@@ -1,0 +1,2700 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech & Market - Tienda Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6a5acd;
+            --primary-light: #8a7de3;
+            --secondary: #ff7b54;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --success: #28a745;
+            --warning: #ffc107;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7ff;
+            color: var(--dark);
+            max-width: 100%;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+        
+        .container {
+            width: 100%;
+            padding: 0 15px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 18px 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+        
+        .cart-icon {
+            position: relative;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        /* Barra de búsqueda */
+        .search-container {
+            padding: 0 15px;
+            margin: 15px 0;
+        }
+        
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: white;
+            box-shadow: var(--shadow);
+            font-size: 1rem;
+            color: var(--dark);
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .suggestions-container {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+        
+        .suggestions-container.active {
+            display: block;
+        }
+        
+        .suggestion-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .suggestion-image {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 15px;
+        }
+        
+        .suggestion-info {
+            flex: 1;
+        }
+        
+        .suggestion-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .suggestion-price {
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .suggestion-category {
+            font-size: 0.75rem;
+            color: var(--primary);
+            background-color: rgba(106, 90, 205, 0.1);
+            padding: 3px 8px;
+            border-radius: 30px;
+        }
+        
+        /* Banner */
+        .banner {
+            background: linear-gradient(rgba(106, 90, 205, 0.9), rgba(138, 125, 227, 0.9)), url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 25px 20px;
+            margin: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .banner h2 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+        
+        .banner p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        /* Categorías */
+        .categories {
+            display: flex;
+            gap: 15px;
+            padding: 0 15px;
+            margin: 20px 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .categories::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-btn {
+            background-color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: var(--gray);
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .category-btn.active, .category-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        /* Productos */
+        .products-section {
+            padding: 0 15px;
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .product-image {
+            height: 140px;
+            width: 100%;
+            object-fit: cover;
+            background-color: #f0f2f5;
+        }
+        
+        .product-info {
+            padding: 15px;
+        }
+        
+        .product-category {
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .product-name {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        .product-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 12px;
+        }
+        
+        .add-to-cart {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .add-to-cart:hover {
+            background-color: var(--primary-light);
+        }
+        
+        /* Vista de Detalle del Producto */
+        .product-detail-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1100;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+        
+        .product-detail-modal.active {
+            transform: translateY(0);
+        }
+        
+        .detail-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .detail-header h2 {
+            font-size: 1.4rem;
+        }
+        
+        .close-detail {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .detail-content {
+            padding: 20px;
+        }
+        
+        .detail-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .detail-category {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: inline-block;
+            background-color: rgba(106, 90, 205, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        
+        .detail-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .detail-price {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+        
+        .detail-description {
+            margin-bottom: 25px;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        .detail-features {
+            margin-bottom: 25px;
+        }
+        
+        .detail-features h4 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+        
+        .features-list {
+            list-style-type: none;
+        }
+        
+        .features-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #555;
+        }
+        
+        .features-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        .detail-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .buy-now-btn {
+            flex: 2;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .buy-now-btn:hover {
+            background-color: #ff6b3d;
+        }
+        
+        .add-to-cart-btn {
+            flex: 1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .add-to-cart-btn:hover {
+            background-color: var(--primary-light);
+        }
+        
+        /* Formulario de Envío */
+        .shipping-form-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1200;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+        
+        .shipping-form-modal.active {
+            transform: translateY(0);
+        }
+        
+        .shipping-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .shipping-header h2 {
+            font-size: 1.4rem;
+        }
+        
+        .close-shipping {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .shipping-content {
+            padding: 20px;
+        }
+        
+        .form-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+            text-align: center;
+        }
+        
+        .saved-shipping-info {
+            background-color: #e8f5e9;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--success);
+        }
+        
+        .saved-shipping-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .saved-shipping-info h4 i {
+            color: var(--success);
+        }
+        
+        .saved-info-item {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            display: flex;
+        }
+        
+        .saved-info-label {
+            font-weight: 600;
+            min-width: 120px;
+            color: var(--dark);
+        }
+        
+        .saved-info-value {
+            color: #555;
+            flex: 1;
+        }
+        
+        .use-saved-info-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .use-saved-info-btn:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-label.required:after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-input.error {
+            border-color: #dc3545;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .error-message.active {
+            display: block;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .form-note {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .order-summary {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin: 25px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .order-summary h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .summary-total {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--secondary);
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #ddd;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .submit-order-btn {
+            flex: 2;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .submit-order-btn:hover {
+            background-color: #ff6b3d;
+        }
+        
+        .submit-order-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .back-to-cart-btn {
+            flex: 1;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .back-to-cart-btn:hover {
+            background-color: #5a6268;
+        }
+        
+        /* Carrito lateral */
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 85%;
+            height: 100%;
+            background-color: white;
+            z-index: 1000;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            transition: right 0.4s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .cart-sidebar.active {
+            right: 0;
+        }
+        
+        .cart-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .cart-header h3 {
+            font-size: 1.4rem;
+        }
+        
+        .close-cart {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .cart-items {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .cart-item {
+            display: flex;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cart-item-image {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+        
+        .cart-item-details {
+            flex: 1;
+        }
+        
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .cart-item-price {
+            color: var(--secondary);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quantity-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--primary);
+            background-color: white;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .quantity {
+            font-weight: 600;
+            min-width: 25px;
+            text-align: center;
+        }
+        
+        .remove-item {
+            color: #dc3545;
+            background: none;
+            border: none;
+            margin-left: auto;
+            cursor: pointer;
+        }
+        
+        .cart-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background-color: #f9f9f9;
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .cart-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .checkout-btn {
+            flex: 2;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .checkout-btn:hover {
+            background-color: #ff6b3d;
+        }
+        
+        .checkout-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .edit-shipping-btn {
+            flex: 1;
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .edit-shipping-btn:hover {
+            background-color: var(--primary);
+        }
+        
+        /* Historial lateral */
+        .history-sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 85%;
+            height: 100%;
+            background-color: white;
+            z-index: 1000;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            transition: left 0.4s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .history-sidebar.active {
+            left: 0;
+        }
+        
+        .history-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .history-header h3 {
+            font-size: 1.4rem;
+        }
+        
+        .close-history {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .history-items {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .history-date {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .history-products {
+            margin-top: 10px;
+        }
+        
+        .history-product {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .history-total {
+            font-weight: 700;
+            color: var(--secondary);
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+        
+        /* WhatsApp flotante */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            background-color: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+            z-index: 99;
+            text-decoration: none;
+            transition: transform 0.3s;
+        }
+        
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Footer móvil */
+        .mobile-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 98;
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .footer-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .footer-btn.active, .footer-btn:hover {
+            color: var(--primary);
+        }
+        
+        .footer-btn i {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 750px;
+                margin: 0 auto;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .cart-sidebar, .history-sidebar {
+                width: 400px;
+            }
+            
+            .search-container {
+                max-width: 500px;
+                margin: 15px auto;
+            }
+            
+            .product-detail-modal, .shipping-form-modal {
+                width: 600px;
+                left: 50%;
+                transform: translate(-50%, 100%);
+            }
+            
+            .product-detail-modal.active, .shipping-form-modal.active {
+                transform: translate(-50%, 0);
+            }
+            
+            .detail-image {
+                height: 300px;
+            }
+        }
+        
+        /* Notificación */
+        .notification {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 10000;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+        
+        /* Aviso de mínimo de compra */
+        .minimum-purchase-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            margin: 10px 15px;
+            font-size: 0.9rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .minimum-purchase-notice.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-store logo-icon"></i>
+                    <h1>Tech & Market</h1>
+                </div>
+                <div class="cart-icon" id="open-cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Aviso de mínimo de compra -->
+    <div class="minimum-purchase-notice" id="minimum-purchase-notice">
+        <i class="fas fa-info-circle"></i> Compra mínima: CLP 15.000
+    </div>
+    
+    <!-- Barra de búsqueda -->
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" class="search-input" id="search-input" placeholder="Buscar productos...">
+            <i class="fas fa-search search-icon"></i>
+            <div class="suggestions-container" id="suggestions-container">
+                <!-- Las sugerencias se cargarán aquí -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Banner -->
+    <section class="banner">
+        <h2>Electrónicos, Comestibles y Accesorios de Limpieza</h2>
+        <p>Más de 40 productos disponibles. ¡Pide ahora y recibe en tu domicilio!</p>
+    </section>
+    
+    <!-- Categorías -->
+    <div class="categories">
+        <button class="category-btn active" data-category="all">Todos</button>
+        <button class="category-btn" data-category="electronics">Electrónicos</button>
+        <button class="category-btn" data-category="food">Comestibles</button>
+        <button class="category-btn" data-category="cleaning">Accesorios de Limpieza</button>
+    </div>
+    
+    <!-- Productos -->
+    <section class="products-section">
+        <h2 class="section-title">Productos Destacados</h2>
+        
+        <div class="products-grid" id="products-grid">
+            <!-- Los productos se cargarán con JavaScript -->
+        </div>
+    </section>
+    
+    <!-- Vista de Detalle del Producto -->
+    <div class="product-detail-modal" id="product-detail-modal">
+        <div class="detail-header">
+            <h2 id="detail-title">Detalle del Producto</h2>
+            <button class="close-detail" id="close-detail">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="detail-content" id="detail-content">
+            <!-- El contenido del detalle se cargará aquí -->
+        </div>
+    </div>
+    
+    <!-- Formulario de Envío -->
+    <div class="shipping-form-modal" id="shipping-form-modal">
+        <div class="shipping-header">
+            <h2>Datos de Envío</h2>
+            <button class="close-shipping" id="close-shipping">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="shipping-content">
+            <h3 class="form-title">Completa tus datos para el envío</h3>
+            
+            <!-- Información de envío guardada -->
+            <div class="saved-shipping-info" id="saved-shipping-info" style="display: none;">
+                <h4><i class="fas fa-check-circle"></i> Tienes datos de envío guardados</h4>
+                <div class="saved-info-item">
+                    <span class="saved-info-label">Nombre:</span>
+                    <span class="saved-info-value" id="saved-full-name"></span>
+                </div>
+                <div class="saved-info-item">
+                    <span class="saved-info-label">Teléfono:</span>
+                    <span class="saved-info-value" id="saved-phone"></span>
+                </div>
+                <div class="saved-info-item">
+                    <span class="saved-info-label">Dirección:</span>
+                    <span class="saved-info-value" id="saved-address"></span>
+                </div>
+                <button type="button" class="use-saved-info-btn" id="use-saved-info">
+                    <i class="fas fa-check"></i>
+                    Usar estos datos
+                </button>
+            </div>
+            
+            <form id="shipping-form">
+                <div class="form-group">
+                    <label class="form-label required" for="full-name">Nombre Completo</label>
+                    <input type="text" id="full-name" class="form-input" placeholder="Juan Pérez García">
+                    <div class="error-message" id="name-error">Por favor ingresa tu nombre completo</div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required" for="phone">Teléfono</label>
+                        <input type="tel" id="phone" class="form-input" placeholder="+56 9 1234 5678">
+                        <div class="error-message" id="phone-error">Por favor ingresa un número de teléfono válido</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required" for="email">Correo Electrónico</label>
+                        <input type="email" id="email" class="form-input" placeholder="ejemplo@correo.com">
+                        <div class="error-message" id="email-error">Por favor ingresa un correo electrónico válido</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required" for="address">Dirección de Envío</label>
+                    <input type="text" id="address" class="form-input" placeholder="Calle Principal #123, Colonia, Ciudad">
+                    <div class="error-message" id="address-error">Por favor ingresa tu dirección completa</div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="city">Ciudad</label>
+                        <input type="text" id="city" class="form-input" placeholder="Santiago">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="postal-code">Código Postal</label>
+                        <input type="text" id="postal-code" class="form-input" placeholder="1234567">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="instructions">Instrucciones de entrega</label>
+                    <textarea id="instructions" class="form-input" rows="3" placeholder="Ejemplo: Llamar antes de llegar, entregar en portería, etc."></textarea>
+                    <div class="form-note">Opcional: Instrucciones especiales para el repartidor</div>
+                </div>
+                
+                <div class="order-summary" id="order-summary">
+                    <!-- El resumen del pedido se cargará aquí -->
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="back-to-cart-btn" id="back-to-cart">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al Carrito
+                    </button>
+                    <button type="submit" class="submit-order-btn" id="submit-order-btn">
+                        <i class="fab fa-whatsapp"></i>
+                        Enviar Pedido por WhatsApp
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Carrito lateral -->
+    <div class="overlay" id="overlay"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Tu Carrito</h3>
+            <button class="close-cart" id="close-cart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="cart-items" id="cart-items">
+            <!-- Los productos del carrito se cargarán aquí -->
+            <p class="empty-cart-message" id="empty-cart-message">Tu carrito está vacío</p>
+        </div>
+        
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total">CLP 0</span>
+            </div>
+            <div class="cart-actions">
+                <button class="checkout-btn" id="checkout-btn">
+                    <i class="fas fa-shipping-fast"></i>
+                    Proceder al Envío
+                </button>
+                <button class="edit-shipping-btn" id="edit-shipping-btn">
+                    <i class="fas fa-edit"></i>
+                    Editar Datos
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Historial lateral -->
+    <div class="history-sidebar" id="history-sidebar">
+        <div class="history-header">
+            <h3>Historial de Compras</h3>
+            <button class="close-history" id="close-history">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="history-items" id="history-items">
+            <!-- El historial se cargará aquí -->
+            <p class="empty-history-message" id="empty-history-message">Aún no tienes compras realizadas</p>
+        </div>
+    </div>
+    
+    <!-- Botón de WhatsApp flotante -->
+    <a href="https://wa.me/56955174362?text=Hola,%20me%20interesan%20sus%20productos" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    
+    <!-- Footer móvil -->
+    <div class="mobile-footer">
+        <button class="footer-btn active" id="home-btn">
+            <i class="fas fa-home"></i>
+            Inicio
+        </button>
+        <button class="footer-btn" id="history-btn">
+            <i class="fas fa-history"></i>
+            Historial
+        </button>
+    </div>
+
+    <script>
+        // Datos de productos - TODOS CONVERTIDOS A PESOS CHILENOS (multiplicados por 1000)
+        const products = [
+            // Electrónicos (24 productos)
+            {
+                id: 1,
+                name: "Transmisor FM Bluetooth para automóvil Q7",
+                category: "electronics",
+                price: 5000, // CLP 5.000.000
+                image: "https://i.pinimg.com/1200x/d7/dc/d8/d7dcd813f8f590767a1b84096de0fed7.jpg",
+                tags: ["transmisor FM", "bluetooth", "automóvil", "audio", "manos libres", "cargador USB"],
+                description: "Te permite reproducir música y realizar llamadas manos libres directamente desde tu automóvil. Se conecta fácilmente por Bluetooth a tu celular y transmite el audio a la radio del vehículo mediante frecuencia FM. Cuenta con puertos USB para cargar dispositivos y un diseño compacto ideal para viajes seguros y entretenidos.",
+                features: [
+                    "Conexión Bluetooth para música y llamadas manos libres",
+                    "Puertos USB para carga de dispositivos",
+                    "Diseño compacto y fácil de instalar"
+                ]
+            },
+            {
+                id: 2,
+                name: "Cargador de coche de 150W PD30W",
+                category: "electronics",
+                price: 10000, // CLP 9.000.000
+                image: "https://i.pinimg.com/1200x/5b/e7/18/5be7189c6b80c0fb3b68b9ab34f29538.jpg",
+                tags: ["cargador de coche", "150W", "PD30W", "USB-C", "carga rápida", "accesorios de auto"],
+                description: "Es un cargador vehicular de alta potencia diseñado para mantener tus dispositivos siempre con energía mientras conduces. Con una salida máxima de 150 W y soporte para PD 30 W, permite una carga rápida y eficiente de teléfonos, tablets, laptops ligeras y otros dispositivos compatibles con USB-C.",
+                features: [
+                    "Potencia total de hasta 150 W",
+                    "Soporte Power Delivery 30 W",
+                    "Carga rápida para dispositivos USB-C/iPhone",
+                    "Compatibilidad con móviles, tablets y laptops ligeras",
+                    "Diseño compacto y resistente para uso en auto"
+                ]
+            },
+            {
+                id: 3,
+                name: "Pistola de calor",
+                category: "electronics",
+                price: 17000, // CLP 17.000.000
+                image: "https://i.pinimg.com/736x/eb/f5/cd/ebf5cd34ca2918f207458baba144f217.jpg",
+                tags: ["pistola de calor", "herramientas", "aire caliente", "bricolaje", "reparaciones", "DIY"],
+                description: "Herramienta versátil para múltiples aplicaciones en el hogar y taller. Ideal para retirar pintura, doblar plásticos, soldar, encoger tubos termorretráctiles y más. Con temperatura ajustable y diseño ergonómico para un uso cómodo y seguro.",
+                features: [
+                    "Emisión de aire caliente ajustable",
+                    "Ideal para bricolaje y reparaciones",
+                    "Elimina pintura y barniz fácilmente",
+                    "Ayuda a doblar plásticos y tubos",
+                    "Diseño ergonómico para manejo cómodo"
+                ]
+            },
+            {
+                id: 4,
+                name: "Cable Tipo C 1M",
+                category: "electronics",
+                price: 3000, // CLP 34.990
+                image: "https://i.pinimg.com/1200x/73/4c/70/734c706a78c926718636ec296cf74e13.jpg",
+                tags: ["cable tipo C", "USB-C", "carga rápida", "transferencia de datos", "accesorios móviles", "tecnología"],
+                description: "Cable USB-C de 1 metro que permite una carga rápida y una transferencia de datos estable y segura. Es compatible con una amplia variedad de dispositivos como teléfonos, tablets y otros equipos con puerto USB-C.",
+                features: [
+                    "Cable USB Tipo C de 1M",
+                    "Compatible con carga rápida",
+                    "Transferencia de datos estable",
+                    "Alta durabilidad para uso diario",
+                    "Compatible con múltiples dispositivos USB-C"
+                ]
+            },
+            {
+                id: 5,
+                name: "Rodillo automático para huevos",
+                category: "electronics",
+                price: 4000, // CLP 19.990
+                image: "https://i.pinimg.com/1200x/c1/ff/9e/c1ff9ef66c6a82fceaa3b1bd40a9e2e4.jpg",
+                tags: ["rodillo de huevos", "organizador de huevos", "cocina", "accesorios de cocina", "almacenamiento", "automático"],
+                description: "Práctico organizador de cocina que permite almacenar y dispensar los huevos de forma automática por gravedad. Facilita el orden en el refrigerador, optimiza el espacio y ayuda a usar primero los huevos más antiguos.",
+                features: [
+                    "Sistema automático por gravedad",
+                    "Facilita la rotación y uso de huevos",
+                    "Ahorra espacio en el refrigerador",
+                    "Diseño práctico y fácil de usar",
+                    "Ideal para mantener la cocina organizada"
+                ]
+            },
+          
+          {id: 4,
+                name: "Original Thinkplus Auriculares Inalámbricos Bluetooth",
+                category: "electronics",
+                price: 8000, // CLP 19.990
+                image: "https://i.pinimg.com/1200x/e7/7d/51/e77d51fc35ea2424f1e76ca5ebbdae68.jpg",
+                tags: ["auriculares inalámbricos", "bluetooth", "cancelación de ruido", "gaming", "micrófono HD", "audio"],
+                description: "ofrecen sonido de alta calidad con cancelación activa de ruido (ANC) y un micrófono HD para llamadas claras. Diseñados tanto para uso diario como para gaming, proporcionan comodidad durante largas sesiones y conectividad Bluetooth estable. Ideales para escuchar música, jugar o hacer llamadas sin distracciones.",
+                features: [
+                    "Conectividad Bluetooth inalámbrica",
+  "Cancelación activa de ruido (ANC)",
+  "Micrófono HD integrado para llamadas",
+  "Sonido de alta calidad para música y juegos",
+  "Diseño cómodo para uso prolongado"
+                ]
+            },
+          
+          
+          
+          
+            // Comestibles (24 productos)
+            {
+                id: 6,
+                name: "Harina Pan",
+                category: "food",
+                price: 1600, // CLP 12.500
+                image: "https://i.pinimg.com/1200x/d5/40/3f/d5403f378d3a1687a447146b062eed55.jpg",
+                tags: ["harina PAN", "harina de maíz", "arepas", "productos básicos"],
+                description: "Harina de maíz precocida, ideal para preparar arepas, empanadas, hallacas y muchas recetas tradicionales. Fácil de usar, de textura suave y sabor auténtico, perfecta para el consumo diario en el hogar.",
+                features: [
+                    "Fácil y rápida de preparar",
+                    "Ideal para arepas, empanadas y recetas tradicionales",
+                    "Textura suave y sabor auténtico",
+                    "Producto versátil para cocina diaria"
+                ]
+            },
+            {
+                id: 7,
+                name: "Yuca Fresca",
+                category: "food",
+                price: 3000, // CLP 8.750
+                image: "https://i.pinimg.com/736x/bb/16/2b/bb162bf25258fdc6dbfe7c5d10754163.jpg",
+                tags: ["yuca", "alimentos", "cocina", "producto fresco", "raíces"],
+                description: "Yuca natural y versátil, ideal para preparar platos tradicionales como yuca cocida, frita o en puré. Destaca por su sabor suave y su textura firme, siendo un alimento básico en muchas cocinas.",
+                features: [
+                    "Sabor suave y textura firme",
+                    "Ideal para hervir, freír o preparar purés",
+                    "Alimento versátil para distintas recetas",
+                    "Producto básico de cocina"
+                ]
+            },
+            {
+                id: 8,
+                name: "Plátano Verde",
+                category: "food",
+                price: 2300, // CLP 7.250
+                image: "https://i.pinimg.com/736x/16/06/9a/16069a50bbf5db402a6d832fd98d5539.jpg",
+                tags: ["plátano verde", "alimentos", "cocina", "producto fresco", "ingredientes"],
+                description: "Plátano verde fresco, ideal para preparar platos tradicionales como frituras, purés o acompañamientos. Su textura firme y sabor neutro lo hacen perfecto para múltiples recetas en la cocina diaria.",
+                features: [
+                    "Plátano verde fresco",
+                    "Textura firme ideal para freír o hervir",
+                    "Ingrediente básico en recetas tradicionales",
+                    "Versátil para cocina diaria"
+                ]
+            },
+            {
+                id: 9,
+                name: "Plátano Maduro",
+                category: "food",
+                price: 2500, // CLP 9.990
+                image: "https://i.pinimg.com/1200x/a2/e2/b2/a2e2b2d7b5c93203728534237a9f1f69.jpg",
+                tags: ["plátano maduro", "freír", "alimentos", "cocina", "producto fresco"],
+                description: "Plátano maduro ideal tanto para freír como para hervir. Su sabor dulce y su textura suave lo convierten en un excelente acompañamiento para comidas tradicionales, desayunos y platos caseros.",
+                features: [
+                    "Plátano maduro fresco",
+                    "Sabor dulce natural",
+                    "Ideal para freír o hervir",
+                    "Textura suave y dorado uniforme",
+                    "Perfecto para platos y acompañamientos tradicionales"
+                ]
+            },
+            {
+                id: 10,
+                name: "Maracuyá Fresca",
+                category: "food",
+                price: 2500, // CLP 4.500
+                image: "https://i.pinimg.com/736x/31/1e/4f/311e4f72feac5fdb0dd2a08297c2310a.jpg",
+                tags: ["maracuyá", "fruta tropical", "alimentos", "bebidas", "cocina", "producto fresco"],
+                description: "Fruta tropical de sabor intenso y refrescante, con un equilibrio perfecto entre dulce y ácido. Ideal para preparar jugos, postres, salsas y bebidas naturales.",
+                features: [
+                    "Fruta tropical fresca",
+                    "Sabor dulce y ácido característico",
+                    "Pulpa jugosa y aromática",
+                    "Ideal para jugos, postres y bebidas",
+                    "Versátil para múltiples preparaciones"
+                ]
+            },
+            {
+                id: 11,
+                name: "Poroto Negro",
+                category: "food",
+                price: 3000, // CLP 6.250
+                image: "https://i.pinimg.com/1200x/c4/d7/90/c4d790907a7a33961bb8d5005bbeaacf.jpg",
+                tags: ["poroto negro", "alimentos", "cocina", "granos", "productos secos"],
+                description: "Poroto negro de alta calidad, ideal para preparar guisos, sopas, ensaladas y platos tradicionales. Destaca por su sabor suave y su textura cremosa una vez cocido.",
+                features: [
+                    "Textura cremosa al cocinar",
+                    "Sabor suave y agradable",
+                    "Ideal para guisos, sopas y ensaladas",
+                    "Producto básico para cocina diaria"
+                ]
+            },
+            {
+                id: 12,
+                name: "Agua Mineral Cachantún Sin Gas",
+                category: "food",
+                price: 1000, // CLP 14.990
+                image: "https://i.pinimg.com/736x/75/ec/54/75ec543ccaa62bd73c01c4104fbcefd7.jpg",
+                tags: ["agua cachantún", "agua sin gas", "bebidas", "hidratación", "agua mineral", "consumo diario"],
+                description: "Agua mineral natural, ideal para una hidratación diaria y saludable. Su sabor puro y liviano la hace perfecta para acompañar comidas, actividades diarias y mantener una hidratación constante.",
+                features: [
+                    "Agua mineral natural sin gas",
+                    "Sabor puro y liviano",
+                    "Ideal para hidratación diaria",
+                    "Apta para toda la familia",
+                    "Perfecta para acompañar comidas y actividades"
+                ]
+            },
+            {
+                id: 13,
+                name: "Agua Cachantún Con Gas",
+                category: "food",
+                price: 1000, // CLP 5.750
+                image: "https://i.pinimg.com/1200x/98/48/a4/9848a4fcb7d96065eba39fbbe9501a25.jpg",
+                tags: ["agua cachantún", "agua con gas", "bebidas", "hidratación", "agua mineral", "refrescante"],
+                description: "Agua mineral natural con burbujas suaves y refrescantes, ideal para quienes disfrutan una hidratación distinta. Su sabor limpio y equilibrado la hace perfecta para acompañar comidas.",
+                features: [
+                    "Agua mineral natural con gas",
+                    "Burbujas suaves y refrescantes",
+                    "Sabor limpio y equilibrado",
+                    "Ideal para acompañar comidas o bebidas",
+                    "Apta para consumo diario"
+                ]
+            },
+            {
+                id: 14,
+                name: "Coca-Cola Sabor Original",
+                category: "food",
+                price: 1300, // CLP 3.990
+                image: "https://i.pinimg.com/736x/5f/cf/f8/5fcff8ead11de5e970b332c336c7937e.jpg",
+                tags: ["coca cola", "bebidas", "gaseosa", "sabor original", "refrescante", "consumo diario"],
+                description: "Bebida gaseosa icónica, reconocida por su sabor único e inconfundible. Ideal para disfrutar fría, acompañar comidas, reuniones y momentos especiales.",
+                features: [
+                    "Bebida gaseosa sabor original",
+                    "Sabor clásico e inconfundible",
+                    "Refrescante y burbujeante",
+                    "Ideal para acompañar comidas",
+                    "Perfecta para compartir en cualquier ocasión"
+                ]
+            },
+            {
+                id: 15,
+                name: "Ajinomen",
+                category: "food",
+                price: 500, // CLP 2.990
+                image: "https://i.pinimg.com/736x/ad/7d/64/ad7d641ac5ac9547aca862baa27b0416.jpg",
+                tags: ["ajinomen", "ajinomoto", "condimentos", "cocina", "sopas", "fideos"],
+                description: "Condimento y base de sabor ampliamente utilizado en la cocina, ideal para realzar el gusto de sopas, caldos, fideos y diversas preparaciones.",
+                features: [
+                    "Condimento realzador de sabor",
+                    "Ideal para sopas, caldos y fideos",
+                    "Fácil de usar en preparaciones diarias",
+                    "Aporta sabor intenso y equilibrado",
+                    "Producto práctico para la cocina"
+                ]
+            },
+            {
+                id: 16,
+                name: "Ranchero",
+                category: "food",
+                price: 2500, // CLP 6.500
+                image: "https://i.pinimg.com/736x/a9/7a/dc/a97adc81e267667043977cd05a19233d.jpg",
+                tags: ["ranchero", "condimentos", "alimentos", "cocina", "sabor intenso", "acompañamientos"],
+                description: "Producto de sabor intenso y característico, ideal para acompañar y realzar comidas diarias. Perfecto para agregar un toque especial a platos tradicionales.",
+                features: [
+                    "Sabor intenso y característico",
+                    "Ideal para acompañar comidas",
+                    "Fácil de usar en la cocina",
+                    "Perfecto para snacks y platos rápidos",
+                    "Aporta un toque especial a las preparaciones"
+                ]
+            },
+            {
+                id: 17,
+                name: "Huevos Blancos Frescos",
+                category: "food",
+                price: 5000, // CLP 11.250
+                image: "https://i.pinimg.com/1200x/c3/bc/2a/c3bc2a66749da8879b0718def6273aa4.jpg",
+                tags: ["huevo blanco", "huevos", "alimentos", "proteína", "cocina", "producto fresco"],
+                description: "Huevos blancos frescos, ideales para el consumo diario. Perfectos para preparar desayunos, almuerzos y diversas recetas, ya sea hervidos, fritos, revueltos o en preparaciones de repostería.",
+                features: [
+                    "Huevo blanco fresco",
+                    "Alimento nutritivo y versátil",
+                    "Ideal para múltiples preparaciones",
+                    "Uso diario en cocina y repostería"
+                ]
+            },
+            {
+                id: 18,
+                name: "Lentejas Secas",
+                category: "food",
+                price: 2500, // CLP 4.990
+                image: "https://i.pinimg.com/1200x/31/d2/3a/31d23a6bfb6a7060d847865cb049ef3c.jpg",
+                tags: ["lentejas", "legumbres", "alimentos", "cocina", "granos", "productos secos"],
+                description: "Lentejas nutritivas y versátiles, ideal para preparar guisos, sopas, ensaladas y platos tradicionales. Destacan por su sabor suave, su fácil cocción y su alto valor nutricional.",
+                features: [
+                    "Legumbre seca de alta calidad",
+                    "Ricas en proteínas y fibra",
+                    "Fáciles y rápidas de cocinar",
+                    "Ideales para guisos, sopas y ensaladas",
+                    "Producto básico para cocina diaria"
+                ]
+            },
+            {
+                id: 19,
+                name: "Canela en Rama",
+                category: "food",
+                price: 1000, // CLP 2.250
+                image: "https://i.pinimg.com/1200x/60/21/03/602103cf2bb58a6280bf100a71302c2a.jpg",
+                tags: ["canela", "especias", "condimentos", "cocina", "aromática", "sabor dulce"],
+                description: "Canela en rama de alta calidad, ideal para realzar postres, infusiones y preparaciones culinarias. Su aroma intenso y característico la convierte en un ingrediente esencial.",
+                features: [
+                    "Especia aromática natural",
+                    "Ideal para postres e infusiones",
+                    "Aporta aroma y sabor intenso",
+                    "Uso versátil en cocina"
+                ]
+            },
+            {
+                id: 20,
+                name: "Azúcar Morena",
+                category: "food",
+                price: 3000, // CLP 5.990
+                image: "https://i.pinimg.com/1200x/1e/32/ba/1e32bad33d178d0d8c5acd7c391d3c56.jpg",
+                tags: ["azúcar morena", "endulzante", "cocina", "repostería", "producto básico"],
+                description: "Azúcar morena natural, ideal para endulzar bebidas, postres y preparaciones caseras. Su textura húmeda y su color característico aportan un toque especial a recetas tradicionales y de repostería.",
+                features: [
+                    "Azúcar morena natural",
+                    "Sabor intenso con notas acarameladas",
+                    "Ideal para bebidas y postres",
+                    "Textura húmeda y color característico",
+                    "Uso versátil en cocina y repostería"
+                ]
+            },
+            {
+                id: 21,
+                name: "Ajo Fresco",
+                category: "food",
+                price: 1000, // CLP 8.750
+                image: "https://i.pinimg.com/1200x/58/5b/77/585b77b02308bf6fff48d251ab397674.jpg",
+                tags: ["ajo", "condimentos", "alimentos", "cocina", "producto fresco", "sazonador"],
+                description: "Ajo fresco de alta calidad, ideal para sazonar y cocinar. Su sabor intenso y aroma característico lo convierten en un ingrediente básico en múltiples recetas de la cocina diaria.",
+                features: [
+                    "Ajo fresco de alta calidad",
+                    "Sabor intenso y aroma característico",
+                    "Ideal para sazonar y cocinar",
+                    "Uso versátil en múltiples recetas",
+                    "Ingrediente básico de cocina"
+                ]
+            },
+            {
+                id: 22,
+                name: "Camote Fresco",
+                category: "food",
+                price: 2000, // CLP 3.250
+                image: "https://i.pinimg.com/1200x/2e/86/47/2e8647eeb012cd1cc67e4b72988e44d4.jpg",
+                tags: ["camote", "tubérculo", "alimentos", "cocina", "producto fresco", "raíces"],
+                description: "Camote natural y nutritivo, de sabor ligeramente dulce y textura suave. Ideal para preparar al horno, hervido, frito o en puré, es un alimento versátil que se adapta tanto a recetas dulces como saladas.",
+                features: [
+                    "Sabor ligeramente dulce",
+                    "Ideal para hervir, freír u hornear",
+                    "Textura suave al cocinar",
+                    "Versátil para recetas dulces y saladas"
+                ]
+            },
+            {
+                id: 23,
+                name: "Salsa de Soya Kikko Siyau 500 ml",
+                category: "food",
+                price: 2000, // CLP 1.990
+                image: "https://i.pinimg.com/1200x/8e/0f/7e/8e0f7e083fdbd2ac5bfed89aa08f8e01.jpg",
+                tags: ["salsa de soya", "kikko siyau", "condimentos", "cocina", "sazonador", "500ml"],
+                description: "Salsa de soya tradicional de sabor intenso y equilibrado, ideal para realzar el gusto de tus platillos favoritos. Perfecta para marinar carnes, acompañar sushi, salteados, arroces y una amplia variedad de recetas.",
+                features: [
+                    "Salsa de soya tradicional",
+                    "Sabor intenso y equilibrado",
+                    "Ideal para marinar y sazonar",
+                    "Perfecta para platos asiáticos y cotidianos",
+                    "Presentación de 500 ml"
+                ]
+            },
+            {
+                id: 24,
+                name: "Sazón Super Completa",
+                category: "food",
+                price: 2500, // CLP 7.500
+                image: "https://i.pinimg.com/736x/ac/60/b4/ac60b469204021c35ad011a62049f9a5.jpg",
+                tags: ["condimentos", "especias", "variados", "cocina"],
+                description: "Mezcla de condimentos especialmente formulada para realzar el sabor de tus comidas con un solo toque. Perfecta para guisos, sopas, carnes, arroces y una amplia variedad de recetas.",
+                features: [
+                    "Mezcla de condimentos equilibrada",
+                    "Realza el sabor de múltiples platos",
+                    "Ideal para guisos, sopas y carnes",
+                    "Fácil de usar en cocina diaria",
+                    "Aporta sabor delicioso y completo"
+                ]
+            },
+            // Accesorios de Limpieza (nueva categoría)
+            {
+                id: 25,
+                name: "Detergente Líquido para Ropa",
+                category: "cleaning",
+                price: 2800, // CLP 4.500
+                image: "https://i.pinimg.com/736x/5d/cc/0a/5dcc0ac3309989ecbccdbe8c771e53d0.jpg",
+                tags: ["detergente", "ropa", "limpieza", "lavado", "líquido", "accesorios de limpieza"],
+                description: "Detergente líquido concentrado para ropa, ideal para todo tipo de tejidos. Elimina manchas difíciles, protege los colores y deja un aroma fresco y duradero.",
+                features: [
+                    "Fórmula concentrada para mayor rendimiento",
+                    "Elimina manchas difíciles",
+                    "Protege colores y tejidos",
+                    "Aroma fresco y duradero",
+                    "Ideal para lavadoras automáticas y manuales"
+                ]
+            },
+            {
+                id: 26,
+                name: "papel elite",
+                category: "cleaning",
+                price: 2800, // CLP 3.200
+                image: "https://unimarc.vtexassets.com/arquivos/ids/194982/000000000000628711-UN-01.jpg?v=638321946452600000",
+                tags: ["papel higiénico", "papel elite", "baño", "higiene", "producto del hogar", "absorbente"],
+                description: "es un papel higiénico suave y resistente, diseñado para brindar comodidad y cuidado en el uso diario. Ideal para baños familiares, oficinas o cualquier espacio que requiera un producto confiable y de alta calidad. Su textura delicada y absorbente proporciona una experiencia confortable en cada uso.",
+                features: [
+                    "Papel higiénico suave y resistente",
+  "Alta absorbencia",
+  "4 Rollos",                
+  "Ideal para uso diario en el baño",
+  "Textura delicada para mayor comodidad",
+  "Producto de calidad para el hogar"
+
+                ]
+            },
+            
+           
+          
+       
+        ];
+
+        // Variables globales
+        let cart = [];
+        let purchaseHistory = [];
+        let currentCategory = "all";
+        let searchTimeout = null;
+        let shippingData = null;
+        const phoneNumber = "+56955174362";
+        const MINIMUM_PURCHASE = 15000; // Mínimo de compra: 15.000 pesos chilenos
+        
+        // Elementos DOM
+        const productsGrid = document.getElementById('products-grid');
+        const cartItems = document.getElementById('cart-items');
+        const cartTotalElement = document.getElementById('cart-total');
+        const cartCount = document.querySelector('.cart-count');
+        const openCartBtn = document.getElementById('open-cart');
+        const closeCartBtn = document.getElementById('close-cart');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const overlay = document.getElementById('overlay');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const editShippingBtn = document.getElementById('edit-shipping-btn');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const historyBtn = document.getElementById('history-btn');
+        const homeBtn = document.getElementById('home-btn');
+        const historySidebar = document.getElementById('history-sidebar');
+        const closeHistoryBtn = document.getElementById('close-history');
+        const historyItems = document.getElementById('history-items');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const emptyHistoryMessage = document.getElementById('empty-history-message');
+        const searchInput = document.getElementById('search-input');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+        const productDetailModal = document.getElementById('product-detail-modal');
+        const closeDetailBtn = document.getElementById('close-detail');
+        const detailContent = document.getElementById('detail-content');
+        const shippingFormModal = document.getElementById('shipping-form-modal');
+        const closeShippingBtn = document.getElementById('close-shipping');
+        const shippingForm = document.getElementById('shipping-form');
+        const backToCartBtn = document.getElementById('back-to-cart');
+        const submitOrderBtn = document.getElementById('submit-order-btn');
+        const orderSummary = document.getElementById('order-summary');
+        const savedShippingInfo = document.getElementById('saved-shipping-info');
+        const useSavedInfoBtn = document.getElementById('use-saved-info');
+        const savedFullName = document.getElementById('saved-full-name');
+        const savedPhone = document.getElementById('saved-phone');
+        const savedAddress = document.getElementById('saved-address');
+        const minimumPurchaseNotice = document.getElementById('minimum-purchase-notice');
+        
+        // Función para formatear precio en CLP
+        function formatPrice(price) {
+            return `CLP ${price.toLocaleString('es-CL')}`;
+        }
+
+        // Inicializar la tienda
+        function initStore() {
+            renderProducts();
+            setupEventListeners();
+            loadCartFromStorage();
+            loadPurchaseHistory();
+            loadShippingData();
+            updateEditButtonVisibility();
+            
+            // Mostrar aviso de mínimo de compra si el total es menor
+            checkMinimumPurchase();
+        }
+        
+        // Renderizar productos
+        function renderProducts(filteredProducts = null) {
+            productsGrid.innerHTML = '';
+            
+            let productsToRender;
+            
+            if (filteredProducts) {
+                productsToRender = filteredProducts;
+            } else {
+                productsToRender = currentCategory === "all" 
+                    ? products 
+                    : products.filter(product => product.category === currentCategory);
+            }
+            
+            if (productsToRender.length === 0) {
+                productsGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--gray);">No se encontraron productos</p>';
+                return;
+            }
+            
+            productsToRender.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <div class="product-info">
+                        <div class="product-category">${getCategoryName(product.category)}</div>
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">${formatPrice(product.price)}</div>
+                        <button class="add-to-cart" data-id="${product.id}">
+                            <i class="fas fa-cart-plus"></i>
+                            Añadir al carrito
+                        </button>
+                    </div>
+                `;
+                
+                productCard.addEventListener('click', (e) => {
+                    if (!e.target.closest('.add-to-cart')) {
+                        openProductDetail(product.id);
+                    }
+                });
+                
+                productsGrid.appendChild(productCard);
+            });
+            
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = parseInt(e.currentTarget.getAttribute('data-id'));
+                    addToCart(productId);
+                });
+            });
+        }
+        
+        // Obtener nombre de categoría para mostrar
+        function getCategoryName(categoryCode) {
+            const categories = {
+                "electronics": "Electrónico",
+                "food": "Comestible",
+                "cleaning": "Limpieza"
+            };
+            return categories[categoryCode] || "General";
+        }
+        
+        // Abrir vista de detalle del producto
+        function openProductDetail(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            closeCart();
+            closeHistory();
+            closeShippingForm();
+            
+            overlay.classList.add('active');
+            
+            let featuresHTML = '';
+            if (product.features && product.features.length > 0) {
+                featuresHTML = `
+                    <div class="detail-features">
+                        <h4>Características principales:</h4>
+                        <ul class="features-list">
+                            ${product.features.map(feature => `<li>${feature}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            detailContent.innerHTML = `
+                <img src="${product.image}" alt="${product.name}" class="detail-image">
+                <div class="detail-category">${getCategoryName(product.category)}</div>
+                <h1 class="detail-name">${product.name}</h1>
+                <div class="detail-price">${formatPrice(product.price)}</div>
+                <div class="detail-description">
+                    ${product.description || 'Producto de alta calidad, ideal para tus necesidades.'}
+                </div>
+                ${featuresHTML}
+                <div class="detail-actions">
+                    <button class="buy-now-btn" id="buy-now-detail" data-id="${product.id}">
+                        <i class="fab fa-whatsapp"></i>
+                        Comprar ahora
+                    </button>
+                    <button class="add-to-cart-btn" id="add-to-cart-detail" data-id="${product.id}">
+                        <i class="fas fa-cart-plus"></i>
+                        Añadir
+                    </button>
+                </div>
+            `;
+            
+            productDetailModal.classList.add('active');
+            
+            document.getElementById('buy-now-detail').addEventListener('click', () => {
+                addToCart(product.id);
+                setTimeout(() => {
+                    closeProductDetail();
+                    openShippingForm();
+                }, 300);
+            });
+            
+            document.getElementById('add-to-cart-detail').addEventListener('click', () => {
+                addToCart(product.id);
+                showNotification(`${product.name} añadido al carrito`);
+            });
+        }
+        
+        // Cerrar vista de detalle del producto
+        function closeProductDetail() {
+            productDetailModal.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+        
+        // Abrir formulario de envío
+        function openShippingForm() {
+            if (cart.length === 0) {
+                alert('Tu carrito está vacío. Añade productos antes de proceder al envío.');
+                return;
+            }
+            
+            // Verificar mínimo de compra
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            if (totalPrice < MINIMUM_PURCHASE) {
+                alert(`El monto mínimo de compra es ${formatPrice(MINIMUM_PURCHASE)}. Tu pedido actual es de ${formatPrice(totalPrice)}.\n\nPor favor añade más productos para alcanzar el mínimo requerido.`);
+                return;
+            }
+            
+            closeCart();
+            closeHistory();
+            closeProductDetail();
+            
+            overlay.classList.add('active');
+            
+            updateOrderSummary();
+            
+            if (shippingData) {
+                showSavedShippingInfo();
+            } else {
+                hideSavedShippingInfo();
+            }
+            
+            shippingFormModal.classList.add('active');
+        }
+        
+        // Cerrar formulario de envío
+        function closeShippingForm() {
+            shippingFormModal.classList.remove('active');
+            overlay.classList.remove('active');
+            
+            clearFormErrors();
+        }
+        
+        // Mostrar información de envío guardada
+        function showSavedShippingInfo() {
+            if (shippingData) {
+                savedFullName.textContent = shippingData.fullName;
+                savedPhone.textContent = shippingData.phone;
+                savedAddress.textContent = shippingData.address;
+                savedShippingInfo.style.display = 'block';
+            }
+        }
+        
+        // Ocultar información de envío guardada
+        function hideSavedShippingInfo() {
+            savedShippingInfo.style.display = 'none';
+        }
+        
+        // Usar datos de envío guardados
+        function useSavedShippingData() {
+            if (!shippingData) return;
+            
+            document.getElementById('full-name').value = shippingData.fullName;
+            document.getElementById('phone').value = shippingData.phone;
+            document.getElementById('email').value = shippingData.email;
+            document.getElementById('address').value = shippingData.address;
+            document.getElementById('city').value = shippingData.city;
+            document.getElementById('postal-code').value = shippingData.postalCode;
+            document.getElementById('instructions').value = shippingData.instructions;
+            
+            hideSavedShippingInfo();
+            
+            showNotification('Datos de envío cargados correctamente');
+        }
+        
+        // Actualizar resumen del pedido en el formulario
+        function updateOrderSummary() {
+            let summaryHTML = '<h3>Resumen de tu Pedido</h3>';
+            
+            cart.forEach(item => {
+                summaryHTML += `
+                    <div class="summary-item">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>${formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                `;
+            });
+            
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            summaryHTML += `
+                <div class="summary-item summary-total">
+                    <span>Total a pagar:</span>
+                    <span>${formatPrice(totalPrice)}</span>
+                </div>
+            `;
+            
+            orderSummary.innerHTML = summaryHTML;
+        }
+        
+        // Validar formulario
+        function validateForm() {
+            let isValid = true;
+            
+            const fullName = document.getElementById('full-name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const address = document.getElementById('address').value.trim();
+            
+            clearFormErrors();
+            
+            if (fullName.length < 3) {
+                showFormError('name-error', 'Por favor ingresa tu nombre completo');
+                isValid = false;
+            }
+            
+            const phoneRegex = /^(\+56\s?9\s?[0-9]{4}\s?[0-9]{4}|9\s?[0-9]{4}\s?[0-9]{4}|[0-9]{9})$/;
+            if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+                showFormError('phone-error', 'Por favor ingresa un número de teléfono válido (ej: +56 9 1234 5678)');
+                isValid = false;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showFormError('email-error', 'Por favor ingresa un correo electrónico válido');
+                isValid = false;
+            }
+            
+            if (address.length < 10) {
+                showFormError('address-error', 'Por favor ingresa una dirección completa');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        // Mostrar error en formulario
+        function showFormError(errorId, message) {
+            const errorElement = document.getElementById(errorId);
+            const inputElement = document.getElementById(errorId.replace('-error', ''));
+            
+            errorElement.textContent = message;
+            errorElement.classList.add('active');
+            inputElement.classList.add('error');
+        }
+        
+        // Limpiar errores del formulario
+        function clearFormErrors() {
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.form-input').forEach(el => {
+                el.classList.remove('error');
+            });
+        }
+        
+        // Enviar pedido por WhatsApp con datos de envío
+        function sendOrderWithShipping() {
+            if (cart.length === 0) {
+                alert('Tu carrito está vacío.');
+                return;
+            }
+            
+            // Verificar mínimo de compra
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            if (totalPrice < MINIMUM_PURCHASE) {
+                alert(`El monto mínimo de compra es ${formatPrice(MINIMUM_PURCHASE)}. Tu pedido actual es de ${formatPrice(totalPrice)}.\n\nPor favor añade más productos para alcanzar el mínimo requerido.`);
+                return;
+            }
+            
+            if (!validateForm()) {
+                return;
+            }
+            
+            const fullName = document.getElementById('full-name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const postalCode = document.getElementById('postal-code').value.trim();
+            const instructions = document.getElementById('instructions').value.trim();
+            
+            saveShippingData({
+                fullName,
+                phone,
+                email,
+                address,
+                city,
+                postalCode,
+                instructions
+            });
+            
+            let message = "¡Hola! Quiero hacer el siguiente pedido:\n\n";
+            
+            message += "*DETALLES DEL PEDIDO:*\n";
+            cart.forEach(item => {
+                message += `• ${item.name} x${item.quantity} - ${formatPrice(item.price * item.quantity)}\n`;
+            });
+            
+            const totalPrice2 = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            message += `\n*Total: ${formatPrice(totalPrice2)}*\n\n`;
+            
+            message += "*DATOS DEL CLIENTE:*\n";
+            message += `Nombre: ${fullName}\n`;
+            message += `Teléfono: ${phone}\n`;
+            message += `Email: ${email}\n\n`;
+            
+            message += "*DIRECCIÓN DE ENVÍO:*\n";
+            message += `${address}\n`;
+            if (city) message += `Ciudad: ${city}\n`;
+            if (postalCode) message += `Código Postal: ${postalCode}\n`;
+            if (instructions) message += `Instrucciones: ${instructions}\n`;
+            
+            message += `\nPor favor, confirmen mi pedido y la dirección de entrega.`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappURL = `https://wa.me/${phoneNumber.replace('+', '')}?text=${encodedMessage}`;
+            
+            saveToPurchaseHistory(fullName, address, phone);
+            
+            window.open(whatsappURL, '_blank');
+            
+            cart = [];
+            updateCart();
+            closeShippingForm();
+            
+            showNotification('Pedido enviado por WhatsApp y datos de envío guardados');
+            
+            updateEditButtonVisibility();
+            checkMinimumPurchase();
+        }
+        
+        // Guardar datos de envío
+        function saveShippingData(data) {
+            shippingData = data;
+            localStorage.setItem('shippingData', JSON.stringify(shippingData));
+        }
+        
+        // Cargar datos de envío guardados
+        function loadShippingData() {
+            const savedData = localStorage.getItem('shippingData');
+            if (savedData) {
+                shippingData = JSON.parse(savedData);
+            }
+        }
+        
+        // Actualizar visibilidad del botón editar
+        function updateEditButtonVisibility() {
+            if (shippingData) {
+                editShippingBtn.style.display = 'flex';
+            } else {
+                editShippingBtn.style.display = 'none';
+            }
+        }
+        
+        // Abrir formulario para editar datos de envío
+        function openEditShippingForm() {
+            if (shippingData) {
+                document.getElementById('full-name').value = shippingData.fullName || '';
+                document.getElementById('phone').value = shippingData.phone || '';
+                document.getElementById('email').value = shippingData.email || '';
+                document.getElementById('address').value = shippingData.address || '';
+                document.getElementById('city').value = shippingData.city || '';
+                document.getElementById('postal-code').value = shippingData.postalCode || '';
+                document.getElementById('instructions').value = shippingData.instructions || '';
+            }
+            
+            hideSavedShippingInfo();
+            
+            openShippingForm();
+        }
+        
+        // Verificar mínimo de compra y mostrar/ocultar aviso
+        function checkMinimumPurchase() {
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (cart.length > 0 && totalPrice < MINIMUM_PURCHASE) {
+                minimumPurchaseNotice.classList.add('visible');
+                const remaining = MINIMUM_PURCHASE - totalPrice;
+                minimumPurchaseNotice.innerHTML = `<i class="fas fa-info-circle"></i> Compra mínima: ${formatPrice(MINIMUM_PURCHASE)}. Te faltan ${formatPrice(remaining)} para completar el pedido.`;
+            } else {
+                minimumPurchaseNotice.classList.remove('visible');
+            }
+        }
+        
+        // Buscar productos
+        function searchProducts(searchTerm) {
+            if (!searchTerm.trim()) {
+                renderProducts();
+                suggestionsContainer.classList.remove('active');
+                return;
+            }
+            
+            const term = searchTerm.toLowerCase();
+            
+            const filteredProducts = products.filter(product => {
+                if (product.name.toLowerCase().includes(term)) return true;
+                
+                if (product.category.includes(term)) return true;
+                
+                if (product.tags && product.tags.some(tag => tag.includes(term))) return true;
+                
+                return false;
+            });
+            
+            renderProducts(filteredProducts);
+            
+            if (filteredProducts.length > 0 && searchTerm.length > 0) {
+                showSuggestions(filteredProducts, searchTerm);
+            } else {
+                suggestionsContainer.classList.remove('active');
+            }
+        }
+        
+        // Mostrar sugerencias de búsqueda
+        function showSuggestions(filteredProducts, searchTerm) {
+            suggestionsContainer.innerHTML = '';
+            
+            const suggestions = filteredProducts.slice(0, 5);
+            
+            suggestions.forEach(product => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.className = 'suggestion-item';
+                suggestionItem.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="suggestion-image">
+                    <div class="suggestion-info">
+                        <div class="suggestion-name">${product.name}</div>
+                        <div class="suggestion-price">${formatPrice(product.price)}</div>
+                    </div>
+                    <div class="suggestion-category">${getCategoryName(product.category)}</div>
+                `;
+                
+                suggestionItem.addEventListener('click', () => {
+                    searchInput.value = product.name;
+                    searchProducts(product.name);
+                    suggestionsContainer.classList.remove('active');
+                });
+                
+                suggestionsContainer.appendChild(suggestionItem);
+            });
+            
+            suggestionsContainer.classList.add('active');
+        }
+        
+        // Añadir producto al carrito
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    ...product,
+                    quantity: 1
+                });
+            }
+            
+            updateCart();
+        }
+        
+        // Actualizar carrito
+        function updateCart() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            
+            renderCartItems();
+            
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotalElement.textContent = formatPrice(totalPrice);
+            
+            checkoutBtn.disabled = cart.length === 0;
+            
+            saveCartToStorage();
+            checkMinimumPurchase();
+        }
+        
+        // Renderizar productos en el carrito
+        function renderCartItems() {
+            cartItems.innerHTML = '';
+            
+            if (cart.length === 0) {
+                emptyCartMessage.style.display = 'block';
+                return;
+            }
+            
+            emptyCartMessage.style.display = 'none';
+            
+            cart.forEach(item => {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+                    <div class="cart-item-details">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">${formatPrice(item.price)}</div>
+                        <div class="cart-item-actions">
+                            <button class="quantity-btn decrease" data-id="${item.id}">-</button>
+                            <span class="quantity">${item.quantity}</span>
+                            <button class="quantity-btn increase" data-id="${item.id}">+</button>
+                            <button class="remove-item" data-id="${item.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                cartItems.appendChild(cartItem);
+            });
+            
+            document.querySelectorAll('.decrease').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const productId = parseInt(e.currentTarget.getAttribute('data-id'));
+                    updateQuantity(productId, -1);
+                });
+            });
+            
+            document.querySelectorAll('.increase').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const productId = parseInt(e.currentTarget.getAttribute('data-id'));
+                    updateQuantity(productId, 1);
+                });
+            });
+            
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const productId = parseInt(e.currentTarget.getAttribute('data-id'));
+                    removeFromCart(productId);
+                });
+            });
+        }
+        
+        // Actualizar cantidad de un producto
+        function updateQuantity(productId, change) {
+            const item = cart.find(item => item.id === productId);
+            if (!item) return;
+            
+            item.quantity += change;
+            
+            if (item.quantity <= 0) {
+                cart = cart.filter(item => item.id !== productId);
+            }
+            
+            updateCart();
+        }
+        
+        // Eliminar producto del carrito
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCart();
+        }
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            openCartBtn.addEventListener('click', openCart);
+            closeCartBtn.addEventListener('click', closeCart);
+            overlay.addEventListener('click', closeAllPanels);
+            
+            checkoutBtn.addEventListener('click', openShippingForm);
+            
+            editShippingBtn.addEventListener('click', openEditShippingForm);
+            
+            historyBtn.addEventListener('click', openHistory);
+            closeHistoryBtn.addEventListener('click', closeHistory);
+            
+            homeBtn.addEventListener('click', () => {
+                closeAllPanels();
+                searchInput.value = '';
+                currentCategory = "all";
+                document.querySelector('.category-btn[data-category="all"]').click();
+                setActiveFooterButton(homeBtn);
+            });
+            
+            closeDetailBtn.addEventListener('click', closeProductDetail);
+            
+            closeShippingBtn.addEventListener('click', closeShippingForm);
+            backToCartBtn.addEventListener('click', () => {
+                closeShippingForm();
+                openCart();
+            });
+            
+            useSavedInfoBtn.addEventListener('click', useSavedShippingData);
+            
+            shippingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                sendOrderWithShipping();
+            });
+            
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value;
+                
+                clearTimeout(searchTimeout);
+                
+                searchTimeout = setTimeout(() => {
+                    searchProducts(searchTerm);
+                }, 300);
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                    suggestionsContainer.classList.remove('active');
+                }
+            });
+            
+            categoryBtns.forEach(button => {
+                button.addEventListener('click', () => {
+                    categoryBtns.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentCategory = button.getAttribute('data-category');
+                    searchInput.value = '';
+                    renderProducts();
+                    suggestionsContainer.classList.remove('active');
+                });
+            });
+        }
+        
+        // Abrir carrito
+        function openCart() {
+            closeHistory();
+            closeProductDetail();
+            closeShippingForm();
+            cartSidebar.classList.add('active');
+            overlay.classList.add('active');
+        }
+        
+        // Cerrar carrito
+        function closeCart() {
+            cartSidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+        
+        // Abrir historial
+        function openHistory() {
+            closeCart();
+            closeProductDetail();
+            closeShippingForm();
+            historySidebar.classList.add('active');
+            overlay.classList.add('active');
+            setActiveFooterButton(historyBtn);
+        }
+        
+        // Cerrar historial
+        function closeHistory() {
+            historySidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+        
+        // Cerrar todos los paneles
+        function closeAllPanels() {
+            closeCart();
+            closeHistory();
+            closeProductDetail();
+            closeShippingForm();
+        }
+        
+        // Establecer botón activo en el footer
+        function setActiveFooterButton(activeButton) {
+            document.querySelectorAll('.footer-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            activeButton.classList.add('active');
+        }
+        
+        // Guardar compra en historial con datos de envío
+        function saveToPurchaseHistory(customerName, address, phone) {
+            if (cart.length === 0) return;
+            
+            const purchase = {
+                id: Date.now(),
+                date: new Date().toLocaleString('es-ES'),
+                items: [...cart],
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                customerName: customerName,
+                address: address,
+                phone: phone
+            };
+            
+            purchaseHistory.unshift(purchase);
+            if (purchaseHistory.length > 10) {
+                purchaseHistory = purchaseHistory.slice(0, 10);
+            }
+            
+            savePurchaseHistoryToStorage();
+            renderPurchaseHistory();
+        }
+        
+        // Renderizar historial de compras
+        function renderPurchaseHistory() {
+            historyItems.innerHTML = '';
+            
+            if (purchaseHistory.length === 0) {
+                emptyHistoryMessage.style.display = 'block';
+                return;
+            }
+            
+            emptyHistoryMessage.style.display = 'none';
+            
+            purchaseHistory.forEach(purchase => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                let productsHTML = '';
+                purchase.items.forEach(item => {
+                    productsHTML += `
+                        <div class="history-product">
+                            <span>${item.name} x${item.quantity}</span>
+                            <span>${formatPrice(item.price * item.quantity)}</span>
+                        </div>
+                    `;
+                });
+                
+                historyItem.innerHTML = `
+                    <div class="history-date">
+                        <span>Pedido #${purchase.id.toString().slice(-4)}</span>
+                        <span>${purchase.date}</span>
+                    </div>
+                    <div class="history-products">
+                        ${productsHTML}
+                    </div>
+                    <div class="history-total">
+                        <span>Total:</span>
+                        <span>${formatPrice(purchase.total)}</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.85rem; color: var(--gray);">
+                        <div><strong>Cliente:</strong> ${purchase.customerName || 'No registrado'}</div>
+                        <div><strong>Dirección:</strong> ${purchase.address || 'No registrada'}</div>
+                    </div>
+                `;
+                
+                historyItems.appendChild(historyItem);
+            });
+        }
+        
+        // Mostrar notificación
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Guardar carrito en localStorage
+        function saveCartToStorage() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+        
+        // Cargar carrito desde localStorage
+        function loadCartFromStorage() {
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+                updateCart();
+            }
+        }
+        
+        // Guardar historial en localStorage
+        function savePurchaseHistoryToStorage() {
+            localStorage.setItem('purchaseHistory', JSON.stringify(purchaseHistory));
+        }
+        
+        // Cargar historial desde localStorage
+        function loadPurchaseHistory() {
+            const savedHistory = localStorage.getItem('purchaseHistory');
+            if (savedHistory) {
+                purchaseHistory = JSON.parse(savedHistory);
+                renderPurchaseHistory();
+            }
+        }
+        
+        // Inicializar la tienda cuando se carga la página
+        document.addEventListener('DOMContentLoaded', initStore);
+    </script>
+</body>
+</html>
