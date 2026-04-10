@@ -105,6 +105,15 @@
             display: inline-block;
             margin: 8px 0;
         }
+        .badge-expiracion {
+            background: #e67e22;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 60px;
+            font-size: 11px;
+            display: inline-block;
+            margin: 4px 0;
+        }
         .intercambiar-btn {
             background: #1a472a;
             color: white;
@@ -115,6 +124,17 @@
             margin-top: 10px;
             width: 100%;
         }
+        .eliminar-btn {
+            background: #991b1b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 60px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .eliminar-btn:hover { background: #7f1d1d; }
         .chat-container {
             background: #f8faf0;
             border-radius: 24px;
@@ -293,7 +313,7 @@
 </div>
 
 <script>
-    // ========== CONFIGURACIÓN ==========
+    // ========== CONFIGURACIÓN (REEMPLAZA CON TUS URLs) ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
     const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
     let currentUser = null;
@@ -356,6 +376,17 @@
         }
     }
 
+    async function eliminarObjeto(id) {
+        const response = await fetch(`${WORKER_URL}/objeto/${id}?usuario=${encodeURIComponent(currentUser.email)}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(error);
+        }
+        return response.json();
+    }
+
     async function enviarMensaje(objetoId, receptor, mensaje) {
         return await api('POST', '/mensaje', {
             id_objeto: objetoId,
@@ -391,6 +422,7 @@
             userInfoDiv.innerHTML = `👤 ${currentUser.email}`;
             appSections.style.display = 'block';
             cargarFeed();
+            cargarMisObjetos();
         } else {
             loginSection.querySelector('h3').innerText = '🔐 Accede o regístrate';
             loginBtn.style.display = 'inline-block';
@@ -448,10 +480,27 @@
                     <div class="objeto-info">
                         <strong>${escapeHtml(obj.titulo)}</strong>
                         <p>${escapeHtml(obj.descripcion?.substring(0, 80))}</p>
-                        <span class="badge">📅 ${new Date(obj.fecha).toLocaleDateString()}</span>
+                        <span class="badge">👤 Tú</span>
+                        <span class="badge-expiracion">⏰ Expira: ${new Date(obj.expira).toLocaleDateString()}</span>
+                        <button class="eliminar-btn" data-id="${obj.id}">🗑️ Eliminar publicación</button>
                     </div>
                 </div>
             `).join('');
+            
+            document.querySelectorAll('.eliminar-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (confirm('¿Eliminar esta publicación? Se borrará la foto y los mensajes asociados.')) {
+                        try {
+                            await eliminarObjeto(parseInt(btn.dataset.id));
+                            showStatus('✅ Publicación eliminada', 'success', 'pubStatus');
+                            cargarMisObjetos();
+                            cargarFeed();
+                        } catch (e) {
+                            showStatus('❌ Error: ' + e.message, 'error', 'pubStatus');
+                        }
+                    }
+                });
+            });
         } catch (e) {
             console.error(e);
         }
