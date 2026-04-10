@@ -3,283 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📸 Galería Cloudflare R2 + D1</title>
+    <title>Intercambia - Trueque de objetos</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: system-ui, 'Segoe UI', 'Helvetica Neue', sans-serif;
-            background: linear-gradient(145deg, #1a1e2b 0%, #2a2f45 100%);
+            font-family: system-ui, 'Segoe UI', sans-serif;
+            background: linear-gradient(145deg, #1a472a 0%, #0f2c1c 100%);
             min-height: 100vh;
-            padding: 24px;
+            padding: 20px;
         }
-
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-
-        /* Tarjetas */
+        .container { max-width: 1300px; margin: 0 auto; }
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(2px);
-            border-radius: 32px;
-            padding: 32px;
-            margin-bottom: 28px;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.25);
-            transition: transform 0.2s ease;
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            background: linear-gradient(135deg, #1E3C72, #2A5298);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: #4a5568;
-            border-left: 4px solid #3b82f6;
-            padding-left: 16px;
-            margin-top: 8px;
-            font-weight: 500;
-        }
-
-        /* Área de subida */
-        .upload-area {
-            border: 3px dashed #3b82f6;
+            background: white;
             border-radius: 28px;
-            padding: 48px 24px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+        }
+        h1 { font-size: 2rem; color: #1a472a; margin-bottom: 4px; }
+        .subtitle { color: #4a6741; margin-bottom: 24px; }
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+        }
+        .nav-btn {
+            background: none;
+            border: none;
+            padding: 8px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: 0.2s;
+            color: #4a6741;
+        }
+        .nav-btn.active {
+            background: #1a472a;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .upload-area {
+            border: 3px dashed #4a6741;
+            border-radius: 24px;
+            padding: 40px;
             text-align: center;
             cursor: pointer;
-            transition: 0.25s;
-            background: #f8fafd;
+            background: #f8faf0;
+            transition: 0.2s;
         }
-
-        .upload-area:hover {
-            border-color: #2563eb;
-            background: #eff6ff;
-            transform: scale(0.99);
+        .upload-area:hover { background: #eef3e6; border-color: #1a472a; }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 60px;
+            font-size: 1rem;
         }
-
-        .upload-area.dragover {
-            background: #dbeafe;
-            border-color: #1e40af;
-        }
-
-        #fileInput {
-            display: none;
-        }
-
-        .upload-icon {
-            font-size: 56px;
-            margin-bottom: 12px;
-        }
-
+        textarea { border-radius: 20px; resize: vertical; }
         button {
-            background: linear-gradient(95deg, #2563eb, #1e3a8a);
+            background: #1a472a;
             color: white;
             border: none;
             padding: 12px 28px;
             border-radius: 60px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 1rem;
             transition: 0.2s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-
-        button:hover {
-            transform: scale(1.02);
-            background: linear-gradient(95deg, #1e40af, #1e3a8a);
-        }
-
-        .progress-container {
-            background: #e2e8f0;
-            border-radius: 40px;
-            margin: 24px 0 12px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 12px;
-            background: linear-gradient(90deg, #3b82f6, #2563eb);
-            transition: width 0.2s ease;
-        }
-
-        #status {
-            margin: 16px 0;
-            padding: 12px;
-            border-radius: 60px;
-            font-weight: 500;
-            display: none;
-            text-align: center;
-        }
-
-        .status-success {
-            background: #bbf7d0;
-            color: #166534;
-            display: block;
-        }
-
-        .status-error {
-            background: #fee2e2;
-            color: #991b1b;
-            display: block;
-        }
-
-        .status-info {
-            background: #dbeafe;
-            color: #1e3a8a;
-            display: block;
-        }
-
-        /* Galería */
-        .gallery {
+        button:hover { background: #0f2c1c; transform: scale(1.02); }
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 24px;
-            margin-top: 28px;
+            margin-top: 20px;
         }
-
-        .gallery-item {
+        .objeto-card {
             background: white;
             border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.2);
-            transition: all 0.25s;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+            transition: 0.2s;
         }
-
-        .gallery-item:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 25px -12px black;
-        }
-
-        .gallery-item img, .gallery-item video {
+        .objeto-card:hover { transform: translateY(-5px); }
+        .objeto-card img {
             width: 100%;
             height: 200px;
             object-fit: cover;
-            background: #f1f5f9;
         }
-
-        .gallery-item-info {
-            padding: 14px;
-            font-size: 13px;
-            background: #ffffff;
-            border-top: 1px solid #eef2ff;
-        }
-
-        /* Login */
-        .login-section {
-            background: white;
-            border-radius: 32px;
-            padding: 32px;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            margin: 12px 0;
-            border: 1px solid #cbd5e1;
+        .objeto-info { padding: 16px; }
+        .badge {
+            background: #1a472a;
+            color: white;
+            padding: 4px 12px;
             border-radius: 60px;
-            font-size: 1rem;
-            background: #fefefe;
+            font-size: 12px;
+            display: inline-block;
+            margin: 8px 0;
         }
-
+        .intercambiar-btn {
+            background: #1a472a;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 60px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .chat-container {
+            background: #f8faf0;
+            border-radius: 24px;
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .mensaje {
+            background: white;
+            border-radius: 20px;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+            max-width: 80%;
+        }
+        .mensaje.emisor {
+            background: #1a472a;
+            color: white;
+            margin-left: auto;
+        }
+        .mensaje.receptor {
+            background: #e2e8f0;
+        }
+        .mensaje small {
+            font-size: 10px;
+            opacity: 0.7;
+            display: block;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .chat-input input {
+            flex: 1;
+            margin: 0;
+        }
+        .login-section input {
+            margin: 8px 0;
+        }
         .flex-buttons {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
             margin-top: 8px;
         }
-
-        .btn-secondary {
-            background: #4b5563;
-        }
-
         .user-info {
             background: #eef2ff;
-            padding: 16px;
+            padding: 12px;
             border-radius: 60px;
-            margin-top: 20px;
-            font-weight: 500;
+            margin-top: 16px;
             text-align: center;
         }
-
-        footer {
+        .status-success {
+            background: #bbf7d0;
+            color: #166534;
+            padding: 12px;
+            border-radius: 60px;
+            margin-top: 12px;
             text-align: center;
-            color: #cbd5e1;
-            margin-top: 40px;
+        }
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 60px;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .status-info {
+            background: #dbeafe;
+            color: #1e3a8a;
+            padding: 12px;
+            border-radius: 60px;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .progress-container {
+            background: #e2e8f0;
+            border-radius: 40px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 8px;
+            background: #1a472a;
+            transition: width 0.2s;
+        }
+        .conv-item {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .conv-item:hover {
+            background: #f0f4e8;
+        }
+        @media (max-width: 700px) {
+            .grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="card">
-        <h1>🚀 Galería Cloudflare R2 + D1</h1>
-        <div class="subtitle">📸 Guardado real — las fotos no desaparecen 🔁</div>
+        <h1>🔄 Intercambia</h1>
+        <div class="subtitle">Trueque de objetos: publica lo que ofreces y conversa</div>
     </div>
 
     <!-- LOGIN -->
-    <div class="login-section" id="loginSection">
+    <div class="card" id="loginSection">
         <h3>🔐 Acceso</h3>
-        <input type="email" id="email" placeholder="Correo electrónico" autocomplete="email">
-        <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password">
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
         <div class="flex-buttons">
             <button id="loginBtn">Iniciar sesión</button>
-            <button id="registerBtn" class="btn-secondary">Registrarse</button>
-            <button id="logoutBtn" style="display:none;" class="btn-secondary">Cerrar sesión</button>
+            <button id="registerBtn" style="background:#6c757d;">Registrarse</button>
+            <button id="logoutBtn" style="display:none; background:#6c757d;">Cerrar sesión</button>
         </div>
         <div id="userInfo" class="user-info" style="display:none;"></div>
     </div>
 
-    <!-- SUBIR ARCHIVO (solo logueado) -->
-    <div class="card" id="uploadSection" style="display:none;">
-        <h3>📤 Subir foto o vídeo</h3>
-        <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">📎</div>
-            <p>Arrastra o haz clic para seleccionar</p>
-            <input type="file" id="fileInput" accept="image/*,video/*">
-        </div>
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div id="status"></div>
-        <button id="uploadBtn">Subir ahora</button>
-    </div>
+    <!-- APP (oculta hasta login) -->
+    <div id="appSections" style="display:none;">
+        <div class="card">
+            <div class="nav-buttons">
+                <button class="nav-btn active" data-tab="feed">📦 Objetos disponibles</button>
+                <button class="nav-btn" data-tab="publicar">➕ Publicar objeto</button>
+                <button class="nav-btn" data-tab="misobjetos">📋 Mis objetos</button>
+                <button class="nav-btn" data-tab="chats">💬 Mis conversaciones</button>
+            </div>
 
-    <!-- GALERÍA GLOBAL -->
-    <div class="card">
-        <h3>🖼️ Lo que comparte la comunidad</h3>
-        <div id="gallery" class="gallery">
-            <p style="grid-column:1/-1; text-align:center;">✨ Cargando archivos...</p>
+            <!-- FEED -->
+            <div id="tab-feed">
+                <h3>✨ Objetos para intercambiar</h3>
+                <div id="feedGrid" class="grid">Cargando...</div>
+            </div>
+
+            <!-- PUBLICAR -->
+            <div id="tab-publicar" style="display:none;">
+                <h3>📸 Publicar un objeto</h3>
+                <input type="text" id="titulo" placeholder="Título del objeto">
+                <textarea id="descripcion" rows="2" placeholder="Descripción (estado, qué buscas a cambio...)"></textarea>
+                <div class="upload-area" id="uploadArea">
+                    <div>📁 Haz clic o arrastra una foto</div>
+                    <input type="file" id="fileInput" accept="image/*" style="display:none;">
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <button id="publicarBtn">Publicar objeto</button>
+                <div id="pubStatus"></div>
+            </div>
+
+            <!-- MIS OBJETOS -->
+            <div id="tab-misobjetos" style="display:none;">
+                <h3>📌 Mis objetos publicados</h3>
+                <div id="misObjetosGrid" class="grid">Cargando...</div>
+            </div>
+
+            <!-- CHATS -->
+            <div id="tab-chats" style="display:none;">
+                <h3>💬 Conversaciones activas</h3>
+                <div id="listaChats"></div>
+                <div id="chatDetalle" style="margin-top:24px; display:none;">
+                    <h4 id="chatTitulo"></h4>
+                    <div id="chatMensajes" class="chat-container"></div>
+                    <div class="chat-input">
+                        <input type="text" id="nuevoMensaje" placeholder="Escribe un mensaje...">
+                        <button id="enviarMensajeBtn">Enviar</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <footer>✅ Almacenamiento R2 + Base de datos D1 — Persistencia real</footer>
 </div>
 
 <script>
-    // ==============================================
-    // 🔁 ÚNICO PUNTO A MODIFICAR (TUS URLs REALES)
-    // ==============================================
+    // ========== CONFIGURACIÓN ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
     const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
-
-    // ==============================================
-    // 🧠 Sistema simple de usuarios (localStorage)
-    // ==============================================
     let currentUser = null;
+    let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
 
+    // ========== USUARIOS ==========
     function registerUser(email, password) {
         const users = JSON.parse(localStorage.getItem('app_users') || '{}');
-        if (users[email]) throw new Error('❌ El usuario ya existe');
+        if (users[email]) throw new Error('El usuario ya existe');
         users[email] = { password: btoa(password) };
         localStorage.setItem('app_users', JSON.stringify(users));
         return true;
@@ -288,26 +311,76 @@
     function loginUser(email, password) {
         const users = JSON.parse(localStorage.getItem('app_users') || '{}');
         const user = users[email];
-        if (!user || user.password !== btoa(password)) throw new Error('❌ Email o contraseña incorrectos');
+        if (!user || user.password !== btoa(password)) throw new Error('Email o contraseña incorrectos');
         currentUser = { email };
         localStorage.setItem('app_currentUser', JSON.stringify(currentUser));
-        updateUIForUser();
         return true;
     }
 
     function logoutUser() {
         currentUser = null;
         localStorage.removeItem('app_currentUser');
-        updateUIForUser();
     }
 
+    // ========== API ==========
+    async function api(method, path, body = null) {
+        const opts = { method, headers: {} };
+        if (body && !(body instanceof FormData)) {
+            opts.headers['Content-Type'] = 'application/json';
+            opts.body = JSON.stringify(body);
+        } else if (body instanceof FormData) {
+            opts.body = body;
+        }
+        const res = await fetch(`${WORKER_URL}${path}`, opts);
+        if (!res.ok) {
+            const error = await res.text();
+            throw new Error(error);
+        }
+        return res.json();
+    }
+
+    async function publicarObjeto(titulo, descripcion, file) {
+        const form = new FormData();
+        form.append('file', file);
+        form.append('usuario', currentUser.email);
+        form.append('titulo', titulo);
+        form.append('descripcion', descripcion);
+        return await api('POST', '/objeto', form);
+    }
+
+    async function obtenerObjetos(propios = false) {
+        if (propios) {
+            return await api('GET', `/mis-objetos?usuario=${encodeURIComponent(currentUser.email)}`);
+        } else {
+            return await api('GET', '/objetos');
+        }
+    }
+
+    async function enviarMensaje(objetoId, receptor, mensaje) {
+        return await api('POST', '/mensaje', {
+            id_objeto: objetoId,
+            emisor: currentUser.email,
+            receptor: receptor,
+            mensaje: mensaje
+        });
+    }
+
+    async function obtenerMensajes(objetoId, otroUsuario) {
+        return await api('GET', `/mensajes?id_objeto=${objetoId}&usuario=${encodeURIComponent(currentUser.email)}&otro=${encodeURIComponent(otroUsuario)}`);
+    }
+
+    async function obtenerMisConversaciones() {
+        return await api('GET', `/mis-conversaciones?usuario=${encodeURIComponent(currentUser.email)}`);
+    }
+
+    // ========== UI ==========
     function updateUIForUser() {
         const loginSection = document.getElementById('loginSection');
-        const uploadSection = document.getElementById('uploadSection');
+        const appSections = document.getElementById('appSections');
+        const userInfoDiv = document.getElementById('userInfo');
         const loginBtn = document.getElementById('loginBtn');
         const registerBtn = document.getElementById('registerBtn');
         const logoutBtn = document.getElementById('logoutBtn');
-        const userInfoDiv = document.getElementById('userInfo');
 
         if (currentUser) {
             loginSection.querySelector('h3').innerText = '✅ Sesión activa';
@@ -316,83 +389,133 @@
             logoutBtn.style.display = 'inline-block';
             userInfoDiv.style.display = 'block';
             userInfoDiv.innerHTML = `👤 ${currentUser.email}`;
-            uploadSection.style.display = 'block';
+            appSections.style.display = 'block';
+            cargarFeed();
         } else {
             loginSection.querySelector('h3').innerText = '🔐 Accede o regístrate';
             loginBtn.style.display = 'inline-block';
             registerBtn.style.display = 'inline-block';
             logoutBtn.style.display = 'none';
             userInfoDiv.style.display = 'none';
-            uploadSection.style.display = 'none';
+            appSections.style.display = 'none';
         }
     }
 
-    // ==============================================
-    // 🌐 Comunicación con Worker (R2 + D1)
-    // ==============================================
-    async function cargarFotosDesdeDB() {
+    async function cargarFeed() {
         try {
-            const res = await fetch(`${WORKER_URL}/fotos`);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const fotos = await res.json();
-            const galleryDiv = document.getElementById('gallery');
-
-            if (!fotos.length) {
-                galleryDiv.innerHTML = '<p style="grid-column:1/-1; text-align:center;">📭 Aún no hay archivos. ¡Sé el primero en subir!</p>';
+            const objetos = await obtenerObjetos(false);
+            const feedDiv = document.getElementById('feedGrid');
+            if (!objetos.length) {
+                feedDiv.innerHTML = '<p>📭 No hay objetos publicados aún. ¡Sé el primero!</p>';
                 return;
             }
+            feedDiv.innerHTML = objetos.map(obj => `
+                <div class="objeto-card">
+                    <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
+                    <div class="objeto-info">
+                        <strong>${escapeHtml(obj.titulo)}</strong>
+                        <p>${escapeHtml(obj.descripcion?.substring(0, 100))}</p>
+                        <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
+                        ${obj.usuario !== currentUser.email ? `<button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>` : '<span style="font-size:12px;">(tu objeto)</span>'}
+                    </div>
+                </div>
+            `).join('');
+            document.querySelectorAll('.intercambiar-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const otro = btn.dataset.usuario;
+                    const titulo = btn.dataset.titulo;
+                    abrirChatConObjeto(id, otro, titulo);
+                });
+            });
+        } catch (e) {
+            console.error(e);
+            document.getElementById('feedGrid').innerHTML = '<p>❌ Error al cargar objetos</p>';
+        }
+    }
 
-            let html = '';
-            for (const foto of fotos) {
-                const fileUrl = `${R2_PUBLIC_URL}/${foto.fileName}`;
-                if (foto.tipo.startsWith('image/')) {
-                    html += `
-                        <div class="gallery-item">
-                            <img src="${fileUrl}" loading="lazy" alt="${foto.nombre}">
-                            <div class="gallery-item-info">
-                                <strong>${escapeHtml(foto.nombre.substring(0, 35))}</strong><br>
-                                👤 ${escapeHtml(foto.usuario)}<br>
-                                📅 ${new Date(foto.fecha).toLocaleDateString()}
-                            </div>
-                        </div>
-                    `;
-                } else if (foto.tipo.startsWith('video/')) {
-                    html += `
-                        <div class="gallery-item">
-                            <video src="${fileUrl}" controls preload="metadata"></video>
-                            <div class="gallery-item-info">
-                                <strong>${escapeHtml(foto.nombre.substring(0, 35))}</strong><br>
-                                👤 ${escapeHtml(foto.usuario)}<br>
-                                📅 ${new Date(foto.fecha).toLocaleDateString()}
-                            </div>
-                        </div>
-                    `;
-                }
+    async function cargarMisObjetos() {
+        try {
+            const objetos = await obtenerObjetos(true);
+            const div = document.getElementById('misObjetosGrid');
+            if (!objetos.length) {
+                div.innerHTML = '<p>📭 No has publicado nada aún.</p>';
+                return;
             }
-            galleryDiv.innerHTML = html;
-        } catch (err) {
-            console.error(err);
-            document.getElementById('gallery').innerHTML = '<p style="grid-column:1/-1; text-align:center;">⚠️ Error al cargar los archivos</p>';
+            div.innerHTML = objetos.map(obj => `
+                <div class="objeto-card">
+                    <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
+                    <div class="objeto-info">
+                        <strong>${escapeHtml(obj.titulo)}</strong>
+                        <p>${escapeHtml(obj.descripcion?.substring(0, 80))}</p>
+                        <span class="badge">📅 ${new Date(obj.fecha).toLocaleDateString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error(e);
         }
     }
 
-    async function subirFotoWorker(file, usuario) {
-        const form = new FormData();
-        form.append('file', file);
-        form.append('usuario', usuario);
+    async function abrirChatConObjeto(objetoId, otroUsuario, titulo) {
+        chatActual = { objetoId, otroUsuario, titulo };
+        document.getElementById('chatTitulo').innerHTML = `💬 ${escapeHtml(titulo)}<br><small>Conversando con ${escapeHtml(otroUsuario)}</small>`;
+        document.getElementById('chatDetalle').style.display = 'block';
+        await cargarMensajes();
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('[data-tab="chats"]').classList.add('active');
+        document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
+        document.getElementById('tab-chats').style.display = 'block';
+        cargarListaConversaciones();
+    }
 
-        const resp = await fetch(WORKER_URL, {
-            method: 'POST',
-            body: form
+    async function cargarMensajes() {
+        if (!chatActual.objetoId) return;
+        const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
+        const cont = document.getElementById('chatMensajes');
+        if (!msgs.length) {
+            cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún. Escribe algo para empezar la conversación.</p>';
+            return;
+        }
+        cont.innerHTML = msgs.map(m => `
+            <div class="mensaje ${m.emisor === currentUser.email ? 'emisor' : 'receptor'}">
+                <strong>${m.emisor === currentUser.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}
+                <small>${new Date(m.fecha).toLocaleString()}</small>
+            </div>
+        `).join('');
+        cont.scrollTop = cont.scrollHeight;
+    }
+
+    async function enviarMensajeChat() {
+        const input = document.getElementById('nuevoMensaje');
+        const texto = input.value.trim();
+        if (!texto || !chatActual.objetoId) return;
+        await enviarMensaje(chatActual.objetoId, chatActual.otroUsuario, texto);
+        input.value = '';
+        await cargarMensajes();
+    }
+
+    async function cargarListaConversaciones() {
+        const convs = await obtenerMisConversaciones();
+        const listaDiv = document.getElementById('listaChats');
+        if (!convs.length) {
+            listaDiv.innerHTML = '<p>💬 No hay conversaciones activas aún. Intercambia con alguien para empezar.</p>';
+            return;
+        }
+        listaDiv.innerHTML = convs.map(c => `
+            <div class="conv-item" data-id="${c.id_objeto}" data-otro="${escapeHtml(c.otroUsuario)}" data-titulo="${escapeHtml(c.titulo)}">
+                <strong>📦 ${escapeHtml(c.titulo)}</strong><br>
+                💬 con ${escapeHtml(c.otroUsuario)}<br>
+                <small>Último mensaje: ${new Date(c.ultimaFecha).toLocaleString()}</small>
+            </div>
+        `).join('');
+        document.querySelectorAll('.conv-item').forEach(el => {
+            el.addEventListener('click', () => {
+                abrirChatConObjeto(parseInt(el.dataset.id), el.dataset.otro, el.dataset.titulo);
+            });
         });
-        if (!resp.ok) {
-            const texto = await resp.text();
-            throw new Error(texto || `Error HTTP ${resp.status}`);
-        }
-        return await resp.json();
     }
 
-    // Mini utilidad XSS
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -403,103 +526,118 @@
         });
     }
 
-    // ==============================================
-    // 🎛️ Eventos y UI
-    // ==============================================
-    function showStatus(msg, type) {
-        const div = document.getElementById('status');
+    function showStatus(msg, type, elementId = 'pubStatus') {
+        const div = document.getElementById(elementId);
+        if (!div) return;
         div.className = `status-${type}`;
         div.innerText = msg;
-        div.style.display = 'block';
         setTimeout(() => {
-            div.style.display = 'none';
-        }, 3500);
+            div.className = '';
+            div.innerText = '';
+        }, 3000);
     }
 
-    // Botones
+    // ========== EVENTOS ==========
     document.getElementById('loginBtn').onclick = () => {
         try {
             loginUser(document.getElementById('email').value, document.getElementById('password').value);
-            showStatus('✅ Bienvenido', 'success');
-            cargarFotosDesdeDB();
+            updateUIForUser();
+            showStatus('✅ Sesión iniciada', 'success', 'pubStatus');
         } catch (e) {
-            showStatus(e.message, 'error');
+            showStatus(e.message, 'error', 'pubStatus');
         }
     };
+
     document.getElementById('registerBtn').onclick = () => {
         try {
             registerUser(document.getElementById('email').value, document.getElementById('password').value);
-            showStatus('✅ Registro exitoso, ahora inicia sesión', 'success');
+            showStatus('✅ Registrado exitoso. Ahora inicia sesión.', 'success', 'pubStatus');
         } catch (e) {
-            showStatus(e.message, 'error');
+            showStatus(e.message, 'error', 'pubStatus');
         }
     };
+
     document.getElementById('logoutBtn').onclick = () => {
         logoutUser();
-        showStatus('🔓 Sesión cerrada', 'info');
-        cargarFotosDesdeDB();
+        updateUIForUser();
+        showStatus('Sesión cerrada', 'info', 'pubStatus');
     };
 
-    // Subida
-    const uploadBtn = document.getElementById('uploadBtn');
-    const fileInput = document.getElementById('fileInput');
-    const progressBar = document.getElementById('progressBar');
-
-    uploadBtn.addEventListener('click', async () => {
-        const file = fileInput.files[0];
-        if (!file) return showStatus('❌ Selecciona un archivo', 'error');
-        if (!currentUser) return showStatus('❌ Debes iniciar sesión', 'error');
-
-        showStatus('⏫ Subiendo a Cloudflare R2...', 'info');
-        progressBar.style.width = '0%';
-
-        let interval;
+    document.getElementById('publicarBtn').onclick = async () => {
+        const titulo = document.getElementById('titulo').value;
+        const descripcion = document.getElementById('descripcion').value;
+        const file = document.getElementById('fileInput').files[0];
+        if (!titulo || !descripcion || !file) {
+            showStatus('❌ Completa título, descripción y foto', 'error', 'pubStatus');
+            return;
+        }
+        const progressBar = document.getElementById('progressBar');
         try {
-            let prog = 0;
-            interval = setInterval(() => {
-                prog = Math.min(prog + 12, 90);
-                progressBar.style.width = `${prog}%`;
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress = Math.min(progress + 10, 90);
+                progressBar.style.width = `${progress}%`;
             }, 200);
-
-            const result = await subirFotoWorker(file, currentUser.email);
+            await publicarObjeto(titulo, descripcion, file);
             clearInterval(interval);
             progressBar.style.width = '100%';
-            showStatus('✅ ¡Subida correcta! La foto ya está en la galería', 'success');
-            fileInput.value = '';
-            setTimeout(() => { progressBar.style.width = '0%'; }, 1500);
-            await cargarFotosDesdeDB();
-        } catch (err) {
-            clearInterval(interval);
+            showStatus('✅ Objeto publicado correctamente', 'success', 'pubStatus');
+            setTimeout(() => { progressBar.style.width = '0%'; }, 2000);
+            document.getElementById('titulo').value = '';
+            document.getElementById('descripcion').value = '';
+            document.getElementById('fileInput').value = '';
+            cargarMisObjetos();
+            cargarFeed();
+        } catch (e) {
+            showStatus('❌ Error: ' + e.message, 'error', 'pubStatus');
             progressBar.style.width = '0%';
-            showStatus(`❌ Falla: ${err.message}`, 'error');
-            console.error(err);
         }
+    };
+
+    document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
+    document.getElementById('nuevoMensaje').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') enviarMensajeChat();
     });
 
-    // Drag & drop
-    const area = document.getElementById('uploadArea');
-    area.addEventListener('click', () => fileInput.click());
-    area.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        area.classList.add('dragover');
-    });
-    area.addEventListener('dragleave', () => area.classList.remove('dragover'));
-    area.addEventListener('drop', (e) => {
-        e.preventDefault();
-        area.classList.remove('dragover');
-        if (e.dataTransfer.files.length) fileInput.files = e.dataTransfer.files;
+    // Navegación pestañas
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
+            document.getElementById(`tab-${tab}`).style.display = 'block';
+            if (tab === 'feed') cargarFeed();
+            if (tab === 'misobjetos') cargarMisObjetos();
+            if (tab === 'chats') cargarListaConversaciones();
+        });
     });
 
-    // Restaurar sesión guardada
+    // Subida de foto
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = '#eef3e6';
+    });
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.background = '#f8faf0';
+    });
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = '#f8faf0';
+        fileInput.files = e.dataTransfer.files;
+    });
+
+    // Restaurar sesión
     const saved = localStorage.getItem('app_currentUser');
     if (saved) {
-        try {
-            currentUser = JSON.parse(saved);
-            updateUIForUser();
-        } catch(e) { console.warn(e); }
+        currentUser = JSON.parse(saved);
+        updateUIForUser();
+    } else {
+        updateUIForUser();
     }
-    // Cargar galería real desde D1
-    cargarFotosDesdeDB();
 </script>
 </body>
 </html>
