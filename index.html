@@ -88,6 +88,7 @@
             overflow: hidden;
             box-shadow: 0 6px 14px rgba(0,0,0,0.1);
             transition: 0.2s;
+            position: relative;
         }
         .objeto-card:hover { transform: translateY(-5px); }
         .objeto-card img {
@@ -114,6 +115,15 @@
             display: inline-block;
             margin: 4px 0;
         }
+        .badge-sospechoso {
+            background: #e67e22;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 60px;
+            font-size: 11px;
+            display: inline-block;
+            margin: 4px 0;
+        }
         .intercambiar-btn {
             background: #1a472a;
             color: white;
@@ -124,6 +134,18 @@
             margin-top: 10px;
             width: 100%;
         }
+        .reportar-btn {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 60px;
+            cursor: pointer;
+            margin-top: 5px;
+            width: 100%;
+            font-size: 12px;
+        }
+        .reportar-btn:hover { background: #d35400; }
         .eliminar-btn {
             background: #991b1b;
             color: white;
@@ -387,6 +409,14 @@
         return response.json();
     }
 
+    async function reportarObjeto(idObjeto, motivo) {
+        return await api('POST', '/reporte', {
+            id_objeto: idObjeto,
+            reportado_por: currentUser.email,
+            motivo: motivo
+        });
+    }
+
     async function enviarMensaje(objetoId, receptor, mensaje) {
         return await api('POST', '/mensaje', {
             id_objeto: objetoId,
@@ -448,16 +478,35 @@
                         <strong>${escapeHtml(obj.titulo)}</strong>
                         <p>${escapeHtml(obj.descripcion?.substring(0, 100))}</p>
                         <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
-                        ${obj.usuario !== currentUser.email ? `<button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>` : '<span style="font-size:12px;">(tu objeto)</span>'}
+                        ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
+                        ${obj.usuario !== currentUser.email ? `
+                            <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
+                            <button class="reportar-btn" data-id="${obj.id}" data-titulo="${escapeHtml(obj.titulo)}">⚠️ Reportar</button>
+                        ` : '<span style="font-size:12px;">(tu objeto)</span>'}
                     </div>
                 </div>
             `).join('');
+            
             document.querySelectorAll('.intercambiar-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
                     const otro = btn.dataset.usuario;
                     const titulo = btn.dataset.titulo;
                     abrirChatConObjeto(id, otro, titulo);
+                });
+            });
+            
+            document.querySelectorAll('.reportar-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const motivo = prompt('¿Por qué reportas este objeto? (ej: desnudo, spam, violencia, etc.)');
+                    if (motivo && motivo.trim()) {
+                        try {
+                            await reportarObjeto(parseInt(btn.dataset.id), motivo);
+                            alert('✅ Reporte enviado. Gracias por ayudar a mantener la comunidad segura.');
+                        } catch (e) {
+                            alert('❌ Error al reportar: ' + e.message);
+                        }
+                    }
                 });
             });
         } catch (e) {
@@ -482,6 +531,7 @@
                         <p>${escapeHtml(obj.descripcion?.substring(0, 80))}</p>
                         <span class="badge">👤 Tú</span>
                         <span class="badge-expiracion">⏰ Expira: ${new Date(obj.expira).toLocaleDateString()}</span>
+                        ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión por IA</span>' : ''}
                         <button class="eliminar-btn" data-id="${obj.id}">🗑️ Eliminar publicación</button>
                     </div>
                 </div>
@@ -492,11 +542,11 @@
                     if (confirm('¿Eliminar esta publicación? Se borrará la foto y los mensajes asociados.')) {
                         try {
                             await eliminarObjeto(parseInt(btn.dataset.id));
-                            showStatus('✅ Publicación eliminada', 'success', 'pubStatus');
+                            alert('✅ Publicación eliminada');
                             cargarMisObjetos();
                             cargarFeed();
                         } catch (e) {
-                            showStatus('❌ Error: ' + e.message, 'error', 'pubStatus');
+                            alert('❌ Error: ' + e.message);
                         }
                     }
                 });
@@ -627,10 +677,14 @@
                 progress = Math.min(progress + 10, 90);
                 progressBar.style.width = `${progress}%`;
             }, 200);
-            await publicarObjeto(titulo, descripcion, file);
+            const resultado = await publicarObjeto(titulo, descripcion, file);
             clearInterval(interval);
             progressBar.style.width = '100%';
-            showStatus('✅ Objeto publicado correctamente', 'success', 'pubStatus');
+            if (resultado.sospechoso) {
+                showStatus('⚠️ Publicación recibida. Pasará por revisión moderadora.', 'info', 'pubStatus');
+            } else {
+                showStatus('✅ Objeto publicado correctamente', 'success', 'pubStatus');
+            }
             setTimeout(() => { progressBar.style.width = '0%'; }, 2000);
             document.getElementById('titulo').value = '';
             document.getElementById('descripcion').value = '';
