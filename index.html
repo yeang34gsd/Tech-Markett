@@ -341,8 +341,8 @@
 
 <script>
     // ========== CONFIGURACIÓN ==========
-   const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
-const ACCESS_DOMAIN = "https://subir-fotos-worker.yvellaurore02.workers.dev";
+    const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
+    const ACCESS_DOMAIN = "https://subir-fotos-worker.yvellaurore02.workers.dev";
     
     let currentUser = null;
     let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
@@ -374,7 +374,6 @@ const ACCESS_DOMAIN = "https://subir-fotos-worker.yvellaurore02.workers.dev";
         }
         const res = await fetch(`${WORKER_URL}${path}`, opts);
         if (res.status === 401) {
-            // No autenticado, redirigir a login
             window.location.href = `${ACCESS_DOMAIN}/cdn-cgi/access/login`;
             return null;
         }
