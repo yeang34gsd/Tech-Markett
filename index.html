@@ -1,5 +1,4 @@
-
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -89,6 +88,7 @@
             overflow: hidden;
             box-shadow: 0 6px 14px rgba(0,0,0,0.1);
             transition: 0.2s;
+            position: relative;
         }
         .objeto-card:hover { transform: translateY(-5px); }
         .objeto-card img {
@@ -193,11 +193,14 @@
             flex: 1;
             margin: 0;
         }
-        .login-section {
-            background: white;
-            border-radius: 28px;
-            padding: 32px;
-            text-align: center;
+        .login-section input {
+            margin: 8px 0;
+        }
+        .flex-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 8px;
         }
         .user-info {
             background: #eef2ff;
@@ -263,12 +266,12 @@
         <div class="subtitle">Trueque de objetos: publica lo que ofreces y conversa</div>
     </div>
 
-    <!-- LOGIN (localStorage) -->
-    <div class="login-section" id="loginSection">
+    <!-- LOGIN -->
+    <div class="card" id="loginSection">
         <h3>🔐 Acceso</h3>
         <input type="email" id="email" placeholder="Correo electrónico">
         <input type="password" id="password" placeholder="Contraseña">
-        <div class="flex-buttons" style="display: flex; gap: 10px; justify-content: center; margin-top: 16px;">
+        <div class="flex-buttons">
             <button id="loginBtn">Iniciar sesión</button>
             <button id="registerBtn" style="background:#6c757d;">Registrarse</button>
             <button id="logoutBtn" style="display:none; background:#6c757d;">Cerrar sesión</button>
@@ -276,7 +279,7 @@
         <div id="userInfo" class="user-info" style="display:none;"></div>
     </div>
 
-    <!-- APP (se muestra cuando hay usuario) -->
+    <!-- APP (oculta hasta login) -->
     <div id="appSections" style="display:none;">
         <div class="card">
             <div class="nav-buttons">
@@ -286,11 +289,13 @@
                 <button class="nav-btn" data-tab="chats">💬 Mis conversaciones</button>
             </div>
 
+            <!-- FEED -->
             <div id="tab-feed">
                 <h3>✨ Objetos para intercambiar</h3>
                 <div id="feedGrid" class="grid">Cargando...</div>
             </div>
 
+            <!-- PUBLICAR -->
             <div id="tab-publicar" style="display:none;">
                 <h3>📸 Publicar un objeto</h3>
                 <input type="text" id="titulo" placeholder="Título del objeto">
@@ -306,11 +311,13 @@
                 <div id="pubStatus"></div>
             </div>
 
+            <!-- MIS OBJETOS -->
             <div id="tab-misobjetos" style="display:none;">
                 <h3>📌 Mis objetos publicados</h3>
                 <div id="misObjetosGrid" class="grid">Cargando...</div>
             </div>
 
+            <!-- CHATS -->
             <div id="tab-chats" style="display:none;">
                 <h3>💬 Conversaciones activas</h3>
                 <div id="listaChats"></div>
@@ -328,13 +335,13 @@
 </div>
 
 <script>
-    // ========== CONFIGURACIÓN ==========
+    // ========== CONFIGURACIÓN (REEMPLAZA CON TUS URLs) ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
-    
+    const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
     let currentUser = null;
     let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
 
-    // ========== USUARIOS (localStorage) ==========
+    // ========== USUARIOS ==========
     function registerUser(email, password) {
         const users = JSON.parse(localStorage.getItem('app_users') || '{}');
         if (users[email]) throw new Error('El usuario ya existe');
@@ -349,42 +356,12 @@
         if (!user || user.password !== btoa(password)) throw new Error('Email o contraseña incorrectos');
         currentUser = { email };
         localStorage.setItem('app_currentUser', JSON.stringify(currentUser));
-        updateUIForUser();
         return true;
     }
 
     function logoutUser() {
         currentUser = null;
         localStorage.removeItem('app_currentUser');
-        updateUIForUser();
-    }
-
-    function updateUIForUser() {
-        const loginSection = document.getElementById('loginSection');
-        const appSections = document.getElementById('appSections');
-        const userInfoDiv = document.getElementById('userInfo');
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        if (currentUser) {
-            loginSection.querySelector('h3').innerText = '✅ Sesión activa';
-            loginBtn.style.display = 'none';
-            registerBtn.style.display = 'none';
-            logoutBtn.style.display = 'inline-block';
-            userInfoDiv.style.display = 'block';
-            userInfoDiv.innerHTML = `👤 ${currentUser.email}`;
-            appSections.style.display = 'block';
-            cargarFeed();
-            cargarMisObjetos();
-        } else {
-            loginSection.querySelector('h3').innerText = '🔐 Accede o regístrate';
-            loginBtn.style.display = 'inline-block';
-            registerBtn.style.display = 'inline-block';
-            logoutBtn.style.display = 'none';
-            userInfoDiv.style.display = 'none';
-            appSections.style.display = 'none';
-        }
     }
 
     // ========== API ==========
@@ -458,6 +435,34 @@
     }
 
     // ========== UI ==========
+    function updateUIForUser() {
+        const loginSection = document.getElementById('loginSection');
+        const appSections = document.getElementById('appSections');
+        const userInfoDiv = document.getElementById('userInfo');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        if (currentUser) {
+            loginSection.querySelector('h3').innerText = '✅ Sesión activa';
+            loginBtn.style.display = 'none';
+            registerBtn.style.display = 'none';
+            logoutBtn.style.display = 'inline-block';
+            userInfoDiv.style.display = 'block';
+            userInfoDiv.innerHTML = `👤 ${currentUser.email}`;
+            appSections.style.display = 'block';
+            cargarFeed();
+            cargarMisObjetos();
+        } else {
+            loginSection.querySelector('h3').innerText = '🔐 Accede o regístrate';
+            loginBtn.style.display = 'inline-block';
+            registerBtn.style.display = 'inline-block';
+            logoutBtn.style.display = 'none';
+            userInfoDiv.style.display = 'none';
+            appSections.style.display = 'none';
+        }
+    }
+
     async function cargarFeed() {
         try {
             const objetos = await obtenerObjetos(false);
@@ -474,7 +479,7 @@
                         <p>${escapeHtml(obj.descripcion?.substring(0, 100))}</p>
                         <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
                         ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
-                        ${obj.usuario !== currentUser?.email ? `
+                        ${obj.usuario !== currentUser.email ? `
                             <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
                             <button class="reportar-btn" data-id="${obj.id}" data-titulo="${escapeHtml(obj.titulo)}">⚠️ Reportar</button>
                         ` : '<span style="font-size:12px;">(tu objeto)</span>'}
@@ -635,6 +640,7 @@
     document.getElementById('loginBtn').onclick = () => {
         try {
             loginUser(document.getElementById('email').value, document.getElementById('password').value);
+            updateUIForUser();
             showStatus('✅ Sesión iniciada', 'success', 'pubStatus');
         } catch (e) {
             showStatus(e.message, 'error', 'pubStatus');
@@ -652,6 +658,7 @@
 
     document.getElementById('logoutBtn').onclick = () => {
         logoutUser();
+        updateUIForUser();
         showStatus('Sesión cerrada', 'info', 'pubStatus');
     };
 
