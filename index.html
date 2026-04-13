@@ -76,6 +76,14 @@
             transition: 0.2s;
         }
         button:hover { background: #0f2c1c; transform: scale(1.02); }
+        .google-btn {
+            background: #4285f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .google-btn:hover { background: #357ae8; }
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -193,14 +201,26 @@
             flex: 1;
             margin: 0;
         }
-        .login-section input {
-            margin: 8px 0;
+        .login-section {
+            text-align: center;
         }
-        .flex-buttons {
+        .user-info {
+            background: #eef2ff;
+            padding: 12px;
+            border-radius: 60px;
+            margin-top: 16px;
+            text-align: center;
             display: flex;
-            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
             flex-wrap: wrap;
-            margin-top: 8px;
+            gap: 10px;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
         }
         .status-success {
             background: #bbf7d0;
@@ -247,7 +267,11 @@
         .conv-item:hover {
             background: #f0f4e8;
         }
-        .hidden { display: none; }
+        .logout-btn {
+            background: #6c757d;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
         @media (max-width: 700px) {
             .grid { grid-template-columns: 1fr; }
         }
@@ -260,33 +284,25 @@
         <div class="subtitle">Trueque de objetos: publica lo que ofreces y conversa</div>
     </div>
 
-    <!-- PANTALLA DE LOGIN/REGISTRO (visible al inicio) -->
-    <div class="card" id="loginScreen">
-        <h3>🔐 Accede o regístrate</h3>
-        <div id="loginForm">
-            <input type="email" id="loginEmail" placeholder="Correo electrónico">
-            <input type="password" id="loginPassword" placeholder="Contraseña">
-            <button id="doLoginBtn">Iniciar sesión</button>
-            <p style="margin: 15px 0; text-align: center;">¿No tienes cuenta? <button id="showRegisterBtn" style="background: none; color: #1a472a; display: inline; padding: 0; font-weight: normal;">Regístrate</button></p>
-        </div>
-        <div id="registerForm" style="display: none;">
-            <input type="email" id="registerEmail" placeholder="Correo electrónico">
-            <input type="text" id="registerNombre" placeholder="Nombre (opcional)">
-            <input type="password" id="registerPassword" placeholder="Contraseña">
-            <input type="password" id="registerPassword2" placeholder="Repetir contraseña">
-            <button id="doRegisterBtn">Registrarse</button>
-            <p style="margin: 15px 0; text-align: center;"><button id="showLoginBtn" style="background: none; color: #1a472a; display: inline; padding: 0; font-weight: normal;">← Volver a iniciar sesión</button></p>
-        </div>
-        <div id="loginStatus"></div>
+    <!-- LOGIN CON GOOGLE -->
+    <div class="card" id="loginSection">
+        <h3>🔐 Accede con tu cuenta de Google</h3>
+        <button id="googleLoginBtn" class="google-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Iniciar sesión con Google
+        </button>
+        <button id="logoutBtn" style="display:none;" class="logout-btn">Cerrar sesión</button>
+        <div id="userInfo" class="user-info" style="display:none;"></div>
     </div>
 
-    <!-- APP PRINCIPAL (oculta hasta login exitoso) -->
-    <div id="appSections" class="hidden">
+    <!-- APP (oculta hasta login) -->
+    <div id="appSections" style="display:none;">
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>📱 Bienvenido, <span id="userNombre">Usuario</span></h3>
-                <button id="logoutBtn" style="background: #6c757d;">Cerrar sesión</button>
-            </div>
             <div class="nav-buttons">
                 <button class="nav-btn active" data-tab="feed">📦 Objetos disponibles</button>
                 <button class="nav-btn" data-tab="publicar">➕ Publicar objeto</button>
@@ -294,13 +310,11 @@
                 <button class="nav-btn" data-tab="chats">💬 Mis conversaciones</button>
             </div>
 
-            <!-- FEED -->
             <div id="tab-feed">
                 <h3>✨ Objetos para intercambiar</h3>
                 <div id="feedGrid" class="grid">Cargando...</div>
             </div>
 
-            <!-- PUBLICAR -->
             <div id="tab-publicar" style="display:none;">
                 <h3>📸 Publicar un objeto</h3>
                 <input type="text" id="titulo" placeholder="Título del objeto">
@@ -316,13 +330,11 @@
                 <div id="pubStatus"></div>
             </div>
 
-            <!-- MIS OBJETOS -->
             <div id="tab-misobjetos" style="display:none;">
                 <h3>📌 Mis objetos publicados</h3>
                 <div id="misObjetosGrid" class="grid">Cargando...</div>
             </div>
 
-            <!-- CHATS -->
             <div id="tab-chats" style="display:none;">
                 <h3>💬 Conversaciones activas</h3>
                 <div id="listaChats"></div>
@@ -343,69 +355,66 @@
     // ========== CONFIGURACIÓN ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
     const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
+    
     let currentUser = null;
-    let currentToken = null;
+    let authToken = null;
     let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
 
     // ========== FUNCIONES DE AUTENTICACIÓN ==========
-    function guardarSesion(token, usuario) {
-        currentToken = token;
-        currentUser = usuario;
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('auth_user', JSON.stringify(usuario));
+    function getTokenFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        if (token) {
+            localStorage.setItem('auth_token', token);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return token;
+        }
+        return localStorage.getItem('auth_token');
     }
 
-    function limpiarSesion() {
-        currentToken = null;
-        currentUser = null;
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
-    }
-
-    function getAuthHeader() {
-        return currentToken ? { 'Authorization': `Bearer ${currentToken}` } : {};
-    }
-
-    async function verificarSesion() {
-        const token = localStorage.getItem('auth_token');
-        const user = localStorage.getItem('auth_user');
-        if (!token || !user) return false;
-        
+    async function verifyToken(token) {
         try {
-            const response = await fetch(`${WORKER_URL}/auth/verificar`, {
+            const response = await fetch(`${WORKER_URL}/auth/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (response.ok) {
-                currentToken = token;
-                currentUser = JSON.parse(user);
-                return true;
-            } else {
-                limpiarSesion();
-                return false;
-            }
-        } catch(e) {
-            return false;
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data.user;
+        } catch (e) {
+            return null;
         }
     }
 
-    // ========== API ==========
-    async function api(method, path, body = null, useAuth = true) {
-        const headers = useAuth ? getAuthHeader() : {};
-        const opts = { method, headers };
-        
-        if (body && !(body instanceof FormData)) {
-            headers['Content-Type'] = 'application/json';
-            opts.body = JSON.stringify(body);
-        } else if (body instanceof FormData) {
-            opts.body = body;
+    async function loginWithGoogle() {
+        window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`;
+    }
+
+    function logout() {
+        localStorage.removeItem('auth_token');
+        currentUser = null;
+        authToken = null;
+        updateUIForUser();
+    }
+
+    // ========== API (con autenticación) ==========
+    async function apiFetch(path, options = {}) {
+        const headers = options.headers || {};
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
         }
-        
-        const res = await fetch(`${WORKER_URL}${path}`, opts);
-        if (!res.ok) {
-            const error = await res.text();
+        const response = await fetch(`${WORKER_URL}${path}`, {
+            ...options,
+            headers
+        });
+        if (!response.ok) {
+            if (response.status === 401) {
+                logout();
+                throw new Error('Sesión expirada. Inicia sesión nuevamente.');
+            }
+            const error = await response.text();
             throw new Error(error);
         }
-        return res.json();
+        return response.json();
     }
 
     async function publicarObjeto(titulo, descripcion, file) {
@@ -413,73 +422,72 @@
         form.append('file', file);
         form.append('titulo', titulo);
         form.append('descripcion', descripcion);
-        return await api('POST', '/objeto', form, true);
+        return await apiFetch('/objeto', { method: 'POST', body: form });
     }
 
     async function obtenerObjetos(propios = false) {
         if (propios) {
-            return await api('GET', `/mis-objetos`, null, true);
+            return await apiFetch('/mis-objetos');
         } else {
-            return await api('GET', `/objetos`, null, true);
+            return await apiFetch('/objetos');
         }
     }
 
     async function eliminarObjeto(id) {
-        return await api('DELETE', `/objeto/${id}`, null, true);
+        return await apiFetch(`/objeto/${id}`, { method: 'DELETE' });
     }
 
     async function reportarObjeto(idObjeto, motivo) {
-        return await api('POST', '/reporte', { id_objeto: idObjeto, motivo: motivo }, true);
+        return await apiFetch('/reporte', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_objeto: idObjeto, motivo })
+        });
     }
 
     async function enviarMensaje(objetoId, receptor, mensaje) {
-        return await api('POST', '/mensaje', { id_objeto: objetoId, receptor, mensaje }, true);
+        return await apiFetch('/mensaje', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje })
+        });
     }
 
     async function obtenerMensajes(objetoId, otroUsuario) {
-        return await api('GET', `/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`, null, true);
+        return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`);
     }
 
     async function obtenerMisConversaciones() {
-        return await api('GET', `/mis-conversaciones`, null, true);
-    }
-
-    // ========== LOGIN/REGISTRO ==========
-    async function doLogin(email, password) {
-        const result = await api('POST', '/auth/login', { email, password }, false);
-        if (result.success) {
-            guardarSesion(result.token, result.usuario);
-            mostrarApp();
-            showStatus('✅ Sesión iniciada correctamente', 'success', 'loginStatus');
-        }
-        return result;
-    }
-
-    async function doRegister(email, password, nombre) {
-        const result = await api('POST', '/auth/registro', { email, password, nombre }, false);
-        if (result.success) {
-            showStatus('✅ Registro exitoso. Ahora inicia sesión.', 'success', 'loginStatus');
-            mostrarLogin();
-        }
-        return result;
+        return await apiFetch('/mis-conversaciones');
     }
 
     // ========== UI ==========
-    function mostrarApp() {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('appSections').classList.remove('hidden');
-        document.getElementById('userNombre').innerText = currentUser?.nombre || currentUser?.email || 'Usuario';
-        cargarFeed();
-        cargarMisObjetos();
-    }
+    function updateUIForUser() {
+        const loginSection = document.getElementById('loginSection');
+        const appSections = document.getElementById('appSections');
+        const userInfoDiv = document.getElementById('userInfo');
+        const googleBtn = document.getElementById('googleLoginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
 
-    function mostrarLogin() {
-        document.getElementById('loginScreen').style.display = 'block';
-        document.getElementById('appSections').classList.add('hidden');
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('registerForm').style.display = 'none';
-        document.getElementById('loginEmail').value = '';
-        document.getElementById('loginPassword').value = '';
+        if (currentUser) {
+            loginSection.querySelector('h3').innerText = '✅ Sesión activa';
+            googleBtn.style.display = 'none';
+            logoutBtn.style.display = 'inline-block';
+            userInfoDiv.style.display = 'flex';
+            userInfoDiv.innerHTML = `
+                <img src="${currentUser.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name)}" class="user-avatar">
+                <span>👤 ${currentUser.name || currentUser.email}</span>
+            `;
+            appSections.style.display = 'block';
+            cargarFeed();
+            cargarMisObjetos();
+        } else {
+            loginSection.querySelector('h3').innerText = '🔐 Accede con tu cuenta de Google';
+            googleBtn.style.display = 'flex';
+            logoutBtn.style.display = 'none';
+            userInfoDiv.style.display = 'none';
+            appSections.style.display = 'none';
+        }
     }
 
     async function cargarFeed() {
@@ -498,9 +506,9 @@
                         <p>${escapeHtml(obj.descripcion?.substring(0, 100))}</p>
                         <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
                         ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
-                        ${obj.usuario !== currentUser.email ? `
+                        ${obj.usuario !== currentUser?.email ? `
                             <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
-                            <button class="reportar-btn" data-id="${obj.id}" data-titulo="${escapeHtml(obj.titulo)}">⚠️ Reportar</button>
+                            <button class="reportar-btn" data-id="${obj.id}">⚠️ Reportar</button>
                         ` : '<span style="font-size:12px;">(tu objeto)</span>'}
                     </div>
                 </div>
@@ -508,22 +516,19 @@
             
             document.querySelectorAll('.intercambiar-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const id = parseInt(btn.dataset.id);
-                    const otro = btn.dataset.usuario;
-                    const titulo = btn.dataset.titulo;
-                    abrirChatConObjeto(id, otro, titulo);
+                    abrirChatConObjeto(parseInt(btn.dataset.id), btn.dataset.usuario, btn.dataset.titulo);
                 });
             });
             
             document.querySelectorAll('.reportar-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
-                    const motivo = prompt('¿Por qué reportas este objeto? (ej: desnudo, spam, violencia, etc.)');
+                    const motivo = prompt('¿Por qué reportas este objeto?');
                     if (motivo && motivo.trim()) {
                         try {
                             await reportarObjeto(parseInt(btn.dataset.id), motivo);
-                            alert('✅ Reporte enviado. Gracias por ayudar a mantener la comunidad segura.');
+                            alert('✅ Reporte enviado. Gracias.');
                         } catch (e) {
-                            alert('❌ Error al reportar: ' + e.message);
+                            alert('❌ Error: ' + e.message);
                         }
                     }
                 });
@@ -548,7 +553,6 @@
                     <div class="objeto-info">
                         <strong>${escapeHtml(obj.titulo)}</strong>
                         <p>${escapeHtml(obj.descripcion?.substring(0, 80))}</p>
-                        <span class="badge">👤 Tú</span>
                         <span class="badge-expiracion">⏰ Expira: ${new Date(obj.expira).toLocaleDateString()}</span>
                         ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión por IA</span>' : ''}
                         <button class="eliminar-btn" data-id="${obj.id}">🗑️ Eliminar publicación</button>
@@ -558,7 +562,7 @@
             
             document.querySelectorAll('.eliminar-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
-                    if (confirm('¿Eliminar esta publicación? Se borrará la foto y los mensajes asociados.')) {
+                    if (confirm('¿Eliminar esta publicación?')) {
                         try {
                             await eliminarObjeto(parseInt(btn.dataset.id));
                             alert('✅ Publicación eliminada');
@@ -592,12 +596,12 @@
         const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
         const cont = document.getElementById('chatMensajes');
         if (!msgs.length) {
-            cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún. Escribe algo para empezar la conversación.</p>';
+            cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún.</p>';
             return;
         }
         cont.innerHTML = msgs.map(m => `
-            <div class="mensaje ${m.emisor === currentUser.email ? 'emisor' : 'receptor'}">
-                <strong>${m.emisor === currentUser.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}
+            <div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}">
+                <strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}
                 <small>${new Date(m.fecha).toLocaleString()}</small>
             </div>
         `).join('');
@@ -614,24 +618,28 @@
     }
 
     async function cargarListaConversaciones() {
-        const convs = await obtenerMisConversaciones();
-        const listaDiv = document.getElementById('listaChats');
-        if (!convs.length) {
-            listaDiv.innerHTML = '<p>💬 No hay conversaciones activas aún. Intercambia con alguien para empezar.</p>';
-            return;
-        }
-        listaDiv.innerHTML = convs.map(c => `
-            <div class="conv-item" data-id="${c.id_objeto}" data-otro="${escapeHtml(c.otroUsuario)}" data-titulo="${escapeHtml(c.titulo)}">
-                <strong>📦 ${escapeHtml(c.titulo)}</strong><br>
-                💬 con ${escapeHtml(c.otroUsuario)}<br>
-                <small>Último mensaje: ${new Date(c.ultimaFecha).toLocaleString()}</small>
-            </div>
-        `).join('');
-        document.querySelectorAll('.conv-item').forEach(el => {
-            el.addEventListener('click', () => {
-                abrirChatConObjeto(parseInt(el.dataset.id), el.dataset.otro, el.dataset.titulo);
+        try {
+            const convs = await obtenerMisConversaciones();
+            const listaDiv = document.getElementById('listaChats');
+            if (!convs.length) {
+                listaDiv.innerHTML = '<p>💬 No hay conversaciones activas aún.</p>';
+                return;
+            }
+            listaDiv.innerHTML = convs.map(c => `
+                <div class="conv-item" data-id="${c.id_objeto}" data-otro="${escapeHtml(c.otroUsuario)}" data-titulo="${escapeHtml(c.titulo)}">
+                    <strong>📦 ${escapeHtml(c.titulo)}</strong><br>
+                    💬 con ${escapeHtml(c.otroUsuario)}<br>
+                    <small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
+                </div>
+            `).join('');
+            document.querySelectorAll('.conv-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    abrirChatConObjeto(parseInt(el.dataset.id), el.dataset.otro, el.dataset.titulo);
+                });
             });
-        });
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     function escapeHtml(str) {
@@ -655,67 +663,16 @@
         }, 3000);
     }
 
-    // ========== EVENTOS LOGIN/REGISTRO ==========
-    document.getElementById('doLoginBtn').onclick = async () => {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        if (!email || !password) {
-            showStatus('❌ Completa email y contraseña', 'error', 'loginStatus');
-            return;
-        }
-        try {
-            await doLogin(email, password);
-        } catch (e) {
-            showStatus('❌ Error: ' + e.message, 'error', 'loginStatus');
-        }
-    };
+    // ========== EVENTOS ==========
+    document.getElementById('googleLoginBtn').onclick = () => loginWithGoogle();
+    document.getElementById('logoutBtn').onclick = () => logout();
 
-    document.getElementById('doRegisterBtn').onclick = async () => {
-        const email = document.getElementById('registerEmail').value;
-        const nombre = document.getElementById('registerNombre').value;
-        const password = document.getElementById('registerPassword').value;
-        const password2 = document.getElementById('registerPassword2').value;
-        
-        if (!email || !password) {
-            showStatus('❌ Completa email y contraseña', 'error', 'loginStatus');
-            return;
-        }
-        if (password !== password2) {
-            showStatus('❌ Las contraseñas no coinciden', 'error', 'loginStatus');
-            return;
-        }
-        try {
-            await doRegister(email, password, nombre);
-        } catch (e) {
-            showStatus('❌ Error: ' + e.message, 'error', 'loginStatus');
-        }
-    };
-
-    document.getElementById('showRegisterBtn').onclick = () => {
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('registerForm').style.display = 'block';
-        document.getElementById('loginStatus').innerHTML = '';
-    };
-
-    document.getElementById('showLoginBtn').onclick = () => {
-        document.getElementById('registerForm').style.display = 'none';
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('loginStatus').innerHTML = '';
-    };
-
-    document.getElementById('logoutBtn').onclick = () => {
-        limpiarSesion();
-        mostrarLogin();
-        showStatus('Sesión cerrada', 'info', 'loginStatus');
-    };
-
-    // ========== EVENTOS APP ==========
     document.getElementById('publicarBtn').onclick = async () => {
         const titulo = document.getElementById('titulo').value;
         const descripcion = document.getElementById('descripcion').value;
         const file = document.getElementById('fileInput').files[0];
         if (!titulo || !descripcion || !file) {
-            showStatus('❌ Completa título, descripción y foto', 'error', 'pubStatus');
+            showStatus('❌ Completa todos los campos', 'error', 'pubStatus');
             return;
         }
         const progressBar = document.getElementById('progressBar');
@@ -729,9 +686,9 @@
             clearInterval(interval);
             progressBar.style.width = '100%';
             if (resultado.sospechoso) {
-                showStatus('⚠️ Publicación recibida. Pasará por revisión moderadora.', 'info', 'pubStatus');
+                showStatus('⚠️ Publicación recibida. Pasará por revisión.', 'info', 'pubStatus');
             } else {
-                showStatus('✅ Objeto publicado correctamente', 'success', 'pubStatus');
+                showStatus('✅ Objeto publicado', 'success', 'pubStatus');
             }
             setTimeout(() => { progressBar.style.width = '0%'; }, 2000);
             document.getElementById('titulo').value = '';
@@ -750,7 +707,6 @@
         if (e.key === 'Enter') enviarMensajeChat();
     });
 
-    // Navegación pestañas
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -764,7 +720,6 @@
         });
     });
 
-    // Subida de foto
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     uploadArea.addEventListener('click', () => fileInput.click());
@@ -781,15 +736,23 @@
         fileInput.files = e.dataTransfer.files;
     });
 
-    // Inicializar
-    (async () => {
-        const tieneSesion = await verificarSesion();
-        if (tieneSesion) {
-            mostrarApp();
-        } else {
-            mostrarLogin();
+    // ========== INICIALIZACIÓN ==========
+    async function init() {
+        const token = getTokenFromURL();
+        if (token) {
+            authToken = token;
+            const user = await verifyToken(token);
+            if (user) {
+                currentUser = user;
+            } else {
+                localStorage.removeItem('auth_token');
+                authToken = null;
+            }
         }
-    })();
+        updateUIForUser();
+    }
+    
+    init();
 </script>
 </body>
 </html>
