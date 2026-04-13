@@ -202,13 +202,6 @@
             flex-wrap: wrap;
             margin-top: 8px;
         }
-        .user-info {
-            background: #eef2ff;
-            padding: 12px;
-            border-radius: 60px;
-            margin-top: 16px;
-            text-align: center;
-        }
         .status-success {
             background: #bbf7d0;
             color: #166534;
@@ -254,6 +247,7 @@
         .conv-item:hover {
             background: #f0f4e8;
         }
+        .hidden { display: none; }
         @media (max-width: 700px) {
             .grid { grid-template-columns: 1fr; }
         }
@@ -266,22 +260,33 @@
         <div class="subtitle">Trueque de objetos: publica lo que ofreces y conversa</div>
     </div>
 
-    <!-- LOGIN -->
-    <div class="card" id="loginSection">
-        <h3>🔐 Acceso</h3>
-        <input type="email" id="email" placeholder="Correo electrónico">
-        <input type="password" id="password" placeholder="Contraseña">
-        <div class="flex-buttons">
-            <button id="loginBtn">Iniciar sesión</button>
-            <button id="registerBtn" style="background:#6c757d;">Registrarse</button>
-            <button id="logoutBtn" style="display:none; background:#6c757d;">Cerrar sesión</button>
+    <!-- PANTALLA DE LOGIN/REGISTRO (visible al inicio) -->
+    <div class="card" id="loginScreen">
+        <h3>🔐 Accede o regístrate</h3>
+        <div id="loginForm">
+            <input type="email" id="loginEmail" placeholder="Correo electrónico">
+            <input type="password" id="loginPassword" placeholder="Contraseña">
+            <button id="doLoginBtn">Iniciar sesión</button>
+            <p style="margin: 15px 0; text-align: center;">¿No tienes cuenta? <button id="showRegisterBtn" style="background: none; color: #1a472a; display: inline; padding: 0; font-weight: normal;">Regístrate</button></p>
         </div>
-        <div id="userInfo" class="user-info" style="display:none;"></div>
+        <div id="registerForm" style="display: none;">
+            <input type="email" id="registerEmail" placeholder="Correo electrónico">
+            <input type="text" id="registerNombre" placeholder="Nombre (opcional)">
+            <input type="password" id="registerPassword" placeholder="Contraseña">
+            <input type="password" id="registerPassword2" placeholder="Repetir contraseña">
+            <button id="doRegisterBtn">Registrarse</button>
+            <p style="margin: 15px 0; text-align: center;"><button id="showLoginBtn" style="background: none; color: #1a472a; display: inline; padding: 0; font-weight: normal;">← Volver a iniciar sesión</button></p>
+        </div>
+        <div id="loginStatus"></div>
     </div>
 
-    <!-- APP (oculta hasta login) -->
-    <div id="appSections" style="display:none;">
+    <!-- APP PRINCIPAL (oculta hasta login exitoso) -->
+    <div id="appSections" class="hidden">
         <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>📱 Bienvenido, <span id="userNombre">Usuario</span></h3>
+                <button id="logoutBtn" style="background: #6c757d;">Cerrar sesión</button>
+            </div>
             <div class="nav-buttons">
                 <button class="nav-btn active" data-tab="feed">📦 Objetos disponibles</button>
                 <button class="nav-btn" data-tab="publicar">➕ Publicar objeto</button>
@@ -335,44 +340,66 @@
 </div>
 
 <script>
-    // ========== CONFIGURACIÓN (REEMPLAZA CON TUS URLs) ==========
+    // ========== CONFIGURACIÓN ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
     const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
     let currentUser = null;
+    let currentToken = null;
     let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
 
-    // ========== USUARIOS ==========
-    function registerUser(email, password) {
-        const users = JSON.parse(localStorage.getItem('app_users') || '{}');
-        if (users[email]) throw new Error('El usuario ya existe');
-        users[email] = { password: btoa(password) };
-        localStorage.setItem('app_users', JSON.stringify(users));
-        return true;
+    // ========== FUNCIONES DE AUTENTICACIÓN ==========
+    function guardarSesion(token, usuario) {
+        currentToken = token;
+        currentUser = usuario;
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_user', JSON.stringify(usuario));
     }
 
-    function loginUser(email, password) {
-        const users = JSON.parse(localStorage.getItem('app_users') || '{}');
-        const user = users[email];
-        if (!user || user.password !== btoa(password)) throw new Error('Email o contraseña incorrectos');
-        currentUser = { email };
-        localStorage.setItem('app_currentUser', JSON.stringify(currentUser));
-        return true;
-    }
-
-    function logoutUser() {
+    function limpiarSesion() {
+        currentToken = null;
         currentUser = null;
-        localStorage.removeItem('app_currentUser');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+    }
+
+    function getAuthHeader() {
+        return currentToken ? { 'Authorization': `Bearer ${currentToken}` } : {};
+    }
+
+    async function verificarSesion() {
+        const token = localStorage.getItem('auth_token');
+        const user = localStorage.getItem('auth_user');
+        if (!token || !user) return false;
+        
+        try {
+            const response = await fetch(`${WORKER_URL}/auth/verificar`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                currentToken = token;
+                currentUser = JSON.parse(user);
+                return true;
+            } else {
+                limpiarSesion();
+                return false;
+            }
+        } catch(e) {
+            return false;
+        }
     }
 
     // ========== API ==========
-    async function api(method, path, body = null) {
-        const opts = { method, headers: {} };
+    async function api(method, path, body = null, useAuth = true) {
+        const headers = useAuth ? getAuthHeader() : {};
+        const opts = { method, headers };
+        
         if (body && !(body instanceof FormData)) {
-            opts.headers['Content-Type'] = 'application/json';
+            headers['Content-Type'] = 'application/json';
             opts.body = JSON.stringify(body);
         } else if (body instanceof FormData) {
             opts.body = body;
         }
+        
         const res = await fetch(`${WORKER_URL}${path}`, opts);
         if (!res.ok) {
             const error = await res.text();
@@ -384,83 +411,75 @@
     async function publicarObjeto(titulo, descripcion, file) {
         const form = new FormData();
         form.append('file', file);
-        form.append('usuario', currentUser.email);
         form.append('titulo', titulo);
         form.append('descripcion', descripcion);
-        return await api('POST', '/objeto', form);
+        return await api('POST', '/objeto', form, true);
     }
 
     async function obtenerObjetos(propios = false) {
         if (propios) {
-            return await api('GET', `/mis-objetos?usuario=${encodeURIComponent(currentUser.email)}`);
+            return await api('GET', `/mis-objetos`, null, true);
         } else {
-            return await api('GET', '/objetos');
+            return await api('GET', `/objetos`, null, true);
         }
     }
 
     async function eliminarObjeto(id) {
-        const response = await fetch(`${WORKER_URL}/objeto/${id}?usuario=${encodeURIComponent(currentUser.email)}`, {
-            method: 'DELETE'
-        });
-        if (!response.ok) {
-            const error = await response.text();
-            throw new Error(error);
-        }
-        return response.json();
+        return await api('DELETE', `/objeto/${id}`, null, true);
     }
 
     async function reportarObjeto(idObjeto, motivo) {
-        return await api('POST', '/reporte', {
-            id_objeto: idObjeto,
-            reportado_por: currentUser.email,
-            motivo: motivo
-        });
+        return await api('POST', '/reporte', { id_objeto: idObjeto, motivo: motivo }, true);
     }
 
     async function enviarMensaje(objetoId, receptor, mensaje) {
-        return await api('POST', '/mensaje', {
-            id_objeto: objetoId,
-            emisor: currentUser.email,
-            receptor: receptor,
-            mensaje: mensaje
-        });
+        return await api('POST', '/mensaje', { id_objeto: objetoId, receptor, mensaje }, true);
     }
 
     async function obtenerMensajes(objetoId, otroUsuario) {
-        return await api('GET', `/mensajes?id_objeto=${objetoId}&usuario=${encodeURIComponent(currentUser.email)}&otro=${encodeURIComponent(otroUsuario)}`);
+        return await api('GET', `/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`, null, true);
     }
 
     async function obtenerMisConversaciones() {
-        return await api('GET', `/mis-conversaciones?usuario=${encodeURIComponent(currentUser.email)}`);
+        return await api('GET', `/mis-conversaciones`, null, true);
+    }
+
+    // ========== LOGIN/REGISTRO ==========
+    async function doLogin(email, password) {
+        const result = await api('POST', '/auth/login', { email, password }, false);
+        if (result.success) {
+            guardarSesion(result.token, result.usuario);
+            mostrarApp();
+            showStatus('✅ Sesión iniciada correctamente', 'success', 'loginStatus');
+        }
+        return result;
+    }
+
+    async function doRegister(email, password, nombre) {
+        const result = await api('POST', '/auth/registro', { email, password, nombre }, false);
+        if (result.success) {
+            showStatus('✅ Registro exitoso. Ahora inicia sesión.', 'success', 'loginStatus');
+            mostrarLogin();
+        }
+        return result;
     }
 
     // ========== UI ==========
-    function updateUIForUser() {
-        const loginSection = document.getElementById('loginSection');
-        const appSections = document.getElementById('appSections');
-        const userInfoDiv = document.getElementById('userInfo');
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
+    function mostrarApp() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('appSections').classList.remove('hidden');
+        document.getElementById('userNombre').innerText = currentUser?.nombre || currentUser?.email || 'Usuario';
+        cargarFeed();
+        cargarMisObjetos();
+    }
 
-        if (currentUser) {
-            loginSection.querySelector('h3').innerText = '✅ Sesión activa';
-            loginBtn.style.display = 'none';
-            registerBtn.style.display = 'none';
-            logoutBtn.style.display = 'inline-block';
-            userInfoDiv.style.display = 'block';
-            userInfoDiv.innerHTML = `👤 ${currentUser.email}`;
-            appSections.style.display = 'block';
-            cargarFeed();
-            cargarMisObjetos();
-        } else {
-            loginSection.querySelector('h3').innerText = '🔐 Accede o regístrate';
-            loginBtn.style.display = 'inline-block';
-            registerBtn.style.display = 'inline-block';
-            logoutBtn.style.display = 'none';
-            userInfoDiv.style.display = 'none';
-            appSections.style.display = 'none';
-        }
+    function mostrarLogin() {
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('appSections').classList.add('hidden');
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('loginEmail').value = '';
+        document.getElementById('loginPassword').value = '';
     }
 
     async function cargarFeed() {
@@ -636,32 +655,61 @@
         }, 3000);
     }
 
-    // ========== EVENTOS ==========
-    document.getElementById('loginBtn').onclick = () => {
+    // ========== EVENTOS LOGIN/REGISTRO ==========
+    document.getElementById('doLoginBtn').onclick = async () => {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        if (!email || !password) {
+            showStatus('❌ Completa email y contraseña', 'error', 'loginStatus');
+            return;
+        }
         try {
-            loginUser(document.getElementById('email').value, document.getElementById('password').value);
-            updateUIForUser();
-            showStatus('✅ Sesión iniciada', 'success', 'pubStatus');
+            await doLogin(email, password);
         } catch (e) {
-            showStatus(e.message, 'error', 'pubStatus');
+            showStatus('❌ Error: ' + e.message, 'error', 'loginStatus');
         }
     };
 
-    document.getElementById('registerBtn').onclick = () => {
-        try {
-            registerUser(document.getElementById('email').value, document.getElementById('password').value);
-            showStatus('✅ Registrado exitoso. Ahora inicia sesión.', 'success', 'pubStatus');
-        } catch (e) {
-            showStatus(e.message, 'error', 'pubStatus');
+    document.getElementById('doRegisterBtn').onclick = async () => {
+        const email = document.getElementById('registerEmail').value;
+        const nombre = document.getElementById('registerNombre').value;
+        const password = document.getElementById('registerPassword').value;
+        const password2 = document.getElementById('registerPassword2').value;
+        
+        if (!email || !password) {
+            showStatus('❌ Completa email y contraseña', 'error', 'loginStatus');
+            return;
         }
+        if (password !== password2) {
+            showStatus('❌ Las contraseñas no coinciden', 'error', 'loginStatus');
+            return;
+        }
+        try {
+            await doRegister(email, password, nombre);
+        } catch (e) {
+            showStatus('❌ Error: ' + e.message, 'error', 'loginStatus');
+        }
+    };
+
+    document.getElementById('showRegisterBtn').onclick = () => {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'block';
+        document.getElementById('loginStatus').innerHTML = '';
+    };
+
+    document.getElementById('showLoginBtn').onclick = () => {
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('loginStatus').innerHTML = '';
     };
 
     document.getElementById('logoutBtn').onclick = () => {
-        logoutUser();
-        updateUIForUser();
-        showStatus('Sesión cerrada', 'info', 'pubStatus');
+        limpiarSesion();
+        mostrarLogin();
+        showStatus('Sesión cerrada', 'info', 'loginStatus');
     };
 
+    // ========== EVENTOS APP ==========
     document.getElementById('publicarBtn').onclick = async () => {
         const titulo = document.getElementById('titulo').value;
         const descripcion = document.getElementById('descripcion').value;
@@ -733,14 +781,15 @@
         fileInput.files = e.dataTransfer.files;
     });
 
-    // Restaurar sesión
-    const saved = localStorage.getItem('app_currentUser');
-    if (saved) {
-        currentUser = JSON.parse(saved);
-        updateUIForUser();
-    } else {
-        updateUIForUser();
-    }
+    // Inicializar
+    (async () => {
+        const tieneSesion = await verificarSesion();
+        if (tieneSesion) {
+            mostrarApp();
+        } else {
+            mostrarLogin();
+        }
+    })();
 </script>
 </body>
 </html>
