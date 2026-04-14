@@ -2,114 +2,152 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Intercambia - Trueque de objetos</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: system-ui, 'Segoe UI', sans-serif;
-            background: linear-gradient(145deg, #1a472a 0%, #0f2c1c 100%);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        .container { max-width: 1300px; margin: 0 auto; }
-        .card {
-            background: white;
-            border-radius: 28px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 12px 28px rgba(0,0,0,0.2);
-        }
-        h1 { font-size: 2rem; color: #1a472a; margin-bottom: 4px; }
-        .subtitle { color: #4a6741; margin-bottom: 24px; }
-        .nav-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 12px;
-        }
-        .nav-btn {
-            background: none;
-            border: none;
-            padding: 8px 20px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 40px;
-            transition: 0.2s;
-            color: #4a6741;
-        }
-        .nav-btn.active {
-            background: #1a472a;
-            color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .upload-area {
-            border: 3px dashed #4a6741;
-            border-radius: 24px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            background: #f8faf0;
-            transition: 0.2s;
-        }
-        .upload-area:hover { background: #eef3e6; border-color: #1a472a; }
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #cbd5e1;
-            border-radius: 60px;
-            font-size: 1rem;
-        }
-        textarea { border-radius: 20px; resize: vertical; }
-        button {
-            background: #1a472a;
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 60px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        button:hover { background: #0f2c1c; transform: scale(1.02); }
-        .google-btn {
-            background: #4285f4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 100%;
-            max-width: 300px;
+
+        .container {
+            max-width: 1300px;
             margin: 0 auto;
         }
-        .google-btn:hover { background: #357ae8; }
+
+        /* Header principal */
+        .main-header {
+            background: white;
+            border-radius: 32px;
+            padding: 20px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(5, 150, 105, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .logo-area h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #059669, #10b981);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .logo-area p {
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        /* Barra de búsqueda */
+        .search-section {
+            background: white;
+            border-radius: 28px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .search-bar {
+            background: #f1f5f9;
+            border-radius: 60px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            width: 100%;
+            outline: none;
+        }
+
+        .categories {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .cat-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #334155;
+        }
+
+        .cat-btn.active {
+            background: #059669;
+            color: white;
+        }
+
+        /* Tarjetas */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 24px;
-            margin-top: 20px;
+            margin-top: 8px;
         }
+
         .objeto-card {
             background: white;
-            border-radius: 24px;
+            border-radius: 28px;
             overflow: hidden;
-            box-shadow: 0 6px 14px rgba(0,0,0,0.1);
-            transition: 0.2s;
-            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eef2ff;
         }
-        .objeto-card:hover { transform: translateY(-5px); }
+
+        .objeto-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
+        }
+
         .objeto-card img {
             width: 100%;
-            height: 200px;
+            height: 220px;
             object-fit: cover;
+            background: #f1f5f9;
         }
-        .objeto-info { padding: 16px; }
+
+        .objeto-info {
+            padding: 20px;
+        }
+
+        .categoria-badge {
+            background: #dcfce7;
+            color: #166534;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
         .badge {
-            background: #1a472a;
+            background: #059669;
             color: white;
             padding: 4px 12px;
             border-radius: 60px;
@@ -117,6 +155,7 @@
             display: inline-block;
             margin: 8px 0;
         }
+
         .badge-expiracion {
             background: #e67e22;
             color: white;
@@ -126,8 +165,9 @@
             display: inline-block;
             margin: 4px 0;
         }
+
         .badge-sospechoso {
-            background: #e67e22;
+            background: #f59e0b;
             color: white;
             padding: 4px 12px;
             border-radius: 60px;
@@ -135,46 +175,116 @@
             display: inline-block;
             margin: 4px 0;
         }
+
+        /* Botones */
+        .btn-primary {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #047857;
+            transform: scale(1.02);
+        }
+
+        .google-btn {
+            background: #4285f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            padding: 12px 24px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
         .intercambiar-btn {
-            background: #1a472a;
+            background: #059669;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 60px;
+            padding: 10px 16px;
+            border-radius: 40px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 12px;
             width: 100%;
+            font-weight: 500;
         }
+
         .reportar-btn {
-            background: #e67e22;
+            background: #f59e0b;
             color: white;
             border: none;
             padding: 8px 16px;
-            border-radius: 60px;
+            border-radius: 40px;
             cursor: pointer;
-            margin-top: 5px;
+            margin-top: 8px;
             width: 100%;
-            font-size: 12px;
+            font-size: 13px;
         }
-        .reportar-btn:hover { background: #d35400; }
+
         .eliminar-btn {
-            background: #991b1b;
+            background: #dc2626;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 60px;
+            padding: 10px 16px;
+            border-radius: 40px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 12px;
             width: 100%;
+            font-weight: 500;
         }
-        .eliminar-btn:hover { background: #7f1d1d; }
+
+        /* Modal de vista previa */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            max-width: 400px;
+            width: 90%;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .modal-content img {
+            width: 100%;
+            border-radius: 20px;
+            margin: 16px 0;
+        }
+
+        /* Chat */
         .chat-container {
-            background: #f8faf0;
+            background: #f8fafc;
             border-radius: 24px;
             padding: 16px;
             max-height: 400px;
             overflow-y: auto;
         }
+
         .mensaje {
             background: white;
             border-radius: 20px;
@@ -182,55 +292,153 @@
             margin-bottom: 12px;
             max-width: 80%;
         }
+
         .mensaje.emisor {
-            background: #1a472a;
+            background: #059669;
             color: white;
             margin-left: auto;
         }
+
         .mensaje.receptor {
             background: #e2e8f0;
         }
-        .mensaje small {
-            font-size: 10px;
-            opacity: 0.7;
-            display: block;
-        }
+
         .chat-input {
             display: flex;
             gap: 10px;
             margin-top: 16px;
         }
+
         .chat-input input {
             flex: 1;
-            margin: 0;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 40px;
+            outline: none;
         }
-        .login-section {
+
+        /* Login y usuario */
+        .login-card {
             text-align: center;
+            background: white;
+            border-radius: 32px;
+            padding: 32px;
+            margin-bottom: 24px;
         }
+
         .user-info {
             background: #eef2ff;
-            padding: 12px;
+            padding: 12px 20px;
             border-radius: 60px;
             margin-top: 16px;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
+
         .user-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
         }
+
         .logout-btn {
-            background: #6c757d;
-            padding: 8px 16px;
-            font-size: 14px;
-            margin-top: 10px;
+            background: #64748b;
+            padding: 8px 20px;
+            border-radius: 40px;
+            border: none;
+            color: white;
+            cursor: pointer;
         }
+
+        /* Navegación */
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            padding: 8px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: 0.2s;
+            color: #475569;
+        }
+
+        .nav-btn.active {
+            background: #059669;
+            color: white;
+        }
+
+        /* Subida de archivos */
+        .upload-area {
+            border: 3px dashed #cbd5e1;
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8fafc;
+            transition: 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: #059669;
+            background: #f0fdf4;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 10px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 60px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        textarea {
+            border-radius: 20px;
+            resize: vertical;
+        }
+
+        .progress-container {
+            background: #e2e8f0;
+            border-radius: 40px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 8px;
+            background: #059669;
+            transition: width 0.2s;
+        }
+
+        .conv-item {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 16px;
+        }
+
+        .conv-item:hover {
+            background: #f1f5f9;
+        }
+
         .status-success, .status-error, .status-info {
             padding: 12px;
             border-radius: 60px;
@@ -240,38 +448,22 @@
         .status-success { background: #bbf7d0; color: #166534; }
         .status-error { background: #fee2e2; color: #991b1b; }
         .status-info { background: #dbeafe; color: #1e3a8a; }
-        .progress-container {
-            background: #e2e8f0;
-            border-radius: 40px;
-            margin: 16px 0;
-            overflow: hidden;
-        }
-        .progress-bar {
-            width: 0%;
-            height: 8px;
-            background: #1a472a;
-            transition: width 0.2s;
-        }
-        .conv-item {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .conv-item:hover { background: #f0f4e8; }
-        @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="card">
-        <h1>🔄 Intercambia</h1>
-        <div class="subtitle">Trueque de objetos: publica lo que ofreces y conversa</div>
+    <!-- Header -->
+    <div class="main-header">
+        <div class="logo-area">
+            <h1>🔄 Intercambia</h1>
+            <p>Trueque de objetos - Dale una segunda vida</p>
+        </div>
     </div>
 
-    <!-- LOGIN CON GOOGLE -->
-    <div class="card" id="loginSection">
-        <h3>🔐 Accede con tu cuenta de Google</h3>
+    <!-- Login con Google -->
+    <div class="login-card" id="loginSection">
+        <h2>🔐 Bienvenido a Intercambia</h2>
+        <p style="margin: 16px 0; color: #475569;">Inicia sesión para publicar objetos, intercambiar y chatear</p>
         <button id="googleLoginBtn" class="google-btn">
             <svg width="20" height="20" viewBox="0 0 24 24">
                 <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -285,39 +477,77 @@
         <div id="userInfo" class="user-info" style="display:none;"></div>
     </div>
 
-    <!-- APP (oculta hasta login) -->
+    <!-- App principal (oculta hasta login) -->
     <div id="appSections" style="display:none;">
-        <div class="card">
-            <div class="nav-buttons">
-                <button class="nav-btn active" data-tab="feed">📦 Objetos disponibles</button>
-                <button class="nav-btn" data-tab="publicar">➕ Publicar objeto</button>
-                <button class="nav-btn" data-tab="misobjetos">📋 Mis objetos</button>
-                <button class="nav-btn" data-tab="chats">💬 Mis conversaciones</button>
+        <!-- Búsqueda y categorías -->
+        <div class="search-section">
+            <div class="search-bar">
+                <span>🔍</span>
+                <input type="text" id="searchInput" placeholder="Buscar por título o usuario...">
             </div>
+            <div class="categories">
+                <button class="cat-btn active" data-cat="all">Todos</button>
+                <button class="cat-btn" data-cat="Electrónica">📱 Electrónica</button>
+                <button class="cat-btn" data-cat="Ropa">👕 Ropa</button>
+                <button class="cat-btn" data-cat="Libros">📚 Libros</button>
+                <button class="cat-btn" data-cat="Mascotas">🐾 Mascotas</button>
+                <button class="cat-btn" data-cat="Hogar">🏠 Hogar</button>
+                <button class="cat-btn" data-cat="Deportes">⚽ Deportes</button>
+            </div>
+        </div>
 
-            <div id="tab-feed"><h3>✨ Objetos para intercambiar</h3><div id="feedGrid" class="grid">Cargando...</div></div>
-            <div id="tab-publicar" style="display:none;">
+        <!-- Navegación -->
+        <div class="nav-buttons">
+            <button class="nav-btn active" data-tab="feed">📦 Objetos disponibles</button>
+            <button class="nav-btn" data-tab="publicar">➕ Publicar objeto</button>
+            <button class="nav-btn" data-tab="misobjetos">📋 Mis objetos</button>
+            <button class="nav-btn" data-tab="chats">💬 Mis conversaciones</button>
+        </div>
+
+        <!-- Feed -->
+        <div id="tab-feed">
+            <div id="feedGrid" class="grid">Cargando objetos...</div>
+        </div>
+
+        <!-- Publicar -->
+        <div id="tab-publicar" style="display:none;">
+            <div style="background: white; border-radius: 28px; padding: 24px;">
                 <h3>📸 Publicar un objeto</h3>
                 <input type="text" id="titulo" placeholder="Título del objeto">
-                <textarea id="descripcion" rows="2" placeholder="Descripción (estado, qué buscas a cambio...)"></textarea>
+                <select id="categoria">
+                    <option value="Electrónica">📱 Electrónica</option>
+                    <option value="Ropa">👕 Ropa</option>
+                    <option value="Libros">📚 Libros</option>
+                    <option value="Mascotas">🐾 Mascotas</option>
+                    <option value="Hogar">🏠 Hogar</option>
+                    <option value="Deportes">⚽ Deportes</option>
+                </select>
+                <textarea id="descripcion" rows="3" placeholder="Descripción (estado, qué buscas a cambio...)"></textarea>
                 <div class="upload-area" id="uploadArea">
                     <div>📁 Haz clic o arrastra una foto</div>
                     <input type="file" id="fileInput" accept="image/*" style="display:none;">
                 </div>
                 <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
-                <button id="publicarBtn">Publicar objeto</button>
+                <button id="previewBtn" class="btn-primary">📸 Vista previa</button>
                 <div id="pubStatus"></div>
             </div>
-            <div id="tab-misobjetos" style="display:none;"><h3>📌 Mis objetos publicados</h3><div id="misObjetosGrid" class="grid">Cargando...</div></div>
-            <div id="tab-chats" style="display:none;">
-                <h3>💬 Conversaciones activas</h3>
-                <div id="listaChats"></div>
-                <div id="chatDetalle" style="margin-top:24px; display:none;">
+        </div>
+
+        <!-- Mis objetos -->
+        <div id="tab-misobjetos" style="display:none;">
+            <div id="misObjetosGrid" class="grid">Cargando...</div>
+        </div>
+
+        <!-- Chats -->
+        <div id="tab-chats" style="display:none;">
+            <div id="listaChats"></div>
+            <div id="chatDetalle" style="margin-top:24px; display:none;">
+                <div style="background: white; border-radius: 28px; padding: 20px;">
                     <h4 id="chatTitulo"></h4>
                     <div id="chatMensajes" class="chat-container"></div>
                     <div class="chat-input">
                         <input type="text" id="nuevoMensaje" placeholder="Escribe un mensaje...">
-                        <button id="enviarMensajeBtn">Enviar</button>
+                        <button id="enviarMensajeBtn" style="background: #059669;">Enviar</button>
                     </div>
                 </div>
             </div>
@@ -325,16 +555,61 @@
     </div>
 </div>
 
+<!-- Modal de vista previa -->
+<div id="previewModal" class="modal">
+    <div class="modal-content">
+        <h3>📋 ¿Publicar este objeto?</h3>
+        <img id="previewImg" src="" alt="Vista previa">
+        <p><strong id="previewTitulo"></strong></p>
+        <p id="previewDesc" style="color:#475569;"></p>
+        <p><span class="categoria-badge" id="previewCategoria"></span></p>
+        <button id="confirmarPublicarBtn" class="btn-primary">✅ Sí, publicar</button>
+        <button id="cancelarPublicarBtn" style="margin-top: 12px; background:#e2e8f0; color:#1e293b; border:none; padding:10px; border-radius:40px; width:100%;">Cancelar</button>
+    </div>
+</div>
+
+<!-- OneSignal SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-    // ========== CONFIGURACIÓN (VERIFICA TUS URLs) ==========
+    // ========== CONFIGURACIÓN ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
     const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
     
     let currentUser = null;
     let authToken = null;
     let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
+    let pendingPublication = null;
 
-    // ========== FUNCIONES DE AUTENTICACIÓN ==========
+    // ========== ONESIGNAL ==========
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+            appId: "68491021-9c85-423d-9e50-ddcffa0c2d63",
+            notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' },
+            promptOptions: {
+                actionMessage: "¿Quieres recibir notificaciones cuando te envíen mensajes?",
+                acceptButtonText: "Sí, avísame",
+                cancelButtonText: "No, gracias"
+            }
+        });
+    });
+
+    async function guardarOneSignalId(email) {
+        try {
+            const OneSignal = window.OneSignal;
+            const userId = await OneSignal.User.getPushSubscriptionId();
+            if (userId) {
+                await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ onesignal_id: userId })
+                });
+                console.log('OneSignal ID guardado:', userId);
+            }
+        } catch(e) { console.error('Error guardando OneSignal ID:', e); }
+    }
+
+    // ========== AUTENTICACIÓN ==========
     function getTokenFromURL() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
@@ -368,7 +643,7 @@
         updateUIForUser();
     }
 
-    // ========== API CON AUTENTICACIÓN ==========
+    // ========== API ==========
     async function apiFetch(path, options = {}) {
         const headers = options.headers || {};
         if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
@@ -380,14 +655,18 @@
         return response.json();
     }
 
-    async function publicarObjeto(titulo, descripcion, file) {
+    async function publicarObjeto(titulo, descripcion, categoria, file) {
         const form = new FormData();
-        form.append('file', file); form.append('titulo', titulo); form.append('descripcion', descripcion);
+        form.append('file', file);
+        form.append('titulo', titulo);
+        form.append('descripcion', `${categoria} | ${descripcion}`);
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
+
     async function obtenerObjetos(propios = false) {
         return propios ? await apiFetch('/mis-objetos') : await apiFetch('/objetos');
     }
+
     async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
     async function reportarObjeto(idObjeto, motivo) {
         return await apiFetch('/reporte', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: idObjeto, motivo }) });
@@ -409,15 +688,16 @@
         const logoutBtn = document.getElementById('logoutBtn');
 
         if (currentUser) {
-            loginSection.querySelector('h3').innerText = '✅ Sesión activa';
+            loginSection.querySelector('h2').innerText = '✅ Sesión activa';
             googleBtn.style.display = 'none';
             logoutBtn.style.display = 'inline-block';
             userInfoDiv.style.display = 'flex';
             userInfoDiv.innerHTML = `<img src="${currentUser.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name)}" class="user-avatar"><span>👤 ${currentUser.name || currentUser.email}</span>`;
             appSections.style.display = 'block';
             cargarFeed(); cargarMisObjetos();
+            guardarOneSignalId(currentUser.email);
         } else {
-            loginSection.querySelector('h3').innerText = '🔐 Accede con tu cuenta de Google';
+            loginSection.querySelector('h2').innerText = '🔐 Bienvenido a Intercambia';
             googleBtn.style.display = 'flex';
             logoutBtn.style.display = 'none';
             userInfoDiv.style.display = 'none';
@@ -425,48 +705,75 @@
         }
     }
 
+    function filtrarObjetos() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const activeCat = document.querySelector('.cat-btn.active').dataset.cat;
+        const cards = document.querySelectorAll('.objeto-card');
+        cards.forEach(card => {
+            const titulo = card.querySelector('.objeto-info strong')?.innerText.toLowerCase() || '';
+            const usuario = card.querySelector('.badge')?.innerText.toLowerCase() || '';
+            const categoria = card.dataset.cat || '';
+            const matchesSearch = titulo.includes(searchTerm) || usuario.includes(searchTerm);
+            const matchesCat = activeCat === 'all' || categoria === activeCat;
+            card.style.display = matchesSearch && matchesCat ? 'block' : 'none';
+        });
+    }
+
     async function cargarFeed() {
         try {
             const objetos = await obtenerObjetos(false);
             const feedDiv = document.getElementById('feedGrid');
-            if (!objetos.length) { feedDiv.innerHTML = '<p>📭 No hay objetos publicados aún. ¡Sé el primero!</p>'; return; }
-            feedDiv.innerHTML = objetos.map(obj => `
-                <div class="objeto-card">
-                    <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
-                    <div class="objeto-info">
-                        <strong>${escapeHtml(obj.titulo)}</strong>
-                        <p>${escapeHtml(obj.descripcion?.substring(0, 100))}</p>
-                        <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
-                        ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
-                        ${obj.usuario !== currentUser?.email ? `<button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button><button class="reportar-btn" data-id="${obj.id}">⚠️ Reportar</button>` : '<span style="font-size:12px;">(tu objeto)</span>'}
+            if (!objetos.length) { feedDiv.innerHTML = '<div style="text-align:center; padding:40px;">📭 No hay objetos publicados aún. ¡Sé el primero!</div>'; return; }
+            feedDiv.innerHTML = objetos.map(obj => {
+                const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
+                const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
+                return `
+                    <div class="objeto-card" data-cat="${categoria}">
+                        <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
+                        <div class="objeto-info">
+                            <span class="categoria-badge">${escapeHtml(categoria)}</span>
+                            <strong>${escapeHtml(obj.titulo)}</strong>
+                            <p style="margin-top:8px; color:#475569;">${escapeHtml(descripcion.substring(0, 80))}</p>
+                            <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
+                            ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
+                            ${obj.usuario !== currentUser?.email ? `
+                                <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
+                                <button class="reportar-btn" data-id="${obj.id}">⚠️ Reportar</button>
+                            ` : '<span style="font-size:12px; color:#64748b;">(tu objeto)</span>'}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             document.querySelectorAll('.intercambiar-btn').forEach(btn => btn.addEventListener('click', () => abrirChatConObjeto(parseInt(btn.dataset.id), btn.dataset.usuario, btn.dataset.titulo)));
             document.querySelectorAll('.reportar-btn').forEach(btn => btn.addEventListener('click', async () => {
                 const motivo = prompt('¿Por qué reportas este objeto?');
                 if (motivo) try { await reportarObjeto(parseInt(btn.dataset.id), motivo); alert('✅ Reporte enviado'); } catch(e) { alert('Error: ' + e.message); }
             }));
-        } catch(e) { document.getElementById('feedGrid').innerHTML = '<p>❌ Error al cargar objetos</p>'; }
+            filtrarObjetos();
+        } catch(e) { document.getElementById('feedGrid').innerHTML = '<div style="text-align:center; padding:40px;">❌ Error al cargar objetos</div>'; }
     }
 
     async function cargarMisObjetos() {
         try {
             const objetos = await obtenerObjetos(true);
             const div = document.getElementById('misObjetosGrid');
-            if (!objetos.length) { div.innerHTML = '<p>📭 No has publicado nada aún.</p>'; return; }
-            div.innerHTML = objetos.map(obj => `
-                <div class="objeto-card">
-                    <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
-                    <div class="objeto-info">
-                        <strong>${escapeHtml(obj.titulo)}</strong>
-                        <p>${escapeHtml(obj.descripcion?.substring(0, 80))}</p>
-                        <span class="badge-expiracion">⏰ Expira: ${new Date(obj.expira).toLocaleDateString()}</span>
-                        ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión por IA</span>' : ''}
-                        <button class="eliminar-btn" data-id="${obj.id}">🗑️ Eliminar publicación</button>
+            if (!objetos.length) { div.innerHTML = '<div style="text-align:center; padding:40px;">📭 No has publicado nada aún.</div>'; return; }
+            div.innerHTML = objetos.map(obj => {
+                const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
+                const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
+                return `
+                    <div class="objeto-card">
+                        <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
+                        <div class="objeto-info">
+                            <strong>${escapeHtml(obj.titulo)}</strong>
+                            <p style="margin:8px 0;">${escapeHtml(descripcion.substring(0, 80))}</p>
+                            <span class="badge-expiracion">⏰ Expira: ${new Date(obj.expira).toLocaleDateString()}</span>
+                            ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión por IA</span>' : ''}
+                            <button class="eliminar-btn" data-id="${obj.id}">🗑️ Eliminar publicación</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             document.querySelectorAll('.eliminar-btn').forEach(btn => btn.addEventListener('click', async () => {
                 if (confirm('¿Eliminar esta publicación?')) try { await eliminarObjeto(parseInt(btn.dataset.id)); alert('✅ Eliminado'); cargarMisObjetos(); cargarFeed(); } catch(e) { alert('Error: ' + e.message); }
             }));
@@ -489,7 +796,7 @@
         if (!chatActual.objetoId) return;
         const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
         const cont = document.getElementById('chatMensajes');
-        if (!msgs.length) { cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún.</p>'; return; }
+        if (!msgs.length) { cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún. Envía uno para empezar.</p>'; return; }
         cont.innerHTML = msgs.map(m => `<div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}"><strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}<small>${new Date(m.fecha).toLocaleString()}</small></div>`).join('');
         cont.scrollTop = cont.scrollHeight;
     }
@@ -507,7 +814,7 @@
         try {
             const convs = await obtenerMisConversaciones();
             const listaDiv = document.getElementById('listaChats');
-            if (!convs.length) { listaDiv.innerHTML = '<p>💬 No hay conversaciones activas aún.</p>'; return; }
+            if (!convs.length) { listaDiv.innerHTML = '<p style="text-align:center; padding:20px;">💬 No hay conversaciones activas aún.</p>'; return; }
             listaDiv.innerHTML = convs.map(c => `<div class="conv-item" data-id="${c.id_objeto}" data-otro="${escapeHtml(c.otroUsuario)}" data-titulo="${escapeHtml(c.titulo)}"><strong>📦 ${escapeHtml(c.titulo)}</strong><br>💬 con ${escapeHtml(c.otroUsuario)}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small></div>`).join('');
             document.querySelectorAll('.conv-item').forEach(el => el.addEventListener('click', () => abrirChatConObjeto(parseInt(el.dataset.id), el.dataset.otro, el.dataset.titulo)));
         } catch(e) { console.error(e); }
@@ -516,25 +823,60 @@
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
     function showStatus(msg, type, elementId = 'pubStatus') { const div = document.getElementById(elementId); if (!div) return; div.className = `status-${type}`; div.innerText = msg; setTimeout(() => { div.className = ''; div.innerText = ''; }, 3000); }
 
-    // EVENTOS
-    document.getElementById('googleLoginBtn').onclick = () => loginWithGoogle();
-    document.getElementById('logoutBtn').onclick = () => logout();
-    document.getElementById('publicarBtn').onclick = async () => {
-        const titulo = document.getElementById('titulo').value, desc = document.getElementById('descripcion').value, file = document.getElementById('fileInput').files[0];
-        if (!titulo || !desc || !file) { showStatus('❌ Completa todos los campos', 'error', 'pubStatus'); return; }
+    // ========== VISTA PREVIA Y PUBLICACIÓN ==========
+    document.getElementById('previewBtn').onclick = () => {
+        const titulo = document.getElementById('titulo').value;
+        const categoria = document.getElementById('categoria').value;
+        const descripcion = document.getElementById('descripcion').value;
+        const file = document.getElementById('fileInput').files[0];
+        if (!titulo || !descripcion || !file) { showStatus('❌ Completa todos los campos', 'error', 'pubStatus'); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('previewTitulo').innerText = titulo;
+            document.getElementById('previewDesc').innerText = descripcion;
+            document.getElementById('previewCategoria').innerText = categoria;
+            pendingPublication = { titulo, categoria, descripcion, file };
+            document.getElementById('previewModal').style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+    };
+
+    document.getElementById('confirmarPublicarBtn').onclick = async () => {
+        if (!pendingPublication) return;
+        const { titulo, categoria, descripcion, file } = pendingPublication;
         const progressBar = document.getElementById('progressBar');
         try {
             let progress = 0, interval = setInterval(() => { progress = Math.min(progress + 10, 90); progressBar.style.width = `${progress}%`; }, 200);
-            const result = await publicarObjeto(titulo, desc, file);
+            const result = await publicarObjeto(titulo, `${categoria} | ${descripcion}`, categoria, file);
             clearInterval(interval); progressBar.style.width = '100%';
             showStatus(result.sospechoso ? '⚠️ Publicación en revisión' : '✅ Objeto publicado', result.sospechoso ? 'info' : 'success', 'pubStatus');
             setTimeout(() => { progressBar.style.width = '0%'; }, 2000);
-            document.getElementById('titulo').value = ''; document.getElementById('descripcion').value = ''; document.getElementById('fileInput').value = '';
+            document.getElementById('titulo').value = '';
+            document.getElementById('descripcion').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('previewModal').style.display = 'none';
+            pendingPublication = null;
             cargarMisObjetos(); cargarFeed();
         } catch(e) { showStatus('❌ Error: ' + e.message, 'error', 'pubStatus'); progressBar.style.width = '0%'; }
     };
+
+    document.getElementById('cancelarPublicarBtn').onclick = () => {
+        document.getElementById('previewModal').style.display = 'none';
+        pendingPublication = null;
+    };
+
+    // ========== EVENTOS ==========
+    document.getElementById('googleLoginBtn').onclick = () => loginWithGoogle();
+    document.getElementById('logoutBtn').onclick = () => logout();
     document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
     document.getElementById('nuevoMensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensajeChat(); });
+    document.getElementById('searchInput').addEventListener('input', filtrarObjetos);
+    document.querySelectorAll('.cat-btn').forEach(btn => btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtrarObjetos();
+    }));
 
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -548,10 +890,11 @@
 
     const uploadArea = document.getElementById('uploadArea'), fileInput = document.getElementById('fileInput');
     uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.background = '#eef3e6'; });
-    uploadArea.addEventListener('dragleave', () => { uploadArea.style.background = '#f8faf0'; });
-    uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.style.background = '#f8faf0'; fileInput.files = e.dataTransfer.files; });
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.background = '#f0fdf4'; });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.style.background = '#f8fafc'; });
+    uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.style.background = '#f8fafc'; fileInput.files = e.dataTransfer.files; });
 
+    // ========== INICIALIZACIÓN ==========
     async function init() {
         const token = getTokenFromURL();
         if (token) { authToken = token; const user = await verifyToken(token); if (user) currentUser = user; else { localStorage.removeItem('auth_token'); authToken = null; } }
