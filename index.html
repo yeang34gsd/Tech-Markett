@@ -82,6 +82,9 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
         }
         .google-btn:hover { background: #357ae8; }
         .grid {
@@ -212,9 +215,9 @@
             text-align: center;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
+            justify-content: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .user-avatar {
             width: 40px;
@@ -222,30 +225,21 @@
             border-radius: 50%;
             object-fit: cover;
         }
-        .status-success {
-            background: #bbf7d0;
-            color: #166534;
+        .logout-btn {
+            background: #6c757d;
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .status-success, .status-error, .status-info {
             padding: 12px;
             border-radius: 60px;
             margin-top: 12px;
             text-align: center;
         }
-        .status-error {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 60px;
-            margin-top: 12px;
-            text-align: center;
-        }
-        .status-info {
-            background: #dbeafe;
-            color: #1e3a8a;
-            padding: 12px;
-            border-radius: 60px;
-            margin-top: 12px;
-            text-align: center;
-        }
+        .status-success { background: #bbf7d0; color: #166534; }
+        .status-error { background: #fee2e2; color: #991b1b; }
+        .status-info { background: #dbeafe; color: #1e3a8a; }
         .progress-container {
             background: #e2e8f0;
             border-radius: 40px;
@@ -264,17 +258,8 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .conv-item:hover {
-            background: #f0f4e8;
-        }
-        .logout-btn {
-            background: #6c757d;
-            padding: 8px 16px;
-            font-size: 14px;
-        }
-        @media (max-width: 700px) {
-            .grid { grid-template-columns: 1fr; }
-        }
+        .conv-item:hover { background: #f0f4e8; }
+        @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -310,11 +295,7 @@
                 <button class="nav-btn" data-tab="chats">💬 Mis conversaciones</button>
             </div>
 
-            <div id="tab-feed">
-                <h3>✨ Objetos para intercambiar</h3>
-                <div id="feedGrid" class="grid">Cargando...</div>
-            </div>
-
+            <div id="tab-feed"><h3>✨ Objetos para intercambiar</h3><div id="feedGrid" class="grid">Cargando...</div></div>
             <div id="tab-publicar" style="display:none;">
                 <h3>📸 Publicar un objeto</h3>
                 <input type="text" id="titulo" placeholder="Título del objeto">
@@ -323,18 +304,11 @@
                     <div>📁 Haz clic o arrastra una foto</div>
                     <input type="file" id="fileInput" accept="image/*" style="display:none;">
                 </div>
-                <div class="progress-container">
-                    <div class="progress-bar" id="progressBar"></div>
-                </div>
+                <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
                 <button id="publicarBtn">Publicar objeto</button>
                 <div id="pubStatus"></div>
             </div>
-
-            <div id="tab-misobjetos" style="display:none;">
-                <h3>📌 Mis objetos publicados</h3>
-                <div id="misObjetosGrid" class="grid">Cargando...</div>
-            </div>
-
+            <div id="tab-misobjetos" style="display:none;"><h3>📌 Mis objetos publicados</h3><div id="misObjetosGrid" class="grid">Cargando...</div></div>
             <div id="tab-chats" style="display:none;">
                 <h3>💬 Conversaciones activas</h3>
                 <div id="listaChats"></div>
@@ -352,7 +326,7 @@
 </div>
 
 <script>
-    // ========== CONFIGURACIÓN ==========
+    // ========== CONFIGURACIÓN (VERIFICA TUS URLs) ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
     const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
     
@@ -380,12 +354,10 @@
             if (!response.ok) return null;
             const data = await response.json();
             return data.user;
-        } catch (e) {
-            return null;
-        }
+        } catch (e) { return null; }
     }
 
-    async function loginWithGoogle() {
+    function loginWithGoogle() {
         window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`;
     }
 
@@ -396,70 +368,37 @@
         updateUIForUser();
     }
 
-    // ========== API (con autenticación) ==========
+    // ========== API CON AUTENTICACIÓN ==========
     async function apiFetch(path, options = {}) {
         const headers = options.headers || {};
-        if (authToken) {
-            headers['Authorization'] = `Bearer ${authToken}`;
-        }
-        const response = await fetch(`${WORKER_URL}${path}`, {
-            ...options,
-            headers
-        });
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+        const response = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
         if (!response.ok) {
-            if (response.status === 401) {
-                logout();
-                throw new Error('Sesión expirada. Inicia sesión nuevamente.');
-            }
-            const error = await response.text();
-            throw new Error(error);
+            if (response.status === 401) { logout(); throw new Error('Sesión expirada'); }
+            throw new Error(await response.text());
         }
         return response.json();
     }
 
     async function publicarObjeto(titulo, descripcion, file) {
         const form = new FormData();
-        form.append('file', file);
-        form.append('titulo', titulo);
-        form.append('descripcion', descripcion);
+        form.append('file', file); form.append('titulo', titulo); form.append('descripcion', descripcion);
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
-
     async function obtenerObjetos(propios = false) {
-        if (propios) {
-            return await apiFetch('/mis-objetos');
-        } else {
-            return await apiFetch('/objetos');
-        }
+        return propios ? await apiFetch('/mis-objetos') : await apiFetch('/objetos');
     }
-
-    async function eliminarObjeto(id) {
-        return await apiFetch(`/objeto/${id}`, { method: 'DELETE' });
-    }
-
+    async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
     async function reportarObjeto(idObjeto, motivo) {
-        return await apiFetch('/reporte', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_objeto: idObjeto, motivo })
-        });
+        return await apiFetch('/reporte', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: idObjeto, motivo }) });
     }
-
     async function enviarMensaje(objetoId, receptor, mensaje) {
-        return await apiFetch('/mensaje', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje })
-        });
+        return await apiFetch('/mensaje', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
     }
-
     async function obtenerMensajes(objetoId, otroUsuario) {
         return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`);
     }
-
-    async function obtenerMisConversaciones() {
-        return await apiFetch('/mis-conversaciones');
-    }
+    async function obtenerMisConversaciones() { return await apiFetch('/mis-conversaciones'); }
 
     // ========== UI ==========
     function updateUIForUser() {
@@ -474,13 +413,9 @@
             googleBtn.style.display = 'none';
             logoutBtn.style.display = 'inline-block';
             userInfoDiv.style.display = 'flex';
-            userInfoDiv.innerHTML = `
-                <img src="${currentUser.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name)}" class="user-avatar">
-                <span>👤 ${currentUser.name || currentUser.email}</span>
-            `;
+            userInfoDiv.innerHTML = `<img src="${currentUser.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name)}" class="user-avatar"><span>👤 ${currentUser.name || currentUser.email}</span>`;
             appSections.style.display = 'block';
-            cargarFeed();
-            cargarMisObjetos();
+            cargarFeed(); cargarMisObjetos();
         } else {
             loginSection.querySelector('h3').innerText = '🔐 Accede con tu cuenta de Google';
             googleBtn.style.display = 'flex';
@@ -494,10 +429,7 @@
         try {
             const objetos = await obtenerObjetos(false);
             const feedDiv = document.getElementById('feedGrid');
-            if (!objetos.length) {
-                feedDiv.innerHTML = '<p>📭 No hay objetos publicados aún. ¡Sé el primero!</p>';
-                return;
-            }
+            if (!objetos.length) { feedDiv.innerHTML = '<p>📭 No hay objetos publicados aún. ¡Sé el primero!</p>'; return; }
             feedDiv.innerHTML = objetos.map(obj => `
                 <div class="objeto-card">
                     <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
@@ -506,47 +438,23 @@
                         <p>${escapeHtml(obj.descripcion?.substring(0, 100))}</p>
                         <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
                         ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
-                        ${obj.usuario !== currentUser?.email ? `
-                            <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
-                            <button class="reportar-btn" data-id="${obj.id}">⚠️ Reportar</button>
-                        ` : '<span style="font-size:12px;">(tu objeto)</span>'}
+                        ${obj.usuario !== currentUser?.email ? `<button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button><button class="reportar-btn" data-id="${obj.id}">⚠️ Reportar</button>` : '<span style="font-size:12px;">(tu objeto)</span>'}
                     </div>
                 </div>
             `).join('');
-            
-            document.querySelectorAll('.intercambiar-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    abrirChatConObjeto(parseInt(btn.dataset.id), btn.dataset.usuario, btn.dataset.titulo);
-                });
-            });
-            
-            document.querySelectorAll('.reportar-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const motivo = prompt('¿Por qué reportas este objeto?');
-                    if (motivo && motivo.trim()) {
-                        try {
-                            await reportarObjeto(parseInt(btn.dataset.id), motivo);
-                            alert('✅ Reporte enviado. Gracias.');
-                        } catch (e) {
-                            alert('❌ Error: ' + e.message);
-                        }
-                    }
-                });
-            });
-        } catch (e) {
-            console.error(e);
-            document.getElementById('feedGrid').innerHTML = '<p>❌ Error al cargar objetos</p>';
-        }
+            document.querySelectorAll('.intercambiar-btn').forEach(btn => btn.addEventListener('click', () => abrirChatConObjeto(parseInt(btn.dataset.id), btn.dataset.usuario, btn.dataset.titulo)));
+            document.querySelectorAll('.reportar-btn').forEach(btn => btn.addEventListener('click', async () => {
+                const motivo = prompt('¿Por qué reportas este objeto?');
+                if (motivo) try { await reportarObjeto(parseInt(btn.dataset.id), motivo); alert('✅ Reporte enviado'); } catch(e) { alert('Error: ' + e.message); }
+            }));
+        } catch(e) { document.getElementById('feedGrid').innerHTML = '<p>❌ Error al cargar objetos</p>'; }
     }
 
     async function cargarMisObjetos() {
         try {
             const objetos = await obtenerObjetos(true);
             const div = document.getElementById('misObjetosGrid');
-            if (!objetos.length) {
-                div.innerHTML = '<p>📭 No has publicado nada aún.</p>';
-                return;
-            }
+            if (!objetos.length) { div.innerHTML = '<p>📭 No has publicado nada aún.</p>'; return; }
             div.innerHTML = objetos.map(obj => `
                 <div class="objeto-card">
                     <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
@@ -559,24 +467,10 @@
                     </div>
                 </div>
             `).join('');
-            
-            document.querySelectorAll('.eliminar-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    if (confirm('¿Eliminar esta publicación?')) {
-                        try {
-                            await eliminarObjeto(parseInt(btn.dataset.id));
-                            alert('✅ Publicación eliminada');
-                            cargarMisObjetos();
-                            cargarFeed();
-                        } catch (e) {
-                            alert('❌ Error: ' + e.message);
-                        }
-                    }
-                });
-            });
-        } catch (e) {
-            console.error(e);
-        }
+            document.querySelectorAll('.eliminar-btn').forEach(btn => btn.addEventListener('click', async () => {
+                if (confirm('¿Eliminar esta publicación?')) try { await eliminarObjeto(parseInt(btn.dataset.id)); alert('✅ Eliminado'); cargarMisObjetos(); cargarFeed(); } catch(e) { alert('Error: ' + e.message); }
+            }));
+        } catch(e) { console.error(e); }
     }
 
     async function abrirChatConObjeto(objetoId, otroUsuario, titulo) {
@@ -595,16 +489,8 @@
         if (!chatActual.objetoId) return;
         const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
         const cont = document.getElementById('chatMensajes');
-        if (!msgs.length) {
-            cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún.</p>';
-            return;
-        }
-        cont.innerHTML = msgs.map(m => `
-            <div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}">
-                <strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}
-                <small>${new Date(m.fecha).toLocaleString()}</small>
-            </div>
-        `).join('');
+        if (!msgs.length) { cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún.</p>'; return; }
+        cont.innerHTML = msgs.map(m => `<div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}"><strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}<small>${new Date(m.fecha).toLocaleString()}</small></div>`).join('');
         cont.scrollTop = cont.scrollHeight;
     }
 
@@ -621,137 +507,56 @@
         try {
             const convs = await obtenerMisConversaciones();
             const listaDiv = document.getElementById('listaChats');
-            if (!convs.length) {
-                listaDiv.innerHTML = '<p>💬 No hay conversaciones activas aún.</p>';
-                return;
-            }
-            listaDiv.innerHTML = convs.map(c => `
-                <div class="conv-item" data-id="${c.id_objeto}" data-otro="${escapeHtml(c.otroUsuario)}" data-titulo="${escapeHtml(c.titulo)}">
-                    <strong>📦 ${escapeHtml(c.titulo)}</strong><br>
-                    💬 con ${escapeHtml(c.otroUsuario)}<br>
-                    <small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
-                </div>
-            `).join('');
-            document.querySelectorAll('.conv-item').forEach(el => {
-                el.addEventListener('click', () => {
-                    abrirChatConObjeto(parseInt(el.dataset.id), el.dataset.otro, el.dataset.titulo);
-                });
-            });
-        } catch (e) {
-            console.error(e);
-        }
+            if (!convs.length) { listaDiv.innerHTML = '<p>💬 No hay conversaciones activas aún.</p>'; return; }
+            listaDiv.innerHTML = convs.map(c => `<div class="conv-item" data-id="${c.id_objeto}" data-otro="${escapeHtml(c.otroUsuario)}" data-titulo="${escapeHtml(c.titulo)}"><strong>📦 ${escapeHtml(c.titulo)}</strong><br>💬 con ${escapeHtml(c.otroUsuario)}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small></div>`).join('');
+            document.querySelectorAll('.conv-item').forEach(el => el.addEventListener('click', () => abrirChatConObjeto(parseInt(el.dataset.id), el.dataset.otro, el.dataset.titulo)));
+        } catch(e) { console.error(e); }
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+    function showStatus(msg, type, elementId = 'pubStatus') { const div = document.getElementById(elementId); if (!div) return; div.className = `status-${type}`; div.innerText = msg; setTimeout(() => { div.className = ''; div.innerText = ''; }, 3000); }
 
-    function showStatus(msg, type, elementId = 'pubStatus') {
-        const div = document.getElementById(elementId);
-        if (!div) return;
-        div.className = `status-${type}`;
-        div.innerText = msg;
-        setTimeout(() => {
-            div.className = '';
-            div.innerText = '';
-        }, 3000);
-    }
-
-    // ========== EVENTOS ==========
+    // EVENTOS
     document.getElementById('googleLoginBtn').onclick = () => loginWithGoogle();
     document.getElementById('logoutBtn').onclick = () => logout();
-
     document.getElementById('publicarBtn').onclick = async () => {
-        const titulo = document.getElementById('titulo').value;
-        const descripcion = document.getElementById('descripcion').value;
-        const file = document.getElementById('fileInput').files[0];
-        if (!titulo || !descripcion || !file) {
-            showStatus('❌ Completa todos los campos', 'error', 'pubStatus');
-            return;
-        }
+        const titulo = document.getElementById('titulo').value, desc = document.getElementById('descripcion').value, file = document.getElementById('fileInput').files[0];
+        if (!titulo || !desc || !file) { showStatus('❌ Completa todos los campos', 'error', 'pubStatus'); return; }
         const progressBar = document.getElementById('progressBar');
         try {
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress = Math.min(progress + 10, 90);
-                progressBar.style.width = `${progress}%`;
-            }, 200);
-            const resultado = await publicarObjeto(titulo, descripcion, file);
-            clearInterval(interval);
-            progressBar.style.width = '100%';
-            if (resultado.sospechoso) {
-                showStatus('⚠️ Publicación recibida. Pasará por revisión.', 'info', 'pubStatus');
-            } else {
-                showStatus('✅ Objeto publicado', 'success', 'pubStatus');
-            }
+            let progress = 0, interval = setInterval(() => { progress = Math.min(progress + 10, 90); progressBar.style.width = `${progress}%`; }, 200);
+            const result = await publicarObjeto(titulo, desc, file);
+            clearInterval(interval); progressBar.style.width = '100%';
+            showStatus(result.sospechoso ? '⚠️ Publicación en revisión' : '✅ Objeto publicado', result.sospechoso ? 'info' : 'success', 'pubStatus');
             setTimeout(() => { progressBar.style.width = '0%'; }, 2000);
-            document.getElementById('titulo').value = '';
-            document.getElementById('descripcion').value = '';
-            document.getElementById('fileInput').value = '';
-            cargarMisObjetos();
-            cargarFeed();
-        } catch (e) {
-            showStatus('❌ Error: ' + e.message, 'error', 'pubStatus');
-            progressBar.style.width = '0%';
-        }
+            document.getElementById('titulo').value = ''; document.getElementById('descripcion').value = ''; document.getElementById('fileInput').value = '';
+            cargarMisObjetos(); cargarFeed();
+        } catch(e) { showStatus('❌ Error: ' + e.message, 'error', 'pubStatus'); progressBar.style.width = '0%'; }
     };
-
     document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
-    document.getElementById('nuevoMensaje').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') enviarMensajeChat();
-    });
+    document.getElementById('nuevoMensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensajeChat(); });
 
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const tab = btn.dataset.tab;
-            document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
-            document.getElementById(`tab-${tab}`).style.display = 'block';
-            if (tab === 'feed') cargarFeed();
-            if (tab === 'misobjetos') cargarMisObjetos();
-            if (tab === 'chats') cargarListaConversaciones();
-        });
-    });
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active'); const tab = btn.dataset.tab;
+        document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
+        document.getElementById(`tab-${tab}`).style.display = 'block';
+        if (tab === 'feed') cargarFeed();
+        if (tab === 'misobjetos') cargarMisObjetos();
+        if (tab === 'chats') cargarListaConversaciones();
+    }));
 
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea'), fileInput = document.getElementById('fileInput');
     uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.style.background = '#eef3e6';
-    });
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.style.background = '#f8faf0';
-    });
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.style.background = '#f8faf0';
-        fileInput.files = e.dataTransfer.files;
-    });
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.background = '#eef3e6'; });
+    uploadArea.addEventListener('dragleave', () => { uploadArea.style.background = '#f8faf0'; });
+    uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.style.background = '#f8faf0'; fileInput.files = e.dataTransfer.files; });
 
-    // ========== INICIALIZACIÓN ==========
     async function init() {
         const token = getTokenFromURL();
-        if (token) {
-            authToken = token;
-            const user = await verifyToken(token);
-            if (user) {
-                currentUser = user;
-            } else {
-                localStorage.removeItem('auth_token');
-                authToken = null;
-            }
-        }
+        if (token) { authToken = token; const user = await verifyToken(token); if (user) currentUser = user; else { localStorage.removeItem('auth_token'); authToken = null; } }
         updateUIForUser();
     }
-    
     init();
 </script>
 </body>
