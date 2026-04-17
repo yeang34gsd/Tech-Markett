@@ -77,7 +77,6 @@
             gap: 12px;
             flex-wrap: wrap;
             align-items: center;
-            margin-bottom: 16px;
         }
         .categories {
             display: flex;
@@ -100,76 +99,12 @@
             background: #059669;
             color: white;
         }
-        /* Zona selector */
-        .zona-section {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 16px;
-            margin-top: 8px;
-        }
-        .zona-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .zona-tab {
-            background: none;
+        #filtroDistancia {
+            background: #f1f5f9;
             border: none;
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 12px;
-            cursor: pointer;
-            color: #64748b;
-        }
-        .zona-tab.active {
-            background: #059669;
-            color: white;
-        }
-        .zonas-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 12px;
-        }
-        .zona-btn {
-            background: white;
-            border: 1px solid #cbd5e1;
+            border-radius: 40px;
             padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .zona-btn:hover {
-            background: #059669;
-            color: white;
-            border-color: #059669;
-        }
-        .zona-btn.active {
-            background: #059669;
-            color: white;
-            border-color: #059669;
-        }
-        .radio-control {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-top: 12px;
-        }
-        .radio-control input {
-            flex: 1;
-            margin: 0;
-        }
-        .btn-aplicar {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 40px;
+            font-size: 0.85rem;
             cursor: pointer;
         }
         .grid {
@@ -220,12 +155,18 @@
         }
         .badge-ubicacion {
             background: #e0e7ff;
-            color: #3730a3;
+            color: #1e40af;
             padding: 4px 12px;
             border-radius: 60px;
             font-size: 11px;
             display: inline-block;
             margin: 4px 4px 4px 0;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .badge-ubicacion:hover {
+            background: #c7d2fe;
+            transform: scale(1.02);
         }
         .badge-expiracion {
             background: #e67e22;
@@ -320,6 +261,10 @@
             width: 100%;
             font-size: 13px;
             transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .btn-como-llegar:hover {
             background: #2563eb;
@@ -561,37 +506,13 @@
                     <button class="cat-btn" data-cat="Hogar">🏠 Hogar</button>
                     <button class="cat-btn" data-cat="Deportes">⚽ Deportes</button>
                 </div>
-            </div>
-            
-            <!-- Selector de zona -->
-            <div class="zona-section">
-                <div class="zona-header">
-                    <span style="font-weight: 600;">📍 Ubicación</span>
-                    <div>
-                        <button id="zonaSugeridaBtn" class="zona-tab active">Radio sugerido</button>
-                        <button id="zonaPersonalizadaBtn" class="zona-tab">Radio personalizado</button>
-                    </div>
-                </div>
-                
-                <!-- Zonas sugeridas -->
-                <div id="zonasSugeridas" class="zonas-grid">
-                    <button class="zona-btn" data-zona="Viña del Mar">🌊 Viña del Mar</button>
-                    <button class="zona-btn" data-zona="Forestal">🌳 Forestal</button>
-                    <button class="zona-btn" data-zona="La Torres">🏘️ La Torres</button>
-                    <button class="zona-btn" data-zona="Gustavo Fricke">🏥 Gustavo Fricke</button>
-                    <button class="zona-btn" data-zona="Reñaca">🏖️ Reñaca</button>
-                    <button class="zona-btn" data-zona="Valparaíso">⚓ Valparaíso</button>
-                    <button class="zona-btn" data-zona="Playa Ancha">🏄 Playa Ancha</button>
-                </div>
-                
-                <!-- Radio personalizado (oculto por defecto) -->
-                <div id="radioPersonalizado" style="display:none;">
-                    <div class="radio-control">
-                        <input type="range" id="radioKm" min="1" max="50" value="10">
-                        <span id="radioKmValue" style="min-width: 80px;">10 km</span>
-                        <button id="aplicarRadioBtn" class="btn-aplicar">Aplicar</button>
-                    </div>
-                </div>
+                <select id="filtroDistancia">
+                    <option value="0">📍 Todas las zonas</option>
+                    <option value="5">📍 Radio 5 km</option>
+                    <option value="10">📍 Radio 10 km</option>
+                    <option value="25">📍 Radio 25 km</option>
+                    <option value="50">📍 Radio 50 km</option>
+                </select>
             </div>
         </div>
 
@@ -628,7 +549,7 @@
                     <label>📍 Ubicación del objeto</label>
                     <div style="display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap;">
                         <button type="button" id="ubicarBtn" style="background:#3b82f6; padding: 10px 16px; width: auto;">📍 Usar mi ubicación</button>
-                        <input type="text" id="direccionInput" placeholder="O escribe una dirección (ciudad, barrio)" style="flex:1;">
+                        <input type="text" id="direccionInput" placeholder="Ej: Av. Los Paltos 321, Quilpué" style="flex:1;">
                     </div>
                     <div id="mapaContainer" style="display:none; margin-top: 10px;">
                         <div id="mapa"></div>
@@ -699,12 +620,6 @@
     let marker = null;
     let mapaVisible = false;
     let ubicacionUsuario = null;
-    
-    // Variables para selector de zona
-    let zonaActiva = null;
-    let modoZona = 'sugerida';
-    let radioPersonalizadoActivo = false;
-    let radioPersonalizadoKm = 10;
 
     // ========== ONESIGNAL ==========
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -735,9 +650,9 @@
     }
 
     // ========== FUNCIONES DE UBICACIÓN ==========
-    function initMapa(lat = -33.0456, lng = -71.6197) {
+    function initMapa(lat = -33.4489, lng = -70.6693) {
         if (map) map.remove();
-        map = L.map('mapa').setView([lat, lng], 13);
+        map = L.map('mapa').setView([lat, lng], 15);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
@@ -758,20 +673,29 @@
 
     async function obtenerDireccionDesdeCoordenadas(lat, lng) {
         try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=es`);
             const data = await response.json();
-            if (data.display_name) {
-                const ciudad = data.address?.city || data.address?.town || data.address?.village || '';
-                const barrio = data.address?.suburb || data.address?.neighbourhood || '';
-                const direccion = `${barrio ? barrio + ', ' : ''}${ciudad}`.replace(/,$/, '');
-                if (direccion) document.getElementById('direccionInput').value = direccion;
+            if (data.address) {
+                const partes = [];
+                if (data.address.road) partes.push(data.address.road);
+                if (data.address.house_number) partes.push(data.address.house_number);
+                if (data.address.suburb) partes.push(data.address.suburb);
+                if (data.address.city || data.address.town) partes.push(data.address.city || data.address.town);
+                
+                let direccionLegible = partes.join(', ');
+                if (direccionLegible) {
+                    document.getElementById('direccionInput').value = direccionLegible;
+                } else if (data.display_name) {
+                    document.getElementById('direccionInput').value = data.display_name.split(',')[0];
+                }
             }
         } catch(e) { console.error('Error geocoding:', e); }
     }
 
     async function obtenerCoordenadasDesdeDireccion(direccion) {
+        if (!direccion || direccion.length < 5) return null;
         try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}&limit=1`);
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}&limit=1&accept-language=es`);
             const data = await response.json();
             if (data.length > 0) {
                 const lat = parseFloat(data[0].lat);
@@ -780,7 +704,7 @@
                 document.getElementById('longitud').value = lng;
                 if (mapaVisible && map) {
                     marker.setLatLng([lat, lng]);
-                    map.setView([lat, lng], 13);
+                    map.setView([lat, lng], 15);
                 }
                 return { lat, lng };
             }
@@ -808,7 +732,7 @@
                     setTimeout(() => initMapa(lat, lng), 100);
                 } else if (map) {
                     marker.setLatLng([lat, lng]);
-                    map.setView([lat, lng], 13);
+                    map.setView([lat, lng], 15);
                 }
                 obtenerDireccionDesdeCoordenadas(lat, lng);
                 document.getElementById('ubicarBtn').textContent = '📍 Usar mi ubicación';
@@ -834,37 +758,16 @@
         return R * c;
     }
 
-    function abrirGoogleMaps(direccion, titulo) {
-        if (!direccion) return;
+    function abrirGoogleMaps(lat, lng, direccion, titulo) {
         const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const direccionCodificada = encodeURIComponent(direccion + ', Chile');
+        // Usar dirección si está disponible, si no usar coordenadas
+        let query = direccion && direccion.length > 5 ? encodeURIComponent(direccion) : `${lat},${lng}`;
+        
         if (esMovil) {
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${direccionCodificada}&travelmode=driving`, '_blank');
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}&travelmode=driving`, '_blank');
         } else {
-            window.open(`https://www.google.com/maps/search/?api=1&query=${direccionCodificada}`, '_blank');
+            window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
         }
-    }
-
-    // ========== SELECCIONADOR DE ZONA ==========
-    function filtrarPorZona() {
-        const cards = document.querySelectorAll('.objeto-card');
-        cards.forEach(card => {
-            const direccionElem = card.querySelector('.badge-ubicacion');
-            const direccion = direccionElem ? direccionElem.innerText : '';
-            const lat = parseFloat(card.dataset.lat);
-            const lng = parseFloat(card.dataset.lng);
-            
-            let mostrar = true;
-            
-            if (modoZona === 'sugerida' && zonaActiva) {
-                mostrar = direccion.toLowerCase().includes(zonaActiva.toLowerCase());
-            } else if (modoZona === 'personalizada' && radioPersonalizadoActivo && ubicacionUsuario && lat && lng) {
-                const distancia = calcularDistancia(ubicacionUsuario.lat, ubicacionUsuario.lng, lat, lng);
-                mostrar = distancia <= radioPersonalizadoKm;
-            }
-            
-            if (!mostrar) card.style.display = 'none';
-        });
     }
 
     // ========== AUTENTICACIÓN ==========
@@ -969,33 +872,28 @@
     function filtrarObjetos() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const activeCat = document.querySelector('.cat-btn.active').dataset.cat;
+        const distanciaMax = parseInt(document.getElementById('filtroDistancia').value) || 0;
         const cards = document.querySelectorAll('.objeto-card');
         
         cards.forEach(card => {
             const titulo = card.querySelector('.objeto-info strong')?.innerText.toLowerCase() || '';
             const usuario = card.querySelector('.badge')?.innerText.toLowerCase() || '';
             const categoria = card.dataset.cat || '';
-            const direccionElem = card.querySelector('.badge-ubicacion');
-            const direccion = direccionElem ? direccionElem.innerText : '';
             const lat = parseFloat(card.dataset.lat);
             const lng = parseFloat(card.dataset.lng);
             
             let matchesSearch = titulo.includes(searchTerm) || usuario.includes(searchTerm);
             let matchesCat = activeCat === 'all' || categoria === activeCat;
-            let matchesZona = true;
+            let matchesDistancia = true;
             
-            // Filtro por zona sugerida
-            if (modoZona === 'sugerida' && zonaActiva) {
-                matchesZona = direccion.toLowerCase().includes(zonaActiva.toLowerCase());
-            }
-            
-            // Filtro por distancia personalizada
-            if (modoZona === 'personalizada' && radioPersonalizadoActivo && ubicacionUsuario && lat && lng) {
+            if (distanciaMax > 0 && ubicacionUsuario && lat && lng) {
                 const distancia = calcularDistancia(ubicacionUsuario.lat, ubicacionUsuario.lng, lat, lng);
-                matchesZona = distancia <= radioPersonalizadoKm;
+                matchesDistancia = distancia <= distanciaMax;
+            } else if (distanciaMax > 0 && !ubicacionUsuario) {
+                matchesDistancia = false;
             }
             
-            card.style.display = matchesSearch && matchesCat && matchesZona ? 'block' : 'none';
+            card.style.display = matchesSearch && matchesCat && matchesDistancia ? 'block' : 'none';
         });
     }
 
@@ -1015,12 +913,12 @@
                             <strong>${escapeHtml(obj.titulo)}</strong>
                             <p style="margin-top:8px; color:#475569;">${escapeHtml(descripcion.substring(0, 80))}</p>
                             <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
-                            ${obj.direccion ? `<span class="badge-ubicacion">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
+                            ${obj.direccion ? `<span class="badge-ubicacion" title="Ver en mapa">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
                             ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
                             ${obj.usuario !== currentUser?.email ? `
                                 <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
                                 <button class="reportar-btn" data-id="${obj.id}">⚠️ Reportar</button>
-                                ${obj.direccion ? `<button class="btn-como-llegar" data-direccion="${escapeHtml(obj.direccion)}" data-titulo="${escapeHtml(obj.titulo)}">📍 Cómo llegar</button>` : ''}
+                                ${obj.latitud && obj.longitud ? `<button class="btn-como-llegar" data-lat="${obj.latitud}" data-lng="${obj.longitud}" data-direccion="${escapeHtml(obj.direccion || '')}" data-titulo="${escapeHtml(obj.titulo)}">🗺️ Cómo llegar</button>` : ''}
                             ` : '<span style="font-size:12px; color:#64748b;">(tu objeto)</span>'}
                         </div>
                     </div>
@@ -1034,9 +932,11 @@
             }));
             document.querySelectorAll('.btn-como-llegar').forEach(btn => {
                 btn.addEventListener('click', () => {
+                    const lat = btn.dataset.lat;
+                    const lng = btn.dataset.lng;
                     const direccion = btn.dataset.direccion;
                     const titulo = btn.dataset.titulo;
-                    abrirGoogleMaps(direccion, titulo);
+                    abrirGoogleMaps(lat, lng, direccion, titulo);
                 });
             });
             filtrarObjetos();
@@ -1165,58 +1065,12 @@
     };
 
     // ========== EVENTOS ==========
-    // Selector de zona
-    document.querySelectorAll('.zona-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.zona-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            zonaActiva = btn.dataset.zona;
-            modoZona = 'sugerida';
-            document.getElementById('radioPersonalizado').style.display = 'none';
-            document.getElementById('zonasSugeridas').style.display = 'flex';
-            document.getElementById('zonaSugeridaBtn').classList.add('active');
-            document.getElementById('zonaPersonalizadaBtn').classList.remove('active');
-            filtrarObjetos();
-        });
-    });
-
-    document.getElementById('zonaPersonalizadaBtn').addEventListener('click', () => {
-        document.getElementById('zonaSugeridaBtn').classList.remove('active');
-        document.getElementById('zonaPersonalizadaBtn').classList.add('active');
-        document.getElementById('zonasSugeridas').style.display = 'none';
-        document.getElementById('radioPersonalizado').style.display = 'block';
-        modoZona = 'personalizada';
-        zonaActiva = null;
-        document.querySelectorAll('.zona-btn').forEach(b => b.classList.remove('active'));
-    });
-
-    document.getElementById('zonaSugeridaBtn').addEventListener('click', () => {
-        document.getElementById('zonaSugeridaBtn').classList.add('active');
-        document.getElementById('zonaPersonalizadaBtn').classList.remove('active');
-        document.getElementById('zonasSugeridas').style.display = 'flex';
-        document.getElementById('radioPersonalizado').style.display = 'none';
-        modoZona = 'sugerida';
-        filtrarObjetos();
-    });
-
-    const radioSlider = document.getElementById('radioKm');
-    const radioValue = document.getElementById('radioKmValue');
-    radioSlider.addEventListener('input', (e) => {
-        radioPersonalizadoKm = parseInt(e.target.value);
-        radioValue.innerText = `${radioPersonalizadoKm} km`;
-    });
-
-    document.getElementById('aplicarRadioBtn').addEventListener('click', () => {
-        radioPersonalizadoActivo = true;
-        filtrarObjetos();
-        alert(`✅ Filtro aplicado: mostrar objetos dentro de ${radioPersonalizadoKm} km`);
-    });
-
     document.getElementById('googleLoginBtn').onclick = () => loginWithGoogle();
     document.getElementById('logoutBtn').onclick = () => logout();
     document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
     document.getElementById('nuevoMensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensajeChat(); });
     document.getElementById('searchInput').addEventListener('input', filtrarObjetos);
+    document.getElementById('filtroDistancia').addEventListener('change', filtrarObjetos);
     document.querySelectorAll('.cat-btn').forEach(btn => btn.addEventListener('click', () => {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
