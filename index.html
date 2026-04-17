@@ -4,26 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Intercambia - Trueque de objetos</title>
+    <!-- Leaflet (mapa gratuito) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
             min-height: 100vh;
             padding: 20px;
         }
-
         .container {
             max-width: 1300px;
             margin: 0 auto;
         }
-
-        /* Header principal */
         .main-header {
             background: white;
             border-radius: 32px;
@@ -37,7 +36,6 @@
             flex-wrap: wrap;
             gap: 16px;
         }
-
         .logo-area h1 {
             font-size: 1.8rem;
             font-weight: 700;
@@ -46,13 +44,10 @@
             -webkit-background-clip: text;
             color: transparent;
         }
-
         .logo-area p {
             font-size: 0.85rem;
             color: #475569;
         }
-
-        /* Barra de búsqueda */
         .search-section {
             background: white;
             border-radius: 28px;
@@ -60,7 +55,6 @@
             margin-bottom: 24px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
-
         .search-bar {
             background: #f1f5f9;
             border-radius: 60px;
@@ -69,8 +63,8 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 16px;
+            flex-wrap: wrap;
         }
-
         .search-bar input {
             border: none;
             background: transparent;
@@ -78,13 +72,18 @@
             width: 100%;
             outline: none;
         }
-
+        .filtros-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
         .categories {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            flex: 1;
         }
-
         .cat-btn {
             background: #f1f5f9;
             border: none;
@@ -96,20 +95,24 @@
             transition: 0.2s;
             color: #334155;
         }
-
         .cat-btn.active {
             background: #059669;
             color: white;
         }
-
-        /* Tarjetas */
+        #filtroDistancia {
+            background: #f1f5f9;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 24px;
             margin-top: 8px;
         }
-
         .objeto-card {
             background: white;
             border-radius: 28px;
@@ -118,23 +121,19 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             border: 1px solid #eef2ff;
         }
-
         .objeto-card:hover {
             transform: translateY(-6px);
             box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
         }
-
         .objeto-card img {
             width: 100%;
-            height: 220px;
+            height: 200px;
             object-fit: cover;
             background: #f1f5f9;
         }
-
         .objeto-info {
             padding: 20px;
         }
-
         .categoria-badge {
             background: #dcfce7;
             color: #166534;
@@ -145,7 +144,6 @@
             display: inline-block;
             margin-bottom: 12px;
         }
-
         .badge {
             background: #059669;
             color: white;
@@ -153,9 +151,17 @@
             border-radius: 60px;
             font-size: 12px;
             display: inline-block;
-            margin: 8px 0;
+            margin: 8px 8px 8px 0;
         }
-
+        .badge-ubicacion {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 4px 12px;
+            border-radius: 60px;
+            font-size: 11px;
+            display: inline-block;
+            margin: 4px 4px 4px 0;
+        }
         .badge-expiracion {
             background: #e67e22;
             color: white;
@@ -165,7 +171,6 @@
             display: inline-block;
             margin: 4px 0;
         }
-
         .badge-sospechoso {
             background: #f59e0b;
             color: white;
@@ -175,8 +180,6 @@
             display: inline-block;
             margin: 4px 0;
         }
-
-        /* Botones */
         .btn-primary {
             background: #059669;
             color: white;
@@ -188,12 +191,10 @@
             transition: 0.2s;
             width: 100%;
         }
-
         .btn-primary:hover {
             background: #047857;
             transform: scale(1.02);
         }
-
         .google-btn {
             background: #4285f4;
             display: flex;
@@ -210,7 +211,6 @@
             border: none;
             cursor: pointer;
         }
-
         .intercambiar-btn {
             background: #059669;
             color: white;
@@ -222,7 +222,6 @@
             width: 100%;
             font-weight: 500;
         }
-
         .reportar-btn {
             background: #f59e0b;
             color: white;
@@ -234,7 +233,6 @@
             width: 100%;
             font-size: 13px;
         }
-
         .eliminar-btn {
             background: #dc2626;
             color: white;
@@ -246,8 +244,6 @@
             width: 100%;
             font-weight: 500;
         }
-
-        /* Modal de vista previa */
         .modal {
             display: none;
             position: fixed;
@@ -260,7 +256,6 @@
             align-items: center;
             z-index: 1000;
         }
-
         .modal-content {
             background: white;
             border-radius: 32px;
@@ -269,14 +264,11 @@
             padding: 24px;
             text-align: center;
         }
-
         .modal-content img {
             width: 100%;
             border-radius: 20px;
             margin: 16px 0;
         }
-
-        /* Chat */
         .chat-container {
             background: #f8fafc;
             border-radius: 24px;
@@ -284,7 +276,6 @@
             max-height: 400px;
             overflow-y: auto;
         }
-
         .mensaje {
             background: white;
             border-radius: 20px;
@@ -292,23 +283,19 @@
             margin-bottom: 12px;
             max-width: 80%;
         }
-
         .mensaje.emisor {
             background: #059669;
             color: white;
             margin-left: auto;
         }
-
         .mensaje.receptor {
             background: #e2e8f0;
         }
-
         .chat-input {
             display: flex;
             gap: 10px;
             margin-top: 16px;
         }
-
         .chat-input input {
             flex: 1;
             padding: 12px;
@@ -316,8 +303,6 @@
             border-radius: 40px;
             outline: none;
         }
-
-        /* Login y usuario */
         .login-card {
             text-align: center;
             background: white;
@@ -325,7 +310,6 @@
             padding: 32px;
             margin-bottom: 24px;
         }
-
         .user-info {
             background: #eef2ff;
             padding: 12px 20px;
@@ -338,14 +322,12 @@
             gap: 12px;
             flex-wrap: wrap;
         }
-
         .user-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
         }
-
         .logout-btn {
             background: #64748b;
             padding: 8px 20px;
@@ -354,8 +336,6 @@
             color: white;
             cursor: pointer;
         }
-
-        /* Navegación */
         .nav-buttons {
             display: flex;
             gap: 12px;
@@ -364,7 +344,6 @@
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 12px;
         }
-
         .nav-btn {
             background: none;
             border: none;
@@ -376,13 +355,10 @@
             transition: 0.2s;
             color: #475569;
         }
-
         .nav-btn.active {
             background: #059669;
             color: white;
         }
-
-        /* Subida de archivos */
         .upload-area {
             border: 3px dashed #cbd5e1;
             border-radius: 24px;
@@ -392,12 +368,10 @@
             background: #f8fafc;
             transition: 0.2s;
         }
-
         .upload-area:hover {
             border-color: #059669;
             background: #f0fdf4;
         }
-
         input, textarea, select {
             width: 100%;
             padding: 12px 16px;
@@ -407,26 +381,22 @@
             font-size: 1rem;
             outline: none;
         }
-
         textarea {
             border-radius: 20px;
             resize: vertical;
         }
-
         .progress-container {
             background: #e2e8f0;
             border-radius: 40px;
             margin: 16px 0;
             overflow: hidden;
         }
-
         .progress-bar {
             width: 0%;
             height: 8px;
             background: #059669;
             transition: width 0.2s;
         }
-
         .conv-item {
             padding: 16px;
             border-bottom: 1px solid #e2e8f0;
@@ -434,11 +404,9 @@
             transition: 0.2s;
             border-radius: 16px;
         }
-
         .conv-item:hover {
             background: #f1f5f9;
         }
-
         .status-success, .status-error, .status-info {
             padding: 12px;
             border-radius: 60px;
@@ -448,15 +416,32 @@
         .status-success { background: #bbf7d0; color: #166534; }
         .status-error { background: #fee2e2; color: #991b1b; }
         .status-info { background: #dbeafe; color: #1e3a8a; }
+        .ubicacion-section {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        #mapa {
+            height: 250px;
+            width: 100%;
+            border-radius: 20px;
+            z-index: 1;
+        }
+        .leaflet-control-attribution {
+            font-size: 9px;
+        }
+        @media (max-width: 700px) {
+            .grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- Header -->
     <div class="main-header">
         <div class="logo-area">
             <h1>🔄 Intercambia</h1>
-            <p>Trueque de objetos - Dale una segunda vida</p>
+            <p>Trueque de objetos - Encuentra lo que buscas cerca de ti</p>
         </div>
     </div>
 
@@ -479,20 +464,29 @@
 
     <!-- App principal (oculta hasta login) -->
     <div id="appSections" style="display:none;">
-        <!-- Búsqueda y categorías -->
+        <!-- Búsqueda y filtros -->
         <div class="search-section">
             <div class="search-bar">
                 <span>🔍</span>
                 <input type="text" id="searchInput" placeholder="Buscar por título o usuario...">
             </div>
-            <div class="categories">
-                <button class="cat-btn active" data-cat="all">Todos</button>
-                <button class="cat-btn" data-cat="Electrónica">📱 Electrónica</button>
-                <button class="cat-btn" data-cat="Ropa">👕 Ropa</button>
-                <button class="cat-btn" data-cat="Libros">📚 Libros</button>
-                <button class="cat-btn" data-cat="Mascotas">🐾 Mascotas</button>
-                <button class="cat-btn" data-cat="Hogar">🏠 Hogar</button>
-                <button class="cat-btn" data-cat="Deportes">⚽ Deportes</button>
+            <div class="filtros-row">
+                <div class="categories">
+                    <button class="cat-btn active" data-cat="all">Todos</button>
+                    <button class="cat-btn" data-cat="Electrónica">📱 Electrónica</button>
+                    <button class="cat-btn" data-cat="Ropa">👕 Ropa</button>
+                    <button class="cat-btn" data-cat="Libros">📚 Libros</button>
+                    <button class="cat-btn" data-cat="Mascotas">🐾 Mascotas</button>
+                    <button class="cat-btn" data-cat="Hogar">🏠 Hogar</button>
+                    <button class="cat-btn" data-cat="Deportes">⚽ Deportes</button>
+                </div>
+                <select id="filtroDistancia">
+                    <option value="0">📍 Todas las zonas</option>
+                    <option value="5">📍 Radio 5 km</option>
+                    <option value="10">📍 Radio 10 km</option>
+                    <option value="25">📍 Radio 25 km</option>
+                    <option value="50">📍 Radio 50 km</option>
+                </select>
             </div>
         </div>
 
@@ -523,6 +517,22 @@
                     <option value="Deportes">⚽ Deportes</option>
                 </select>
                 <textarea id="descripcion" rows="3" placeholder="Descripción (estado, qué buscas a cambio...)"></textarea>
+                
+                <!-- Sección de ubicación -->
+                <div class="ubicacion-section">
+                    <label>📍 Ubicación del objeto</label>
+                    <div style="display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap;">
+                        <button type="button" id="ubicarBtn" style="background:#3b82f6; padding: 10px 16px; width: auto;">📍 Usar mi ubicación</button>
+                        <input type="text" id="direccionInput" placeholder="O escribe una dirección (ciudad, barrio)" style="flex:1;">
+                    </div>
+                    <div id="mapaContainer" style="display:none; margin-top: 10px;">
+                        <div id="mapa"></div>
+                        <p style="font-size: 12px; color: #64748b; margin-top: 8px;">🖱️ Haz clic en el mapa para seleccionar la ubicación exacta</p>
+                    </div>
+                    <input type="hidden" id="latitud" value="">
+                    <input type="hidden" id="longitud" value="">
+                </div>
+                
                 <div class="upload-area" id="uploadArea">
                     <div>📁 Haz clic o arrastra una foto</div>
                     <input type="file" id="fileInput" accept="image/*" style="display:none;">
@@ -563,6 +573,7 @@
         <p><strong id="previewTitulo"></strong></p>
         <p id="previewDesc" style="color:#475569;"></p>
         <p><span class="categoria-badge" id="previewCategoria"></span></p>
+        <p id="previewUbicacion" style="font-size:12px; color:#64748b;"></p>
         <button id="confirmarPublicarBtn" class="btn-primary">✅ Sí, publicar</button>
         <button id="cancelarPublicarBtn" style="margin-top: 12px; background:#e2e8f0; color:#1e293b; border:none; padding:10px; border-radius:40px; width:100%;">Cancelar</button>
     </div>
@@ -579,6 +590,10 @@
     let authToken = null;
     let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
     let pendingPublication = null;
+    let map = null;
+    let marker = null;
+    let mapaVisible = false;
+    let ubicacionUsuario = null; // Guardar ubicación del usuario para filtros
 
     // ========== ONESIGNAL ==========
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -604,9 +619,108 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({ onesignal_id: userId })
                 });
-                console.log('OneSignal ID guardado:', userId);
             }
         } catch(e) { console.error('Error guardando OneSignal ID:', e); }
+    }
+
+    // ========== FUNCIONES DE UBICACIÓN ==========
+    function initMapa(lat = -34.6037, lng = -58.3816) {
+        if (map) map.remove();
+        map = L.map('mapa').setView([lat, lng], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        marker.on('dragend', function() {
+            const pos = marker.getLatLng();
+            document.getElementById('latitud').value = pos.lat;
+            document.getElementById('longitud').value = pos.lng;
+            obtenerDireccionDesdeCoordenadas(pos.lat, pos.lng);
+        });
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            document.getElementById('latitud').value = e.latlng.lat;
+            document.getElementById('longitud').value = e.latlng.lng;
+            obtenerDireccionDesdeCoordenadas(e.latlng.lat, e.latlng.lng);
+        });
+    }
+
+    async function obtenerDireccionDesdeCoordenadas(lat, lng) {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+            const data = await response.json();
+            if (data.display_name) {
+                const ciudad = data.address?.city || data.address?.town || data.address?.village || '';
+                const barrio = data.address?.suburb || data.address?.neighbourhood || '';
+                const direccion = `${barrio ? barrio + ', ' : ''}${ciudad}`.replace(/,$/, '');
+                if (direccion) document.getElementById('direccionInput').value = direccion;
+            }
+        } catch(e) { console.error('Error geocoding:', e); }
+    }
+
+    async function obtenerCoordenadasDesdeDireccion(direccion) {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}&limit=1`);
+            const data = await response.json();
+            if (data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lng = parseFloat(data[0].lon);
+                document.getElementById('latitud').value = lat;
+                document.getElementById('longitud').value = lng;
+                if (mapaVisible && map) {
+                    marker.setLatLng([lat, lng]);
+                    map.setView([lat, lng], 13);
+                }
+                return { lat, lng };
+            }
+        } catch(e) { console.error('Error geocoding:', e); }
+        return null;
+    }
+
+    function usarMiUbicacion() {
+        if (!navigator.geolocation) {
+            alert('Tu navegador no soporta geolocalización');
+            return;
+        }
+        document.getElementById('ubicarBtn').textContent = '📍 Obteniendo...';
+        document.getElementById('ubicarBtn').disabled = true;
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                document.getElementById('latitud').value = lat;
+                document.getElementById('longitud').value = lng;
+                ubicacionUsuario = { lat, lng };
+                if (!mapaVisible) {
+                    document.getElementById('mapaContainer').style.display = 'block';
+                    mapaVisible = true;
+                    setTimeout(() => initMapa(lat, lng), 100);
+                } else if (map) {
+                    marker.setLatLng([lat, lng]);
+                    map.setView([lat, lng], 13);
+                }
+                obtenerDireccionDesdeCoordenadas(lat, lng);
+                document.getElementById('ubicarBtn').textContent = '📍 Usar mi ubicación';
+                document.getElementById('ubicarBtn').disabled = false;
+            },
+            (error) => {
+                alert('No se pudo obtener tu ubicación. Actívala en tu navegador.');
+                document.getElementById('ubicarBtn').textContent = '📍 Usar mi ubicación';
+                document.getElementById('ubicarBtn').disabled = false;
+            }
+        );
+    }
+
+    function calcularDistancia(lat1, lon1, lat2, lon2) {
+        if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
     }
 
     // ========== AUTENTICACIÓN ==========
@@ -660,6 +774,9 @@
         form.append('file', file);
         form.append('titulo', titulo);
         form.append('descripcion', `${categoria} | ${descripcion}`);
+        form.append('latitud', document.getElementById('latitud').value || '');
+        form.append('longitud', document.getElementById('longitud').value || '');
+        form.append('direccion', document.getElementById('direccionInput').value || '');
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
 
@@ -708,14 +825,28 @@
     function filtrarObjetos() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const activeCat = document.querySelector('.cat-btn.active').dataset.cat;
+        const distanciaMax = parseInt(document.getElementById('filtroDistancia').value) || 0;
         const cards = document.querySelectorAll('.objeto-card');
+        
         cards.forEach(card => {
             const titulo = card.querySelector('.objeto-info strong')?.innerText.toLowerCase() || '';
             const usuario = card.querySelector('.badge')?.innerText.toLowerCase() || '';
             const categoria = card.dataset.cat || '';
-            const matchesSearch = titulo.includes(searchTerm) || usuario.includes(searchTerm);
-            const matchesCat = activeCat === 'all' || categoria === activeCat;
-            card.style.display = matchesSearch && matchesCat ? 'block' : 'none';
+            const lat = parseFloat(card.dataset.lat);
+            const lng = parseFloat(card.dataset.lng);
+            
+            let matchesSearch = titulo.includes(searchTerm) || usuario.includes(searchTerm);
+            let matchesCat = activeCat === 'all' || categoria === activeCat;
+            let matchesDistancia = true;
+            
+            if (distanciaMax > 0 && ubicacionUsuario && lat && lng) {
+                const distancia = calcularDistancia(ubicacionUsuario.lat, ubicacionUsuario.lng, lat, lng);
+                matchesDistancia = distancia <= distanciaMax;
+            } else if (distanciaMax > 0 && !ubicacionUsuario) {
+                matchesDistancia = false;
+            }
+            
+            card.style.display = matchesSearch && matchesCat && matchesDistancia ? 'block' : 'none';
         });
     }
 
@@ -728,13 +859,14 @@
                 const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
                 const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
                 return `
-                    <div class="objeto-card" data-cat="${categoria}">
+                    <div class="objeto-card" data-cat="${categoria}" data-lat="${obj.latitud || ''}" data-lng="${obj.longitud || ''}">
                         <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
                         <div class="objeto-info">
                             <span class="categoria-badge">${escapeHtml(categoria)}</span>
                             <strong>${escapeHtml(obj.titulo)}</strong>
                             <p style="margin-top:8px; color:#475569;">${escapeHtml(descripcion.substring(0, 80))}</p>
                             <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
+                            ${obj.direccion ? `<span class="badge-ubicacion">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
                             ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
                             ${obj.usuario !== currentUser?.email ? `
                                 <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
@@ -767,6 +899,7 @@
                         <div class="objeto-info">
                             <strong>${escapeHtml(obj.titulo)}</strong>
                             <p style="margin:8px 0;">${escapeHtml(descripcion.substring(0, 80))}</p>
+                            ${obj.direccion ? `<span class="badge-ubicacion">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
                             <span class="badge-expiracion">⏰ Expira: ${new Date(obj.expira).toLocaleDateString()}</span>
                             ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión por IA</span>' : ''}
                             <button class="eliminar-btn" data-id="${obj.id}">🗑️ Eliminar publicación</button>
@@ -828,6 +961,7 @@
         const titulo = document.getElementById('titulo').value;
         const categoria = document.getElementById('categoria').value;
         const descripcion = document.getElementById('descripcion').value;
+        const direccion = document.getElementById('direccionInput').value;
         const file = document.getElementById('fileInput').files[0];
         if (!titulo || !descripcion || !file) { showStatus('❌ Completa todos los campos', 'error', 'pubStatus'); return; }
         const reader = new FileReader();
@@ -836,6 +970,7 @@
             document.getElementById('previewTitulo').innerText = titulo;
             document.getElementById('previewDesc').innerText = descripcion;
             document.getElementById('previewCategoria').innerText = categoria;
+            document.getElementById('previewUbicacion').innerHTML = direccion ? `📍 ${escapeHtml(direccion)}` : '📍 Sin ubicación especificada';
             pendingPublication = { titulo, categoria, descripcion, file };
             document.getElementById('previewModal').style.display = 'flex';
         };
@@ -848,13 +983,18 @@
         const progressBar = document.getElementById('progressBar');
         try {
             let progress = 0, interval = setInterval(() => { progress = Math.min(progress + 10, 90); progressBar.style.width = `${progress}%`; }, 200);
-            const result = await publicarObjeto(titulo, `${categoria} | ${descripcion}`, categoria, file);
+            const result = await publicarObjeto(titulo, descripcion, categoria, file);
             clearInterval(interval); progressBar.style.width = '100%';
             showStatus(result.sospechoso ? '⚠️ Publicación en revisión' : '✅ Objeto publicado', result.sospechoso ? 'info' : 'success', 'pubStatus');
             setTimeout(() => { progressBar.style.width = '0%'; }, 2000);
             document.getElementById('titulo').value = '';
             document.getElementById('descripcion').value = '';
+            document.getElementById('direccionInput').value = '';
+            document.getElementById('latitud').value = '';
+            document.getElementById('longitud').value = '';
             document.getElementById('fileInput').value = '';
+            document.getElementById('mapaContainer').style.display = 'none';
+            mapaVisible = false;
             document.getElementById('previewModal').style.display = 'none';
             pendingPublication = null;
             cargarMisObjetos(); cargarFeed();
@@ -872,11 +1012,30 @@
     document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
     document.getElementById('nuevoMensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensajeChat(); });
     document.getElementById('searchInput').addEventListener('input', filtrarObjetos);
+    document.getElementById('filtroDistancia').addEventListener('change', filtrarObjetos);
     document.querySelectorAll('.cat-btn').forEach(btn => btn.addEventListener('click', () => {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         filtrarObjetos();
     }));
+    
+    document.getElementById('ubicarBtn').onclick = usarMiUbicacion;
+    
+    let timeoutBusqueda;
+    document.getElementById('direccionInput').addEventListener('input', (e) => {
+        clearTimeout(timeoutBusqueda);
+        const direccion = e.target.value;
+        if (direccion.length > 5) {
+            timeoutBusqueda = setTimeout(() => {
+                obtenerCoordenadasDesdeDireccion(direccion);
+                if (!mapaVisible) {
+                    document.getElementById('mapaContainer').style.display = 'block';
+                    mapaVisible = true;
+                    setTimeout(() => initMapa(), 100);
+                }
+            }, 800);
+        }
+    });
 
     document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -899,6 +1058,14 @@
         const token = getTokenFromURL();
         if (token) { authToken = token; const user = await verifyToken(token); if (user) currentUser = user; else { localStorage.removeItem('auth_token'); authToken = null; } }
         updateUIForUser();
+        
+        // Obtener ubicación del usuario al iniciar para filtros
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => { ubicacionUsuario = { lat: position.coords.latitude, lng: position.coords.longitude }; filtrarObjetos(); },
+                () => {}
+            );
+        }
     }
     init();
 </script>
