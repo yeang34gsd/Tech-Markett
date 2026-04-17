@@ -874,52 +874,65 @@
             card.style.display = matchesSearch && matchesCat && matchesDistancia ? 'block' : 'none';
         });
     }
-
-    async function cargarFeed() {
-        try {
-            const objetos = await obtenerObjetos(false);
-            const feedDiv = document.getElementById('feedGrid');
-            if (!objetos.length) { feedDiv.innerHTML = '<div style="text-align:center; padding:40px;">📭 No hay objetos publicados aún. ¡Sé el primero!</div>'; return; }
-            feedDiv.innerHTML = objetos.map(obj => {
-                const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
-                const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
-                return `
-                    <div class="objeto-card" data-cat="${categoria}" data-lat="${obj.latitud || ''}" data-lng="${obj.longitud || ''}">
-                        <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
-                        <div class="objeto-info">
-                            <span class="categoria-badge">${escapeHtml(categoria)}</span>
-                            <strong>${escapeHtml(obj.titulo)}</strong>
-                            <p style="margin-top:8px; color:#475569;">${escapeHtml(descripcion.substring(0, 80))}</p>
-                            <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
-                            ${obj.direccion ? `<span class="badge-ubicacion">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
-                            ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
-                            ${obj.usuario !== currentUser?.email ? `
-                                <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
-                                <button class="reportar-btn" data-id="${obj.id}">⚠️ Reportar</button>
-                                ${obj.latitud && obj.longitud ? `<button class="btn-como-llegar" data-lat="${obj.latitud}" data-lng="${obj.longitud}" data-titulo="${escapeHtml(obj.titulo)}">📍 Cómo llegar</button>` : ''}
-                            ` : '<span style="font-size:12px; color:#64748b;">(tu objeto)</span>'}
-                        </div>
+     async function cargarFeed() {
+    try {
+        const objetos = await obtenerObjetos(false);
+        const feedDiv = document.getElementById('feedGrid');
+        if (!objetos.length) { feedDiv.innerHTML = '<div style="text-align:center; padding:40px;">📭 No hay objetos publicados aún. ¡Sé el primero!</div>'; return; }
+        feedDiv.innerHTML = objetos.map(obj => {
+            const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
+            const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
+            return `
+                <div class="objeto-card" data-cat="${categoria}" data-lat="${obj.latitud || ''}" data-lng="${obj.longitud || ''}">
+                    <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
+                    <div class="objeto-info">
+                        <span class="categoria-badge">${escapeHtml(categoria)}</span>
+                        <strong>${escapeHtml(obj.titulo)}</strong>
+                        <p style="margin-top:8px; color:#475569;">${escapeHtml(descripcion.substring(0, 80))}</p>
+                        <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
+                        ${obj.direccion ? `<span class="badge-ubicacion">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
+                        ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
+                        ${obj.usuario !== currentUser?.email ? `
+                            <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
+                            <button class="reportar-btn" data-id="${obj.id}">⚠️ Reportar</button>
+                            ${obj.direccion ? `<button class="btn-como-llegar" data-direccion="${escapeHtml(obj.direccion)}" data-titulo="${escapeHtml(obj.titulo)}">📍 Cómo llegar</button>` : ''}
+                        ` : '<span style="font-size:12px; color:#64748b;">(tu objeto)</span>'}
                     </div>
-                `;
-            }).join('');
-            
-            document.querySelectorAll('.intercambiar-btn').forEach(btn => btn.addEventListener('click', () => abrirChatConObjeto(parseInt(btn.dataset.id), btn.dataset.usuario, btn.dataset.titulo)));
-            document.querySelectorAll('.reportar-btn').forEach(btn => btn.addEventListener('click', async () => {
-                const motivo = prompt('¿Por qué reportas este objeto?');
-                if (motivo) try { await reportarObjeto(parseInt(btn.dataset.id), motivo); alert('✅ Reporte enviado'); } catch(e) { alert('Error: ' + e.message); }
-            }));
-            document.querySelectorAll('.btn-como-llegar').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const lat = btn.dataset.lat;
-                    const lng = btn.dataset.lng;
-                    const titulo = btn.dataset.titulo;
-                    abrirGoogleMaps(lat, lng, titulo);
-                });
+                </div>
+            `;
+        }).join('');
+        
+        document.querySelectorAll('.intercambiar-btn').forEach(btn => btn.addEventListener('click', () => abrirChatConObjeto(parseInt(btn.dataset.id), btn.dataset.usuario, btn.dataset.titulo)));
+        document.querySelectorAll('.reportar-btn').forEach(btn => btn.addEventListener('click', async () => {
+            const motivo = prompt('¿Por qué reportas este objeto?');
+            if (motivo) try { await reportarObjeto(parseInt(btn.dataset.id), motivo); alert('✅ Reporte enviado'); } catch(e) { alert('Error: ' + e.message); }
+        }));
+        document.querySelectorAll('.btn-como-llegar').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const direccion = btn.dataset.direccion;
+                const titulo = btn.dataset.titulo;
+                abrirGoogleMaps(direccion, titulo);
             });
-            filtrarObjetos();
-        } catch(e) { document.getElementById('feedGrid').innerHTML = '<div style="text-align:center; padding:40px;">❌ Error al cargar objetos</div>'; }
-    }
+        });
+        filtrarObjetos();
+    } catch(e) { document.getElementById('feedGrid').innerHTML = '<div style="text-align:center; padding:40px;">❌ Error al cargar objetos</div>'; }
+}
 
+function abrirGoogleMaps(direccion, titulo) {
+    if (!direccion) return;
+    const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const direccionCodificada = encodeURIComponent(direccion + ', Chile');
+    if (esMovil) {
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${direccionCodificada}&travelmode=driving`, '_blank');
+    } else {
+        window.open(`https://www.google.com/maps/search/?api=1&query=${direccionCodificada}`, '_blank');
+    }
+}
+
+
+    
+
+        
     async function cargarMisObjetos() {
         try {
             const objetos = await obtenerObjetos(true);
