@@ -99,14 +99,6 @@
             background: #059669;
             color: white;
         }
-        #filtroDistancia {
-            background: #f1f5f9;
-            border: none;
-            border-radius: 40px;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -506,13 +498,6 @@
                     <button class="cat-btn" data-cat="Hogar">🏠 Hogar</button>
                     <button class="cat-btn" data-cat="Deportes">⚽ Deportes</button>
                 </div>
-                <select id="filtroDistancia">
-                    <option value="0">📍 Todas las zonas</option>
-                    <option value="5">📍 Radio 5 km</option>
-                    <option value="10">📍 Radio 10 km</option>
-                    <option value="25">📍 Radio 25 km</option>
-                    <option value="50">📍 Radio 50 km</option>
-                </select>
             </div>
         </div>
 
@@ -746,21 +731,8 @@
         );
     }
 
-    function calcularDistancia(lat1, lon1, lat2, lon2) {
-        if (!lat1 || !lon1 || !lat2 || !lon2) return Infinity;
-        const R = 6371;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                  Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-    }
-
     function abrirGoogleMaps(lat, lng, direccion, titulo) {
         const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        // Usar dirección si está disponible, si no usar coordenadas
         let query = direccion && direccion.length > 5 ? encodeURIComponent(direccion) : `${lat},${lng}`;
         
         if (esMovil) {
@@ -872,28 +844,17 @@
     function filtrarObjetos() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const activeCat = document.querySelector('.cat-btn.active').dataset.cat;
-        const distanciaMax = parseInt(document.getElementById('filtroDistancia').value) || 0;
         const cards = document.querySelectorAll('.objeto-card');
         
         cards.forEach(card => {
             const titulo = card.querySelector('.objeto-info strong')?.innerText.toLowerCase() || '';
             const usuario = card.querySelector('.badge')?.innerText.toLowerCase() || '';
             const categoria = card.dataset.cat || '';
-            const lat = parseFloat(card.dataset.lat);
-            const lng = parseFloat(card.dataset.lng);
             
             let matchesSearch = titulo.includes(searchTerm) || usuario.includes(searchTerm);
             let matchesCat = activeCat === 'all' || categoria === activeCat;
-            let matchesDistancia = true;
             
-            if (distanciaMax > 0 && ubicacionUsuario && lat && lng) {
-                const distancia = calcularDistancia(ubicacionUsuario.lat, ubicacionUsuario.lng, lat, lng);
-                matchesDistancia = distancia <= distanciaMax;
-            } else if (distanciaMax > 0 && !ubicacionUsuario) {
-                matchesDistancia = false;
-            }
-            
-            card.style.display = matchesSearch && matchesCat && matchesDistancia ? 'block' : 'none';
+            card.style.display = matchesSearch && matchesCat ? 'block' : 'none';
         });
     }
 
@@ -906,7 +867,7 @@
                 const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
                 const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
                 return `
-                    <div class="objeto-card" data-cat="${categoria}" data-lat="${obj.latitud || ''}" data-lng="${obj.longitud || ''}">
+                    <div class="objeto-card" data-cat="${categoria}">
                         <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
                         <div class="objeto-info">
                             <span class="categoria-badge">${escapeHtml(categoria)}</span>
@@ -1070,7 +1031,6 @@
     document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
     document.getElementById('nuevoMensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensajeChat(); });
     document.getElementById('searchInput').addEventListener('input', filtrarObjetos);
-    document.getElementById('filtroDistancia').addEventListener('change', filtrarObjetos);
     document.querySelectorAll('.cat-btn').forEach(btn => btn.addEventListener('click', () => {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -1119,7 +1079,7 @@
         
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (position) => { ubicacionUsuario = { lat: position.coords.latitude, lng: position.coords.longitude }; filtrarObjetos(); },
+                (position) => { ubicacionUsuario = { lat: position.coords.latitude, lng: position.coords.longitude }; },
                 () => {}
             );
         }
