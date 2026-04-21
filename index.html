@@ -249,15 +249,6 @@
             background: #047857;
             transform: scale(1.02);
         }
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 500;
-        }
         .google-btn {
             background: #4285f4;
             display: flex;
@@ -598,6 +589,14 @@
             object-fit: cover;
             margin-bottom: 16px;
         }
+        .nuevo-mensaje-indicador {
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            margin-left: 8px;
+        }
         @media (max-width: 700px) {
             .grid { grid-template-columns: 1fr; }
         }
@@ -805,8 +804,12 @@
     let marker = null;
     let mapaVisible = false;
     let favoritos = new Set();
-    let fotosSeleccionadas = []; // [fotoPrincipal, ...fotosExtra]
+    let fotosSeleccionadas = [];
     let valoracionPendiente = { id_objeto: null, calificado: null };
+    
+    // ========== POLLING PARA CHAT ==========
+    let pollingInterval = null;
+    let ultimoMensajeId = 0;
 
     // ========== ONESIGNAL ==========
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -973,12 +976,9 @@
         form.append('latitud', document.getElementById('latitud').value || '');
         form.append('longitud', document.getElementById('longitud').value || '');
         form.append('direccion', document.getElementById('direccionInput').value || '');
-        
-        // Agregar fotos (máximo 5)
         for (let i = 0; i < Math.min(fotos.length, 5); i++) {
             form.append(`foto_${i}`, fotos[i]);
         }
-        
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
 
@@ -998,7 +998,6 @@
 
     // ========== FUNCIONES DE MÚLTIPLES FOTOS ==========
     function actualizarPrevisualizaciones() {
-        // Foto principal
         if (fotosSeleccionadas.length > 0) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -1010,7 +1009,6 @@
             document.getElementById('fotoPrincipalPreview').style.display = 'none';
         }
         
-        // Fotos extra
         const container = document.getElementById('fotosExtraPreview');
         container.innerHTML = '';
         for (let i = 1; i < fotosSeleccionadas.length; i++) {
@@ -1036,7 +1034,6 @@
         actualizarPrevisualizaciones();
     };
 
-    // Manejo de selección de fotos
     document.getElementById('fotoPrincipal').addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             if (fotosSeleccionadas.length > 0) fotosSeleccionadas[0] = e.target.files[0];
@@ -1157,19 +1154,14 @@
     }
 
     function crearMiniaturas(objeto, card) {
-        const todasLasFotos = [];
-        todasLasFotos.push(objeto.url);
+        const todasLasFotos = [objeto.url];
         if (objeto.fotos_extra) {
-            for (const foto of objeto.fotos_extra) {
-                todasLasFotos.push(foto.url);
-            }
+            for (const foto of objeto.fotos_extra) todasLasFotos.push(foto.url);
         }
-        
         if (todasLasFotos.length <= 1) return;
         
         const miniaturasDiv = document.createElement('div');
         miniaturasDiv.className = 'miniaturas';
-        
         for (let i = 0; i < todasLasFotos.length; i++) {
             const miniatura = document.createElement('img');
             miniatura.src = todasLasFotos[i];
@@ -1185,12 +1177,8 @@
             })(i);
             miniaturasDiv.appendChild(miniatura);
         }
-        
         const imgPrincipal = card.querySelector('.imagen-principal');
-        if (imgPrincipal) {
-            imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
-        }
-        
+        if (imgPrincipal) imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
         card.insertBefore(miniaturasDiv, card.querySelector('.objeto-info'));
     }
 
@@ -1228,32 +1216,27 @@
                 const card = document.querySelector(`.objeto-card img[src="${obj.url}"]`).parentElement;
                 if (obj.fotos_extra && obj.fotos_extra.length) {
                     const todasFotos = [obj.url, ...obj.fotos_extra.map(f => f.url)];
-                    crearMiniaturasConUrls(card, todasFotos);
+                    const miniaturasDiv = document.createElement('div');
+                    miniaturasDiv.className = 'miniaturas';
+                    for (let i = 0; i < todasFotos.length; i++) {
+                        const miniatura = document.createElement('img');
+                        miniatura.src = todasFotos[i];
+                        miniatura.className = 'miniatura';
+                        if (i === 0) miniatura.classList.add('activa');
+                        miniatura.onclick = (function(idx) {
+                            return function() {
+                                const imgPrincipal = card.querySelector('.imagen-principal');
+                                imgPrincipal.src = todasFotos[idx];
+                                card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
+                                this.classList.add('activa');
+                            };
+                        })(i);
+                        miniaturasDiv.appendChild(miniatura);
+                    }
+                    card.insertBefore(miniaturasDiv, card.querySelector('.objeto-info'));
                 }
             }
         } catch(e) { console.error(e); }
-    }
-
-    function crearMiniaturasConUrls(card, urls) {
-        if (urls.length <= 1) return;
-        const miniaturasDiv = document.createElement('div');
-        miniaturasDiv.className = 'miniaturas';
-        for (let i = 0; i < urls.length; i++) {
-            const miniatura = document.createElement('img');
-            miniatura.src = urls[i];
-            miniatura.className = 'miniatura';
-            if (i === 0) miniatura.classList.add('activa');
-            miniatura.onclick = (function(idx) {
-                return function() {
-                    const imgPrincipal = card.querySelector('.imagen-principal');
-                    imgPrincipal.src = urls[idx];
-                    card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
-                    this.classList.add('activa');
-                };
-            })(i);
-            miniaturasDiv.appendChild(miniatura);
-        }
-        card.insertBefore(miniaturasDiv, card.querySelector('.objeto-info'));
     }
 
     async function cargarFeed() {
@@ -1290,7 +1273,24 @@
                 const card = document.querySelector(`.objeto-card .imagen-principal[src="${obj.url}"]`).parentElement;
                 if (obj.fotos_extra && obj.fotos_extra.length) {
                     const todasFotos = [obj.url, ...obj.fotos_extra.map(f => f.url)];
-                    crearMiniaturasConUrls(card, todasFotos);
+                    const miniaturasDiv = document.createElement('div');
+                    miniaturasDiv.className = 'miniaturas';
+                    for (let i = 0; i < todasFotos.length; i++) {
+                        const miniatura = document.createElement('img');
+                        miniatura.src = todasFotos[i];
+                        miniatura.className = 'miniatura';
+                        if (i === 0) miniatura.classList.add('activa');
+                        miniatura.onclick = (function(idx) {
+                            return function() {
+                                const imgPrincipal = card.querySelector('.imagen-principal');
+                                imgPrincipal.src = todasFotos[idx];
+                                card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
+                                this.classList.add('activa');
+                            };
+                        })(i);
+                        miniaturasDiv.appendChild(miniatura);
+                    }
+                    card.insertBefore(miniaturasDiv, card.querySelector('.objeto-info'));
                 } else {
                     const imgPrincipal = card.querySelector('.imagen-principal');
                     if (imgPrincipal) imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
@@ -1328,7 +1328,24 @@
                 const card = document.querySelector(`.objeto-card .imagen-principal[src="${obj.url}"]`).parentElement;
                 if (obj.fotos_extra && obj.fotos_extra.length) {
                     const todasFotos = [obj.url, ...obj.fotos_extra.map(f => f.url)];
-                    crearMiniaturasConUrls(card, todasFotos);
+                    const miniaturasDiv = document.createElement('div');
+                    miniaturasDiv.className = 'miniaturas';
+                    for (let i = 0; i < todasFotos.length; i++) {
+                        const miniatura = document.createElement('img');
+                        miniatura.src = todasFotos[i];
+                        miniatura.className = 'miniatura';
+                        if (i === 0) miniatura.classList.add('activa');
+                        miniatura.onclick = (function(idx) {
+                            return function() {
+                                const imgPrincipal = card.querySelector('.imagen-principal');
+                                imgPrincipal.src = todasFotos[idx];
+                                card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
+                                this.classList.add('activa');
+                            };
+                        })(i);
+                        miniaturasDiv.appendChild(miniatura);
+                    }
+                    card.insertBefore(miniaturasDiv, card.querySelector('.objeto-info'));
                 } else {
                     const imgPrincipal = card.querySelector('.imagen-principal');
                     if (imgPrincipal) imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
@@ -1347,12 +1364,90 @@
     async function eliminarObjetoPrompt(id) { if (confirm('¿Eliminar esta publicación?')) { await eliminarObjeto(id); cargarMisObjetos(); cargarFeed(); alert('✅ Eliminado'); } }
     async function reportarObjetoPrompt(id) { const motivo = prompt('¿Por qué reportas este objeto?'); if (motivo) { await reportarObjeto(id, motivo); alert('✅ Reporte enviado'); } }
 
+    // ========== CHAT CON POLLING AUTOMÁTICO ==========
+    async function cargarMensajes() {
+        if (!chatActual.objetoId) return;
+        try {
+            const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
+            const cont = document.getElementById('chatMensajes');
+            const hayMensajesNuevos = msgs.length > 0 && (ultimoMensajeId === 0 || msgs[msgs.length - 1].id > ultimoMensajeId);
+            
+            if (!msgs.length) {
+                cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún. Envía uno para empezar.</p>';
+            } else {
+                if (hayMensajesNuevos || ultimoMensajeId === 0) {
+                    cont.innerHTML = msgs.map(m => `
+                        <div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}">
+                            <strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}
+                            <small>${new Date(m.fecha).toLocaleString()}</small>
+                        </div>
+                    `).join('');
+                    cont.scrollTop = cont.scrollHeight;
+                    if (msgs.length > 0) ultimoMensajeId = msgs[msgs.length - 1].id;
+                }
+            }
+            
+            if (!chatActual.objetoIntercambiado) {
+                try {
+                    const objetos = await obtenerObjetos(false);
+                    const objeto = objetos.find(o => o.id === chatActual.objetoId);
+                    if (objeto && objeto.intercambiado === 1 && objeto.usuario !== currentUser?.email) {
+                        document.getElementById('valorarSection').style.display = 'block';
+                        chatActual.objetoIntercambiado = true;
+                        valoracionPendiente = { id_objeto: chatActual.objetoId, calificado: chatActual.otroUsuario };
+                        const stars = document.querySelectorAll('#ratingStars .star');
+                        stars.forEach(star => {
+                            star.onclick = () => {
+                                const val = parseInt(star.dataset.value);
+                                stars.forEach((s, i) => {
+                                    if (i < val) { s.innerHTML = '★'; s.classList.add('selected'); }
+                                    else { s.innerHTML = '☆'; s.classList.remove('selected'); }
+                                });
+                            };
+                        });
+                    }
+                } catch(e) {}
+            }
+            
+            const chatHeader = document.getElementById('chatTitulo');
+            if (hayMensajesNuevos && document.getElementById('tab-chats').style.display !== 'block') {
+                const existingBadge = chatHeader.querySelector('.nuevo-mensaje-indicador');
+                if (!existingBadge) {
+                    const badge = document.createElement('span');
+                    badge.className = 'nuevo-mensaje-indicador';
+                    badge.innerText = 'Nuevo';
+                    chatHeader.appendChild(badge);
+                    setTimeout(() => { if (badge) badge.remove(); }, 5000);
+                }
+            }
+        } catch(e) { console.error('Error cargando mensajes:', e); }
+    }
+
+    function iniciarPolling() {
+        if (pollingInterval) clearInterval(pollingInterval);
+        pollingInterval = setInterval(() => {
+            if (chatActual.objetoId && document.getElementById('tab-chats').style.display === 'block') {
+                cargarMensajes();
+            }
+        }, 5000);
+    }
+
+    function detenerPolling() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+    }
+
     window.abrirChatConObjeto = async function(objetoId, otroUsuario, titulo) {
+        detenerPolling();
+        ultimoMensajeId = 0;
         chatActual = { objetoId, otroUsuario, titulo, objetoIntercambiado: false };
         document.getElementById('chatTitulo').innerHTML = `💬 ${escapeHtml(titulo)}<br><small>Conversando con <span style="cursor:pointer; color:#3b82f6;" onclick="verPerfilUsuario('${escapeHtml(otroUsuario)}')">${escapeHtml(otroUsuario)}</span></small>`;
         document.getElementById('chatDetalle').style.display = 'block';
         document.getElementById('valorarSection').style.display = 'none';
         await cargarMensajes();
+        iniciarPolling();
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelector('[data-tab="chats"]').classList.add('active');
         document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
@@ -1360,37 +1455,22 @@
         cargarListaConversaciones();
     };
 
-    async function cargarMensajes() {
-        if (!chatActual.objetoId) return;
-        const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
-        const cont = document.getElementById('chatMensajes');
-        if (!msgs.length) { cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún. Envía uno para empezar.</p>'; return; }
-        cont.innerHTML = msgs.map(m => `<div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}"><strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}<small>${new Date(m.fecha).toLocaleString()}</small></div>`).join('');
-        cont.scrollTop = cont.scrollHeight;
-        
-        const objeto = (await obtenerObjetos()).find(o => o.id === chatActual.objetoId);
-        if (objeto && objeto.intercambiado === 1 && objeto.usuario !== currentUser?.email) {
-            document.getElementById('valorarSection').style.display = 'block';
-            valoracionPendiente = { id_objeto: chatActual.objetoId, calificado: chatActual.otroUsuario };
-            setupRatingStars('ratingStars');
-        } else {
-            document.getElementById('valorarSection').style.display = 'none';
-        }
+    async function enviarMensajeChat() {
+        const input = document.getElementById('nuevoMensaje');
+        const texto = input.value.trim();
+        if (!texto || !chatActual.objetoId) return;
+        input.value = '';
+        await enviarMensaje(chatActual.objetoId, chatActual.otroUsuario, texto);
+        await cargarMensajes();
     }
 
-    function setupRatingStars(containerId) {
-        const stars = document.querySelectorAll(`#${containerId} .star`);
-        let selectedValue = 0;
-        stars.forEach(star => {
-            star.onclick = () => {
-                selectedValue = parseInt(star.dataset.value);
-                stars.forEach((s, i) => {
-                    if (i < selectedValue) s.innerHTML = '★', s.classList.add('selected');
-                    else s.innerHTML = '☆', s.classList.remove('selected');
-                });
-            };
-        });
-        return () => selectedValue;
+    async function cargarListaConversaciones() {
+        try {
+            const convs = await obtenerMisConversaciones();
+            const listaDiv = document.getElementById('listaChats');
+            if (!convs.length) { listaDiv.innerHTML = '<p style="text-align:center; padding:20px;">💬 No hay conversaciones activas aún.</p>'; return; }
+            listaDiv.innerHTML = convs.map(c => `<div class="conv-item" onclick="abrirChatConObjeto(${c.id_objeto}, '${escapeHtml(c.otroUsuario)}', '${escapeHtml(c.titulo)}')"><strong>📦 ${escapeHtml(c.titulo)}</strong><br>💬 con ${escapeHtml(c.otroUsuario)}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small></div>`).join('');
+        } catch(e) { console.error(e); }
     }
 
     document.getElementById('enviarValoracionBtn').onclick = async () => {
@@ -1405,24 +1485,6 @@
         document.getElementById('comentarioValoracion').value = '';
         stars.forEach(s => { s.innerHTML = '☆'; s.classList.remove('selected'); });
     };
-
-    async function enviarMensajeChat() {
-        const input = document.getElementById('nuevoMensaje');
-        const texto = input.value.trim();
-        if (!texto || !chatActual.objetoId) return;
-        await enviarMensaje(chatActual.objetoId, chatActual.otroUsuario, texto);
-        input.value = '';
-        await cargarMensajes();
-    }
-
-    async function cargarListaConversaciones() {
-        try {
-            const convs = await obtenerMisConversaciones();
-            const listaDiv = document.getElementById('listaChats');
-            if (!convs.length) { listaDiv.innerHTML = '<p style="text-align:center; padding:20px;">💬 No hay conversaciones activas aún.</p>'; return; }
-            listaDiv.innerHTML = convs.map(c => `<div class="conv-item" onclick="abrirChatConObjeto(${c.id_objeto}, '${escapeHtml(c.otroUsuario)}', '${escapeHtml(c.titulo)}')"><strong>📦 ${escapeHtml(c.titulo)}</strong><br>💬 con ${escapeHtml(c.otroUsuario)}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small></div>`).join('');
-        } catch(e) { console.error(e); }
-    }
 
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
     function showStatus(msg, type, elementId = 'pubStatus') { const div = document.getElementById(elementId); if (!div) return; div.className = `status-${type}`; div.innerText = msg; setTimeout(() => { div.className = ''; div.innerText = ''; }, 3000); }
@@ -1444,7 +1506,6 @@
             document.getElementById('previewCategoria').innerText = categoria;
             document.getElementById('previewUbicacion').innerHTML = direccion ? `📍 ${escapeHtml(direccion)}` : '📍 Sin ubicación especificada';
             
-            // Previsualizar fotos extra
             const previewFotos = document.getElementById('previewFotosExtra');
             previewFotos.innerHTML = '';
             for (let i = 1; i < Math.min(fotosSeleccionadas.length, 5); i++) {
@@ -1512,8 +1573,6 @@
     }));
     
     document.getElementById('ubicarBtn').onclick = usarMiUbicacion;
-    
-    // Áreas de subida de fotos
     document.getElementById('uploadAreaPrincipal').onclick = () => document.getElementById('fotoPrincipal').click();
     document.getElementById('uploadAreaExtra').onclick = () => document.getElementById('fotosExtra').click();
     
@@ -1543,6 +1602,7 @@
         if (tab === 'misobjetos') cargarMisObjetos();
         if (tab === 'chats') cargarListaConversaciones();
         if (tab === 'perfil') cargarMiPerfil();
+        if (tab !== 'chats') detenerPolling();
     }));
 
     // ========== INICIALIZACIÓN ==========
