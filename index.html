@@ -63,7 +63,6 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 16px;
-            flex-wrap: wrap;
         }
         .search-bar input {
             border: none;
@@ -72,17 +71,10 @@
             width: 100%;
             outline: none;
         }
-        .filtros-row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
         .categories {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            flex: 1;
         }
         .cat-btn {
             background: #f1f5f9;
@@ -101,7 +93,7 @@
         }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 24px;
             margin-top: 8px;
         }
@@ -112,19 +104,45 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             border: 1px solid #eef2ff;
+            position: relative;
         }
         .objeto-card:hover {
             transform: translateY(-6px);
             box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
         }
-        .objeto-card img {
+        .imagen-principal {
             width: 100%;
-            height: 200px;
+            height: 220px;
             object-fit: cover;
             background: #f1f5f9;
+            cursor: pointer;
+        }
+        .miniaturas {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+            background: white;
+            border-top: 1px solid #eef2ff;
+            overflow-x: auto;
+        }
+        .miniatura {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .miniatura:hover {
+            border-color: #059669;
+            transform: scale(1.05);
+        }
+        .miniatura.activa {
+            border-color: #059669;
         }
         .objeto-info {
-            padding: 20px;
+            padding: 16px;
         }
         .categoria-badge {
             background: #dcfce7;
@@ -144,6 +162,11 @@
             font-size: 12px;
             display: inline-block;
             margin: 8px 8px 8px 0;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .badge:hover {
+            transform: scale(1.02);
         }
         .badge-ubicacion {
             background: #e0e7ff;
@@ -159,6 +182,15 @@
         .badge-ubicacion:hover {
             background: #c7d2fe;
             transform: scale(1.02);
+        }
+        .badge-intercambiado {
+            background: #6b7280;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 60px;
+            font-size: 11px;
+            display: inline-block;
+            margin: 4px 0;
         }
         .badge-expiracion {
             background: #e67e22;
@@ -178,6 +210,30 @@
             display: inline-block;
             margin: 4px 0;
         }
+        .favorito-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .favorito-btn:hover {
+            transform: scale(1.1);
+        }
+        .favorito-btn.activo {
+            color: #eab308;
+        }
         .btn-primary {
             background: #059669;
             color: white;
@@ -192,6 +248,15 @@
         .btn-primary:hover {
             background: #047857;
             transform: scale(1.02);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
         }
         .google-btn {
             background: #4285f4;
@@ -242,6 +307,17 @@
             width: 100%;
             font-weight: 500;
         }
+        .intercambiado-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+            font-weight: 500;
+        }
         .btn-como-llegar {
             background: #3b82f6;
             color: white;
@@ -269,7 +345,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -277,7 +353,7 @@
         .modal-content {
             background: white;
             border-radius: 32px;
-            max-width: 400px;
+            max-width: 500px;
             width: 90%;
             padding: 24px;
             text-align: center;
@@ -286,6 +362,38 @@
             width: 100%;
             border-radius: 20px;
             margin: 16px 0;
+        }
+        .modal-foto {
+            max-width: 90vw;
+            max-height: 80vh;
+        }
+        .modal-foto img {
+            width: auto;
+            max-height: 70vh;
+        }
+        .foto-preview {
+            display: inline-block;
+            position: relative;
+            margin: 8px;
+        }
+        .foto-preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        .foto-preview button {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
         }
         .chat-container {
             background: #f8fafc;
@@ -332,7 +440,6 @@
             background: #eef2ff;
             padding: 12px 20px;
             border-radius: 60px;
-            margin-top: 16px;
             text-align: center;
             display: flex;
             align-items: center;
@@ -345,6 +452,7 @@
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
+            cursor: pointer;
         }
         .logout-btn {
             background: #64748b;
@@ -389,6 +497,18 @@
         .upload-area:hover {
             border-color: #059669;
             background: #f0fdf4;
+        }
+        .fotos-extra-area {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 20px;
+        }
+        .fotos-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
         }
         input, textarea, select {
             width: 100%;
@@ -449,6 +569,35 @@
         .leaflet-control-attribution {
             font-size: 9px;
         }
+        .rating {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 16px 0;
+        }
+        .star {
+            font-size: 32px;
+            cursor: pointer;
+            color: #cbd5e1;
+            transition: 0.2s;
+        }
+        .star.selected {
+            color: #eab308;
+        }
+        .perfil-card {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .perfil-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 16px;
+        }
         @media (max-width: 700px) {
             .grid { grid-template-columns: 1fr; }
         }
@@ -459,8 +608,9 @@
     <div class="main-header">
         <div class="logo-area">
             <h1>🔄 Intercambia</h1>
-            <p>Trueque de objetos - Encuentra lo que buscas cerca de ti</p>
+            <p>Trueque de objetos - Encuentra lo que buscas</p>
         </div>
+        <div id="userInfo" class="user-info" style="display:none;"></div>
     </div>
 
     <!-- Login con Google -->
@@ -477,41 +627,45 @@
             Iniciar sesión con Google
         </button>
         <button id="logoutBtn" style="display:none;" class="logout-btn">Cerrar sesión</button>
-        <div id="userInfo" class="user-info" style="display:none;"></div>
     </div>
 
     <!-- App principal (oculta hasta login) -->
     <div id="appSections" style="display:none;">
-        <!-- Búsqueda y filtros -->
+        <!-- Búsqueda -->
         <div class="search-section">
             <div class="search-bar">
                 <span>🔍</span>
                 <input type="text" id="searchInput" placeholder="Buscar por título o usuario...">
             </div>
-            <div class="filtros-row">
-                <div class="categories">
-                    <button class="cat-btn active" data-cat="all">Todos</button>
-                    <button class="cat-btn" data-cat="Electrónica">📱 Electrónica</button>
-                    <button class="cat-btn" data-cat="Ropa">👕 Ropa</button>
-                    <button class="cat-btn" data-cat="Libros">📚 Libros</button>
-                    <button class="cat-btn" data-cat="Mascotas">🐾 Mascotas</button>
-                    <button class="cat-btn" data-cat="Hogar">🏠 Hogar</button>
-                    <button class="cat-btn" data-cat="Deportes">⚽ Deportes</button>
-                </div>
+            <div class="categories">
+                <button class="cat-btn active" data-cat="all">Todos</button>
+                <button class="cat-btn" data-cat="Electrónica">📱 Electrónica</button>
+                <button class="cat-btn" data-cat="Ropa">👕 Ropa</button>
+                <button class="cat-btn" data-cat="Libros">📚 Libros</button>
+                <button class="cat-btn" data-cat="Mascotas">🐾 Mascotas</button>
+                <button class="cat-btn" data-cat="Hogar">🏠 Hogar</button>
+                <button class="cat-btn" data-cat="Deportes">⚽ Deportes</button>
             </div>
         </div>
 
         <!-- Navegación -->
         <div class="nav-buttons">
             <button class="nav-btn active" data-tab="feed">📦 Objetos disponibles</button>
+            <button class="nav-btn" data-tab="favoritos">⭐ Favoritos</button>
             <button class="nav-btn" data-tab="publicar">➕ Publicar objeto</button>
             <button class="nav-btn" data-tab="misobjetos">📋 Mis objetos</button>
             <button class="nav-btn" data-tab="chats">💬 Mis conversaciones</button>
+            <button class="nav-btn" data-tab="perfil">👤 Mi perfil</button>
         </div>
 
         <!-- Feed -->
         <div id="tab-feed">
             <div id="feedGrid" class="grid">Cargando objetos...</div>
+        </div>
+
+        <!-- Favoritos -->
+        <div id="tab-favoritos" style="display:none;">
+            <div id="favoritosGrid" class="grid">Cargando favoritos...</div>
         </div>
 
         <!-- Publicar -->
@@ -529,6 +683,30 @@
                 </select>
                 <textarea id="descripcion" rows="3" placeholder="Descripción (estado, qué buscas a cambio...)"></textarea>
                 
+                <!-- Sección de fotos múltiples -->
+                <div class="ubicacion-section">
+                    <label>📸 Fotos del objeto (máximo 5)</label>
+                    <div class="upload-area" id="uploadAreaPrincipal">
+                        <div>📁 Haz clic para seleccionar la foto principal</div>
+                        <input type="file" id="fotoPrincipal" accept="image/*" style="display:none;">
+                    </div>
+                    <div id="fotoPrincipalPreview" style="margin-top: 12px; display:none;">
+                        <div class="foto-preview">
+                            <img id="principalPreviewImg" src="">
+                            <button id="eliminarPrincipal" style="position: absolute; top: -8px; right: -8px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">✕</button>
+                        </div>
+                    </div>
+                    
+                    <div class="fotos-extra-area">
+                        <label>📸 Fotos adicionales (opcional, hasta 4 más)</label>
+                        <div class="upload-area" id="uploadAreaExtra" style="padding: 20px; margin-top: 8px;">
+                            <div>📁 Haz clic para agregar más fotos</div>
+                            <input type="file" id="fotosExtra" accept="image/*" multiple style="display:none;">
+                        </div>
+                        <div id="fotosExtraPreview" class="fotos-preview-container"></div>
+                    </div>
+                </div>
+                
                 <!-- Sección de ubicación -->
                 <div class="ubicacion-section">
                     <label>📍 Ubicación del objeto</label>
@@ -544,10 +722,6 @@
                     <input type="hidden" id="longitud" value="">
                 </div>
                 
-                <div class="upload-area" id="uploadArea">
-                    <div>📁 Haz clic o arrastra una foto</div>
-                    <input type="file" id="fileInput" accept="image/*" style="display:none;">
-                </div>
                 <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
                 <button id="previewBtn" class="btn-primary">📸 Vista previa</button>
                 <div id="pubStatus"></div>
@@ -566,12 +740,29 @@
                 <div style="background: white; border-radius: 28px; padding: 20px;">
                     <h4 id="chatTitulo"></h4>
                     <div id="chatMensajes" class="chat-container"></div>
+                    <div id="valorarSection" style="display:none; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                        <h4>⭐ Calificar este intercambio</h4>
+                        <div class="rating" id="ratingStars">
+                            <span class="star" data-value="1">☆</span>
+                            <span class="star" data-value="2">☆</span>
+                            <span class="star" data-value="3">☆</span>
+                            <span class="star" data-value="4">☆</span>
+                            <span class="star" data-value="5">☆</span>
+                        </div>
+                        <textarea id="comentarioValoracion" rows="2" placeholder="Comentario (opcional)" style="border-radius: 20px;"></textarea>
+                        <button id="enviarValoracionBtn" class="btn-primary" style="margin-top: 12px;">Enviar valoración</button>
+                    </div>
                     <div class="chat-input">
                         <input type="text" id="nuevoMensaje" placeholder="Escribe un mensaje...">
                         <button id="enviarMensajeBtn" style="background: #059669;">Enviar</button>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Mi perfil -->
+        <div id="tab-perfil" style="display:none;">
+            <div id="perfilContent"></div>
         </div>
     </div>
 </div>
@@ -585,8 +776,17 @@
         <p id="previewDesc" style="color:#475569;"></p>
         <p><span class="categoria-badge" id="previewCategoria"></span></p>
         <p id="previewUbicacion" style="font-size:12px; color:#64748b;"></p>
+        <div id="previewFotosExtra" style="display:flex; gap:8px; flex-wrap:wrap; margin:16px 0;"></div>
         <button id="confirmarPublicarBtn" class="btn-primary">✅ Sí, publicar</button>
         <button id="cancelarPublicarBtn" style="margin-top: 12px; background:#e2e8f0; color:#1e293b; border:none; padding:10px; border-radius:40px; width:100%;">Cancelar</button>
+    </div>
+</div>
+
+<!-- Modal de foto ampliada -->
+<div id="fotoModal" class="modal">
+    <div class="modal-content modal-foto" style="max-width: 90vw; background: transparent;">
+        <img id="fotoModalImg" src="" style="max-width: 100%; max-height: 70vh; border-radius: 20px;">
+        <button onclick="document.getElementById('fotoModal').style.display='none'" style="margin-top: 16px; background: white; padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer;">Cerrar</button>
     </div>
 </div>
 
@@ -599,12 +799,14 @@
     
     let currentUser = null;
     let authToken = null;
-    let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
+    let chatActual = { objetoId: null, otroUsuario: null, titulo: null, objetoIntercambiado: false };
     let pendingPublication = null;
     let map = null;
     let marker = null;
     let mapaVisible = false;
-    let ubicacionUsuario = null;
+    let favoritos = new Set();
+    let fotosSeleccionadas = []; // [fotoPrincipal, ...fotosExtra]
+    let valoracionPendiente = { id_objeto: null, calificado: null };
 
     // ========== ONESIGNAL ==========
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -612,11 +814,6 @@
         await OneSignal.init({
             appId: "68491021-9c85-423d-9e50-ddcffa0c2d63",
             notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' },
-            promptOptions: {
-                actionMessage: "¿Quieres recibir notificaciones cuando te envíen mensajes?",
-                acceptButtonText: "Sí, avísame",
-                cancelButtonText: "No, gracias"
-            }
         });
     });
 
@@ -666,13 +863,9 @@
                 if (data.address.house_number) partes.push(data.address.house_number);
                 if (data.address.suburb) partes.push(data.address.suburb);
                 if (data.address.city || data.address.town) partes.push(data.address.city || data.address.town);
-                
                 let direccionLegible = partes.join(', ');
-                if (direccionLegible) {
-                    document.getElementById('direccionInput').value = direccionLegible;
-                } else if (data.display_name) {
-                    document.getElementById('direccionInput').value = data.display_name.split(',')[0];
-                }
+                if (direccionLegible) document.getElementById('direccionInput').value = direccionLegible;
+                else if (data.display_name) document.getElementById('direccionInput').value = data.display_name.split(',')[0];
             }
         } catch(e) { console.error('Error geocoding:', e); }
     }
@@ -710,7 +903,6 @@
                 const lng = position.coords.longitude;
                 document.getElementById('latitud').value = lat;
                 document.getElementById('longitud').value = lng;
-                ubicacionUsuario = { lat, lng };
                 if (!mapaVisible) {
                     document.getElementById('mapaContainer').style.display = 'block';
                     mapaVisible = true;
@@ -734,12 +926,8 @@
     function abrirGoogleMaps(lat, lng, direccion, titulo) {
         const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         let query = direccion && direccion.length > 5 ? encodeURIComponent(direccion) : `${lat},${lng}`;
-        
-        if (esMovil) {
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}&travelmode=driving`, '_blank');
-        } else {
-            window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
-        }
+        if (esMovil) window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}&travelmode=driving`, '_blank');
+        else window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
     }
 
     // ========== AUTENTICACIÓN ==========
@@ -756,25 +944,15 @@
 
     async function verifyToken(token) {
         try {
-            const response = await fetch(`${WORKER_URL}/auth/me`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await fetch(`${WORKER_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) return null;
             const data = await response.json();
             return data.user;
         } catch (e) { return null; }
     }
 
-    function loginWithGoogle() {
-        window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`;
-    }
-
-    function logout() {
-        localStorage.removeItem('auth_token');
-        currentUser = null;
-        authToken = null;
-        updateUIForUser();
-    }
+    function loginWithGoogle() { window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`; }
+    function logout() { localStorage.removeItem('auth_token'); currentUser = null; authToken = null; updateUIForUser(); }
 
     // ========== API ==========
     async function apiFetch(path, options = {}) {
@@ -788,32 +966,103 @@
         return response.json();
     }
 
-    async function publicarObjeto(titulo, descripcion, categoria, file) {
+    async function publicarObjeto(titulo, descripcion, categoria, fotos) {
         const form = new FormData();
-        form.append('file', file);
         form.append('titulo', titulo);
         form.append('descripcion', `${categoria} | ${descripcion}`);
         form.append('latitud', document.getElementById('latitud').value || '');
         form.append('longitud', document.getElementById('longitud').value || '');
         form.append('direccion', document.getElementById('direccionInput').value || '');
+        
+        // Agregar fotos (máximo 5)
+        for (let i = 0; i < Math.min(fotos.length, 5); i++) {
+            form.append(`foto_${i}`, fotos[i]);
+        }
+        
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
 
-    async function obtenerObjetos(propios = false) {
-        return propios ? await apiFetch('/mis-objetos') : await apiFetch('/objetos');
+    async function obtenerObjetos(propios = false) { return propios ? await apiFetch('/mis-objetos') : await apiFetch('/objetos'); }
+    async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
+    async function marcarIntercambiado(id) { return await apiFetch(`/objeto/${id}`, { method: 'PATCH' }); }
+    async function reportarObjeto(idObjeto, motivo) { return await apiFetch('/reporte', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: idObjeto, motivo }) }); }
+    async function enviarMensaje(objetoId, receptor, mensaje) { return await apiFetch('/mensaje', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) }); }
+    async function obtenerMensajes(objetoId, otroUsuario) { return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`); }
+    async function obtenerMisConversaciones() { return await apiFetch('/mis-conversaciones'); }
+    async function obtenerFavoritos() { return await apiFetch('/favoritos'); }
+    async function agregarFavorito(id_objeto) { return await apiFetch('/favoritos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto }) }); }
+    async function quitarFavorito(id_objeto) { return await apiFetch('/favoritos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto }) }); }
+    async function obtenerPerfil() { return await apiFetch('/perfil'); }
+    async function obtenerPerfilUsuario(email) { return await apiFetch(`/usuario?email=${encodeURIComponent(email)}`); }
+    async function valorarUsuario(id_objeto, calificado, puntuacion, comentario) { return await apiFetch('/valorar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto, calificado, puntuacion, comentario }) }); }
+
+    // ========== FUNCIONES DE MÚLTIPLES FOTOS ==========
+    function actualizarPrevisualizaciones() {
+        // Foto principal
+        if (fotosSeleccionadas.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('principalPreviewImg').src = e.target.result;
+                document.getElementById('fotoPrincipalPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(fotosSeleccionadas[0]);
+        } else {
+            document.getElementById('fotoPrincipalPreview').style.display = 'none';
+        }
+        
+        // Fotos extra
+        const container = document.getElementById('fotosExtraPreview');
+        container.innerHTML = '';
+        for (let i = 1; i < fotosSeleccionadas.length; i++) {
+            const file = fotosSeleccionadas[i];
+            const reader = new FileReader();
+            reader.onload = (function(idx, f) {
+                return function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'foto-preview';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" style="width:80px; height:80px; object-fit:cover; border-radius:12px;">
+                        <button onclick="eliminarFotoExtra(${idx})">✕</button>
+                    `;
+                    container.appendChild(div);
+                };
+            })(i, file);
+            reader.readAsDataURL(file);
+        }
     }
 
-    async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
-    async function reportarObjeto(idObjeto, motivo) {
-        return await apiFetch('/reporte', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: idObjeto, motivo }) });
-    }
-    async function enviarMensaje(objetoId, receptor, mensaje) {
-        return await apiFetch('/mensaje', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
-    }
-    async function obtenerMensajes(objetoId, otroUsuario) {
-        return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`);
-    }
-    async function obtenerMisConversaciones() { return await apiFetch('/mis-conversaciones'); }
+    window.eliminarFotoExtra = function(index) {
+        fotosSeleccionadas.splice(index, 1);
+        actualizarPrevisualizaciones();
+    };
+
+    // Manejo de selección de fotos
+    document.getElementById('fotoPrincipal').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            if (fotosSeleccionadas.length > 0) fotosSeleccionadas[0] = e.target.files[0];
+            else fotosSeleccionadas.push(e.target.files[0]);
+            actualizarPrevisualizaciones();
+        }
+    });
+    
+    document.getElementById('fotosExtra').addEventListener('change', (e) => {
+        const archivos = Array.from(e.target.files);
+        for (const file of archivos) {
+            if (fotosSeleccionadas.length < 5) {
+                fotosSeleccionadas.push(file);
+            } else {
+                alert('Máximo 5 fotos por objeto');
+                break;
+            }
+        }
+        actualizarPrevisualizaciones();
+        e.target.value = '';
+    });
+    
+    document.getElementById('eliminarPrincipal').onclick = () => {
+        if (fotosSeleccionadas.length > 0) fotosSeleccionadas.splice(0, 1);
+        actualizarPrevisualizaciones();
+    };
 
     // ========== UI ==========
     function updateUIForUser() {
@@ -824,16 +1073,16 @@
         const logoutBtn = document.getElementById('logoutBtn');
 
         if (currentUser) {
-            loginSection.querySelector('h2').innerText = '✅ Sesión activa';
+            loginSection.style.display = 'none';
             googleBtn.style.display = 'none';
             logoutBtn.style.display = 'inline-block';
             userInfoDiv.style.display = 'flex';
-            userInfoDiv.innerHTML = `<img src="${currentUser.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name)}" class="user-avatar"><span>👤 ${currentUser.name || currentUser.email}</span>`;
+            userInfoDiv.innerHTML = `<img src="${currentUser.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name)}" class="user-avatar" onclick="verMiPerfil()"><span onclick="verMiPerfil()" style="cursor:pointer;">👤 ${currentUser.name || currentUser.email}</span>`;
             appSections.style.display = 'block';
-            cargarFeed(); cargarMisObjetos();
+            cargarFeed(); cargarMisObjetos(); cargarFavoritos();
             guardarOneSignalId(currentUser.email);
         } else {
-            loginSection.querySelector('h2').innerText = '🔐 Bienvenido a Intercambia';
+            loginSection.style.display = 'block';
             googleBtn.style.display = 'flex';
             logoutBtn.style.display = 'none';
             userInfoDiv.style.display = 'none';
@@ -841,21 +1090,170 @@
         }
     }
 
+    function verMiPerfil() {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('[data-tab="perfil"]').classList.add('active');
+        document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
+        document.getElementById('tab-perfil').style.display = 'block';
+        cargarMiPerfil();
+    }
+
+    async function cargarMiPerfil() {
+        const perfil = await obtenerPerfil();
+        const html = `
+            <div class="perfil-card">
+                <img src="${currentUser.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name)}" class="perfil-avatar">
+                <h2>${escapeHtml(currentUser.name || currentUser.email)}</h2>
+                <p>${currentUser.email}</p>
+                <div class="rating" style="justify-content:center; margin: 16px 0;">
+                    ${[1,2,3,4,5].map(i => `<span class="star ${perfil.promedio_valoracion >= i ? 'selected' : ''}" style="font-size:24px;">★</span>`).join('')}
+                </div>
+                <p>⭐ ${perfil.promedio_valoracion.toFixed(1)} (${perfil.total_valoraciones} valoraciones)</p>
+            </div>
+            <div class="card" style="background:white; border-radius:28px; padding:24px; margin-bottom:24px;">
+                <h3>📦 Mis objetos publicados (${perfil.objetos.length})</h3>
+                <div class="grid">${perfil.objetos.map(obj => `
+                    <div class="objeto-card">
+                        <img src="${obj.url}">
+                        <div class="objeto-info"><strong>${escapeHtml(obj.titulo)}</strong><p>${escapeHtml(obj.descripcion?.substring(0,80))}</p></div>
+                    </div>
+                `).join('') || '<p>No has publicado nada aún.</p>'}</div>
+            </div>
+            <div class="card" style="background:white; border-radius:28px; padding:24px;">
+                <h3>⭐ Mis valoraciones recibidas</h3>
+                ${perfil.valoraciones.map(v => `
+                    <div style="padding:12px; border-bottom:1px solid #e2e8f0;">
+                        <div class="rating">${[1,2,3,4,5].map(i => `<span class="star ${v.puntuacion >= i ? 'selected' : ''}" style="font-size:16px;">★</span>`).join('')}</div>
+                        <p>${escapeHtml(v.comentario || 'Sin comentario')}</p>
+                        <small>por ${escapeHtml(v.calificador)}</small>
+                    </div>
+                `).join('') || '<p>Aún no tienes valoraciones.</p>'}
+            </div>
+        `;
+        document.getElementById('perfilContent').innerHTML = html;
+    }
+
+    window.verPerfilUsuario = async function(email) {
+        const perfil = await obtenerPerfilUsuario(email);
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(email)}" style="width:80px; border-radius:50%; margin:0 auto;">
+                <h3>${escapeHtml(email)}</h3>
+                <div class="rating" style="justify-content:center;">${[1,2,3,4,5].map(i => `<span class="star ${perfil.promedio_valoracion >= i ? 'selected' : ''}" style="font-size:24px;">★</span>`).join('')}</div>
+                <p>⭐ ${perfil.promedio_valoracion.toFixed(1)} (${perfil.total_valoraciones} valoraciones)</p>
+                <button onclick="this.parentElement.parentElement.remove()" class="btn-primary" style="margin-top:16px;">Cerrar</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    };
+
+    function mostrarFotoAmpliada(url) {
+        document.getElementById('fotoModalImg').src = url;
+        document.getElementById('fotoModal').style.display = 'flex';
+    }
+
+    function crearMiniaturas(objeto, card) {
+        const todasLasFotos = [];
+        todasLasFotos.push(objeto.url);
+        if (objeto.fotos_extra) {
+            for (const foto of objeto.fotos_extra) {
+                todasLasFotos.push(foto.url);
+            }
+        }
+        
+        if (todasLasFotos.length <= 1) return;
+        
+        const miniaturasDiv = document.createElement('div');
+        miniaturasDiv.className = 'miniaturas';
+        
+        for (let i = 0; i < todasLasFotos.length; i++) {
+            const miniatura = document.createElement('img');
+            miniatura.src = todasLasFotos[i];
+            miniatura.className = 'miniatura';
+            if (i === 0) miniatura.classList.add('activa');
+            miniatura.onclick = (function(idx) {
+                return function() {
+                    const imgPrincipal = card.querySelector('.imagen-principal');
+                    imgPrincipal.src = todasLasFotos[idx];
+                    card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
+                    this.classList.add('activa');
+                };
+            })(i);
+            miniaturasDiv.appendChild(miniatura);
+        }
+        
+        const imgPrincipal = card.querySelector('.imagen-principal');
+        if (imgPrincipal) {
+            imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
+        }
+        
+        card.insertBefore(miniaturasDiv, card.querySelector('.objeto-info'));
+    }
+
     function filtrarObjetos() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const activeCat = document.querySelector('.cat-btn.active').dataset.cat;
         const cards = document.querySelectorAll('.objeto-card');
-        
         cards.forEach(card => {
             const titulo = card.querySelector('.objeto-info strong')?.innerText.toLowerCase() || '';
             const usuario = card.querySelector('.badge')?.innerText.toLowerCase() || '';
             const categoria = card.dataset.cat || '';
-            
-            let matchesSearch = titulo.includes(searchTerm) || usuario.includes(searchTerm);
-            let matchesCat = activeCat === 'all' || categoria === activeCat;
-            
+            const matchesSearch = titulo.includes(searchTerm) || usuario.includes(searchTerm);
+            const matchesCat = activeCat === 'all' || categoria === activeCat;
             card.style.display = matchesSearch && matchesCat ? 'block' : 'none';
         });
+    }
+
+    async function cargarFavoritos() {
+        try {
+            const favoritosList = await obtenerFavoritos();
+            const grid = document.getElementById('favoritosGrid');
+            if (!favoritosList.length) { grid.innerHTML = '<div style="text-align:center; padding:40px;">⭐ No tienes favoritos aún.</div>'; return; }
+            grid.innerHTML = favoritosList.map(obj => `
+                <div class="objeto-card" data-cat="${obj.descripcion?.split('|')[0]?.trim() || 'General'}">
+                    <img class="imagen-principal" src="${obj.url}" onclick="mostrarFotoAmpliada('${obj.url}')">
+                    <div class="objeto-info">
+                        <strong>${escapeHtml(obj.titulo)}</strong>
+                        <p style="margin-top:8px;">${escapeHtml((obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '').substring(0,80))}</p>
+                        <span class="badge" onclick="verPerfilUsuario('${escapeHtml(obj.usuario)}')">👤 ${escapeHtml(obj.usuario)}</span>
+                        <button class="intercambiar-btn" onclick="abrirChatConObjeto(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')">💬 Intercambiar</button>
+                    </div>
+                </div>
+            `).join('');
+            for (const obj of favoritosList) {
+                const card = document.querySelector(`.objeto-card img[src="${obj.url}"]`).parentElement;
+                if (obj.fotos_extra && obj.fotos_extra.length) {
+                    const todasFotos = [obj.url, ...obj.fotos_extra.map(f => f.url)];
+                    crearMiniaturasConUrls(card, todasFotos);
+                }
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    function crearMiniaturasConUrls(card, urls) {
+        if (urls.length <= 1) return;
+        const miniaturasDiv = document.createElement('div');
+        miniaturasDiv.className = 'miniaturas';
+        for (let i = 0; i < urls.length; i++) {
+            const miniatura = document.createElement('img');
+            miniatura.src = urls[i];
+            miniatura.className = 'miniatura';
+            if (i === 0) miniatura.classList.add('activa');
+            miniatura.onclick = (function(idx) {
+                return function() {
+                    const imgPrincipal = card.querySelector('.imagen-principal');
+                    imgPrincipal.src = urls[idx];
+                    card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
+                    this.classList.add('activa');
+                };
+            })(i);
+            miniaturasDiv.appendChild(miniatura);
+        }
+        card.insertBefore(miniaturasDiv, card.querySelector('.objeto-info'));
     }
 
     async function cargarFeed() {
@@ -866,40 +1264,38 @@
             feedDiv.innerHTML = objetos.map(obj => {
                 const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
                 const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
+                const esFavorito = favoritos.has(obj.id);
                 return `
                     <div class="objeto-card" data-cat="${categoria}">
-                        <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
+                        <button class="favorito-btn ${esFavorito ? 'activo' : ''}" data-id="${obj.id}" onclick="toggleFavorito(${obj.id}, this)">${esFavorito ? '★' : '☆'}</button>
+                        <img class="imagen-principal" src="${obj.url}" onclick="mostrarFotoAmpliada('${obj.url}')">
                         <div class="objeto-info">
                             <span class="categoria-badge">${escapeHtml(categoria)}</span>
                             <strong>${escapeHtml(obj.titulo)}</strong>
                             <p style="margin-top:8px; color:#475569;">${escapeHtml(descripcion.substring(0, 80))}</p>
-                            <span class="badge">👤 ${escapeHtml(obj.usuario)}</span>
-                            ${obj.direccion ? `<span class="badge-ubicacion" title="Ver en mapa">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
+                            <span class="badge" onclick="verPerfilUsuario('${escapeHtml(obj.usuario)}')">👤 ${escapeHtml(obj.usuario)}</span>
+                            ${obj.direccion ? `<span class="badge-ubicacion" onclick="abrirGoogleMaps(${obj.latitud}, ${obj.longitud}, '${escapeHtml(obj.direccion)}', '${escapeHtml(obj.titulo)}')">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
                             ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
                             ${obj.usuario !== currentUser?.email ? `
-                                <button class="intercambiar-btn" data-id="${obj.id}" data-usuario="${escapeHtml(obj.usuario)}" data-titulo="${escapeHtml(obj.titulo)}">💬 Intercambiar</button>
-                                <button class="reportar-btn" data-id="${obj.id}">⚠️ Reportar</button>
-                                ${obj.latitud && obj.longitud ? `<button class="btn-como-llegar" data-lat="${obj.latitud}" data-lng="${obj.longitud}" data-direccion="${escapeHtml(obj.direccion || '')}" data-titulo="${escapeHtml(obj.titulo)}">🗺️ Cómo llegar</button>` : ''}
+                                <button class="intercambiar-btn" onclick="abrirChatConObjeto(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')">💬 Intercambiar</button>
+                                <button class="reportar-btn" onclick="reportarObjetoPrompt(${obj.id})">⚠️ Reportar</button>
+                                ${obj.latitud && obj.longitud ? `<button class="btn-como-llegar" onclick="abrirGoogleMaps(${obj.latitud}, ${obj.longitud}, '${escapeHtml(obj.direccion || '')}', '${escapeHtml(obj.titulo)}')">🗺️ Cómo llegar</button>` : ''}
                             ` : '<span style="font-size:12px; color:#64748b;">(tu objeto)</span>'}
                         </div>
                     </div>
                 `;
             }).join('');
             
-            document.querySelectorAll('.intercambiar-btn').forEach(btn => btn.addEventListener('click', () => abrirChatConObjeto(parseInt(btn.dataset.id), btn.dataset.usuario, btn.dataset.titulo)));
-            document.querySelectorAll('.reportar-btn').forEach(btn => btn.addEventListener('click', async () => {
-                const motivo = prompt('¿Por qué reportas este objeto?');
-                if (motivo) try { await reportarObjeto(parseInt(btn.dataset.id), motivo); alert('✅ Reporte enviado'); } catch(e) { alert('Error: ' + e.message); }
-            }));
-            document.querySelectorAll('.btn-como-llegar').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const lat = btn.dataset.lat;
-                    const lng = btn.dataset.lng;
-                    const direccion = btn.dataset.direccion;
-                    const titulo = btn.dataset.titulo;
-                    abrirGoogleMaps(lat, lng, direccion, titulo);
-                });
-            });
+            for (const obj of objetos) {
+                const card = document.querySelector(`.objeto-card .imagen-principal[src="${obj.url}"]`).parentElement;
+                if (obj.fotos_extra && obj.fotos_extra.length) {
+                    const todasFotos = [obj.url, ...obj.fotos_extra.map(f => f.url)];
+                    crearMiniaturasConUrls(card, todasFotos);
+                } else {
+                    const imgPrincipal = card.querySelector('.imagen-principal');
+                    if (imgPrincipal) imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
+                }
+            }
             filtrarObjetos();
         } catch(e) { document.getElementById('feedGrid').innerHTML = '<div style="text-align:center; padding:40px;">❌ Error al cargar objetos</div>'; }
     }
@@ -914,35 +1310,55 @@
                 const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
                 return `
                     <div class="objeto-card">
-                        <img src="${obj.url}" alt="${escapeHtml(obj.titulo)}">
+                        <img class="imagen-principal" src="${obj.url}" onclick="mostrarFotoAmpliada('${obj.url}')">
                         <div class="objeto-info">
                             <strong>${escapeHtml(obj.titulo)}</strong>
                             <p style="margin:8px 0;">${escapeHtml(descripcion.substring(0, 80))}</p>
                             ${obj.direccion ? `<span class="badge-ubicacion">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
-                            <span class="badge-expiracion">⏰ Expira: ${new Date(obj.expira).toLocaleDateString()}</span>
+                            ${obj.intercambiado === 1 ? '<span class="badge-intercambiado">✅ Ya intercambiado</span>' : '<span class="badge-expiracion">⏰ Expira: ' + new Date(obj.expira).toLocaleDateString() + '</span>'}
                             ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión por IA</span>' : ''}
-                            <button class="eliminar-btn" data-id="${obj.id}">🗑️ Eliminar publicación</button>
+                            ${obj.intercambiado !== 1 ? `<button class="intercambiado-btn" onclick="marcarIntercambiadoPrompt(${obj.id})">✅ Marcar como intercambiado</button>` : ''}
+                            <button class="eliminar-btn" onclick="eliminarObjetoPrompt(${obj.id})">🗑️ Eliminar publicación</button>
                         </div>
                     </div>
                 `;
             }).join('');
-            document.querySelectorAll('.eliminar-btn').forEach(btn => btn.addEventListener('click', async () => {
-                if (confirm('¿Eliminar esta publicación?')) try { await eliminarObjeto(parseInt(btn.dataset.id)); alert('✅ Eliminado'); cargarMisObjetos(); cargarFeed(); } catch(e) { alert('Error: ' + e.message); }
-            }));
+            
+            for (const obj of objetos) {
+                const card = document.querySelector(`.objeto-card .imagen-principal[src="${obj.url}"]`).parentElement;
+                if (obj.fotos_extra && obj.fotos_extra.length) {
+                    const todasFotos = [obj.url, ...obj.fotos_extra.map(f => f.url)];
+                    crearMiniaturasConUrls(card, todasFotos);
+                } else {
+                    const imgPrincipal = card.querySelector('.imagen-principal');
+                    if (imgPrincipal) imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
+                }
+            }
         } catch(e) { console.error(e); }
     }
 
-    async function abrirChatConObjeto(objetoId, otroUsuario, titulo) {
-        chatActual = { objetoId, otroUsuario, titulo };
-        document.getElementById('chatTitulo').innerHTML = `💬 ${escapeHtml(titulo)}<br><small>Conversando con ${escapeHtml(otroUsuario)}</small>`;
+    async function toggleFavorito(id, btn) {
+        const esFavorito = favoritos.has(id);
+        if (esFavorito) { await quitarFavorito(id); favoritos.delete(id); btn.classList.remove('activo'); btn.innerHTML = '☆'; }
+        else { await agregarFavorito(id); favoritos.add(id); btn.classList.add('activo'); btn.innerHTML = '★'; }
+    }
+
+    async function marcarIntercambiadoPrompt(id) { if (confirm('¿Marcar este objeto como intercambiado? Dejará de aparecer en el feed.')) { await marcarIntercambiado(id); cargarMisObjetos(); cargarFeed(); alert('✅ Marcado como intercambiado'); } }
+    async function eliminarObjetoPrompt(id) { if (confirm('¿Eliminar esta publicación?')) { await eliminarObjeto(id); cargarMisObjetos(); cargarFeed(); alert('✅ Eliminado'); } }
+    async function reportarObjetoPrompt(id) { const motivo = prompt('¿Por qué reportas este objeto?'); if (motivo) { await reportarObjeto(id, motivo); alert('✅ Reporte enviado'); } }
+
+    window.abrirChatConObjeto = async function(objetoId, otroUsuario, titulo) {
+        chatActual = { objetoId, otroUsuario, titulo, objetoIntercambiado: false };
+        document.getElementById('chatTitulo').innerHTML = `💬 ${escapeHtml(titulo)}<br><small>Conversando con <span style="cursor:pointer; color:#3b82f6;" onclick="verPerfilUsuario('${escapeHtml(otroUsuario)}')">${escapeHtml(otroUsuario)}</span></small>`;
         document.getElementById('chatDetalle').style.display = 'block';
+        document.getElementById('valorarSection').style.display = 'none';
         await cargarMensajes();
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelector('[data-tab="chats"]').classList.add('active');
         document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
         document.getElementById('tab-chats').style.display = 'block';
         cargarListaConversaciones();
-    }
+    };
 
     async function cargarMensajes() {
         if (!chatActual.objetoId) return;
@@ -951,7 +1367,44 @@
         if (!msgs.length) { cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún. Envía uno para empezar.</p>'; return; }
         cont.innerHTML = msgs.map(m => `<div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}"><strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}<small>${new Date(m.fecha).toLocaleString()}</small></div>`).join('');
         cont.scrollTop = cont.scrollHeight;
+        
+        const objeto = (await obtenerObjetos()).find(o => o.id === chatActual.objetoId);
+        if (objeto && objeto.intercambiado === 1 && objeto.usuario !== currentUser?.email) {
+            document.getElementById('valorarSection').style.display = 'block';
+            valoracionPendiente = { id_objeto: chatActual.objetoId, calificado: chatActual.otroUsuario };
+            setupRatingStars('ratingStars');
+        } else {
+            document.getElementById('valorarSection').style.display = 'none';
+        }
     }
+
+    function setupRatingStars(containerId) {
+        const stars = document.querySelectorAll(`#${containerId} .star`);
+        let selectedValue = 0;
+        stars.forEach(star => {
+            star.onclick = () => {
+                selectedValue = parseInt(star.dataset.value);
+                stars.forEach((s, i) => {
+                    if (i < selectedValue) s.innerHTML = '★', s.classList.add('selected');
+                    else s.innerHTML = '☆', s.classList.remove('selected');
+                });
+            };
+        });
+        return () => selectedValue;
+    }
+
+    document.getElementById('enviarValoracionBtn').onclick = async () => {
+        const stars = document.querySelectorAll('#ratingStars .star');
+        let puntuacion = 0;
+        stars.forEach((s, i) => { if (s.innerHTML === '★') puntuacion = i + 1; });
+        const comentario = document.getElementById('comentarioValoracion').value;
+        if (puntuacion === 0) { alert('Selecciona una puntuación'); return; }
+        await valorarUsuario(valoracionPendiente.id_objeto, valoracionPendiente.calificado, puntuacion, comentario);
+        alert('✅ Valoración enviada');
+        document.getElementById('valorarSection').style.display = 'none';
+        document.getElementById('comentarioValoracion').value = '';
+        stars.forEach(s => { s.innerHTML = '☆'; s.classList.remove('selected'); });
+    };
 
     async function enviarMensajeChat() {
         const input = document.getElementById('nuevoMensaje');
@@ -967,8 +1420,7 @@
             const convs = await obtenerMisConversaciones();
             const listaDiv = document.getElementById('listaChats');
             if (!convs.length) { listaDiv.innerHTML = '<p style="text-align:center; padding:20px;">💬 No hay conversaciones activas aún.</p>'; return; }
-            listaDiv.innerHTML = convs.map(c => `<div class="conv-item" data-id="${c.id_objeto}" data-otro="${escapeHtml(c.otroUsuario)}" data-titulo="${escapeHtml(c.titulo)}"><strong>📦 ${escapeHtml(c.titulo)}</strong><br>💬 con ${escapeHtml(c.otroUsuario)}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small></div>`).join('');
-            document.querySelectorAll('.conv-item').forEach(el => el.addEventListener('click', () => abrirChatConObjeto(parseInt(el.dataset.id), el.dataset.otro, el.dataset.titulo)));
+            listaDiv.innerHTML = convs.map(c => `<div class="conv-item" onclick="abrirChatConObjeto(${c.id_objeto}, '${escapeHtml(c.otroUsuario)}', '${escapeHtml(c.titulo)}')"><strong>📦 ${escapeHtml(c.titulo)}</strong><br>💬 con ${escapeHtml(c.otroUsuario)}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small></div>`).join('');
         } catch(e) { console.error(e); }
     }
 
@@ -981,8 +1433,9 @@
         const categoria = document.getElementById('categoria').value;
         const descripcion = document.getElementById('descripcion').value;
         const direccion = document.getElementById('direccionInput').value;
-        const file = document.getElementById('fileInput').files[0];
-        if (!titulo || !descripcion || !file) { showStatus('❌ Completa todos los campos', 'error', 'pubStatus'); return; }
+        if (fotosSeleccionadas.length === 0) { showStatus('❌ Selecciona al menos una foto', 'error', 'pubStatus'); return; }
+        if (!titulo || !descripcion) { showStatus('❌ Completa título y descripción', 'error', 'pubStatus'); return; }
+        
         const reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('previewImg').src = e.target.result;
@@ -990,19 +1443,33 @@
             document.getElementById('previewDesc').innerText = descripcion;
             document.getElementById('previewCategoria').innerText = categoria;
             document.getElementById('previewUbicacion').innerHTML = direccion ? `📍 ${escapeHtml(direccion)}` : '📍 Sin ubicación especificada';
-            pendingPublication = { titulo, categoria, descripcion, file };
+            
+            // Previsualizar fotos extra
+            const previewFotos = document.getElementById('previewFotosExtra');
+            previewFotos.innerHTML = '';
+            for (let i = 1; i < Math.min(fotosSeleccionadas.length, 5); i++) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(fotosSeleccionadas[i]);
+                img.style.width = '60px';
+                img.style.height = '60px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '12px';
+                previewFotos.appendChild(img);
+            }
+            
+            pendingPublication = { titulo, categoria, descripcion, fotos: [...fotosSeleccionadas] };
             document.getElementById('previewModal').style.display = 'flex';
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(fotosSeleccionadas[0]);
     };
 
     document.getElementById('confirmarPublicarBtn').onclick = async () => {
         if (!pendingPublication) return;
-        const { titulo, categoria, descripcion, file } = pendingPublication;
+        const { titulo, categoria, descripcion, fotos } = pendingPublication;
         const progressBar = document.getElementById('progressBar');
         try {
             let progress = 0, interval = setInterval(() => { progress = Math.min(progress + 10, 90); progressBar.style.width = `${progress}%`; }, 200);
-            const result = await publicarObjeto(titulo, descripcion, categoria, file);
+            const result = await publicarObjeto(titulo, descripcion, categoria, fotos);
             clearInterval(interval); progressBar.style.width = '100%';
             showStatus(result.sospechoso ? '⚠️ Publicación en revisión' : '✅ Objeto publicado', result.sospechoso ? 'info' : 'success', 'pubStatus');
             setTimeout(() => { progressBar.style.width = '0%'; }, 2000);
@@ -1011,21 +1478,28 @@
             document.getElementById('direccionInput').value = '';
             document.getElementById('latitud').value = '';
             document.getElementById('longitud').value = '';
-            document.getElementById('fileInput').value = '';
+            document.getElementById('fotoPrincipalPreview').style.display = 'none';
+            document.getElementById('fotosExtraPreview').innerHTML = '';
             document.getElementById('mapaContainer').style.display = 'none';
             mapaVisible = false;
+            fotosSeleccionadas = [];
             document.getElementById('previewModal').style.display = 'none';
             pendingPublication = null;
             cargarMisObjetos(); cargarFeed();
         } catch(e) { showStatus('❌ Error: ' + e.message, 'error', 'pubStatus'); progressBar.style.width = '0%'; }
     };
 
-    document.getElementById('cancelarPublicarBtn').onclick = () => {
-        document.getElementById('previewModal').style.display = 'none';
-        pendingPublication = null;
-    };
+    document.getElementById('cancelarPublicarBtn').onclick = () => { document.getElementById('previewModal').style.display = 'none'; pendingPublication = null; };
 
     // ========== EVENTOS ==========
+    window.mostrarFotoAmpliada = mostrarFotoAmpliada;
+    window.toggleFavorito = toggleFavorito;
+    window.marcarIntercambiadoPrompt = marcarIntercambiadoPrompt;
+    window.eliminarObjetoPrompt = eliminarObjetoPrompt;
+    window.reportarObjetoPrompt = reportarObjetoPrompt;
+    window.abrirGoogleMaps = abrirGoogleMaps;
+    window.verMiPerfil = verMiPerfil;
+
     document.getElementById('googleLoginBtn').onclick = () => loginWithGoogle();
     document.getElementById('logoutBtn').onclick = () => logout();
     document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
@@ -1038,6 +1512,10 @@
     }));
     
     document.getElementById('ubicarBtn').onclick = usarMiUbicacion;
+    
+    // Áreas de subida de fotos
+    document.getElementById('uploadAreaPrincipal').onclick = () => document.getElementById('fotoPrincipal').click();
+    document.getElementById('uploadAreaExtra').onclick = () => document.getElementById('fotosExtra').click();
     
     let timeoutBusqueda;
     document.getElementById('direccionInput').addEventListener('input', (e) => {
@@ -1055,33 +1533,26 @@
         }
     });
 
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', async () => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active'); const tab = btn.dataset.tab;
         document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
         document.getElementById(`tab-${tab}`).style.display = 'block';
         if (tab === 'feed') cargarFeed();
+        if (tab === 'favoritos') cargarFavoritos();
         if (tab === 'misobjetos') cargarMisObjetos();
         if (tab === 'chats') cargarListaConversaciones();
+        if (tab === 'perfil') cargarMiPerfil();
     }));
-
-    const uploadArea = document.getElementById('uploadArea'), fileInput = document.getElementById('fileInput');
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.background = '#f0fdf4'; });
-    uploadArea.addEventListener('dragleave', () => { uploadArea.style.background = '#f8fafc'; });
-    uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.style.background = '#f8fafc'; fileInput.files = e.dataTransfer.files; });
 
     // ========== INICIALIZACIÓN ==========
     async function init() {
         const token = getTokenFromURL();
         if (token) { authToken = token; const user = await verifyToken(token); if (user) currentUser = user; else { localStorage.removeItem('auth_token'); authToken = null; } }
         updateUIForUser();
-        
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => { ubicacionUsuario = { lat: position.coords.latitude, lng: position.coords.longitude }; },
-                () => {}
-            );
+        if (currentUser) {
+            const favs = await obtenerFavoritos();
+            favoritos = new Set(favs.map(f => f.id));
         }
     }
     init();
