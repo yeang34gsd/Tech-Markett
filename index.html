@@ -2,9 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Intercambia - Trueque de objetos</title>
-    <!-- Leaflet (mapa gratuito) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Intercambia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -12,902 +15,501 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
-        
-        /* ========== MODO OSCURO ========== */
+
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f5;
             min-height: 100vh;
-            padding: 20px;
         }
+
         body.dark-mode {
-            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+            background: #121212;
         }
+
         body.dark-mode .card,
-        body.dark-mode .main-header,
-        body.dark-mode .search-section,
-        body.dark-mode .login-card,
-        body.dark-mode .objeto-card,
-        body.dark-mode .perfil-card,
+        body.dark-mode .message-item,
+        body.dark-mode .chat-header,
+        body.dark-mode .chat-messages,
+        body.dark-mode .chat-input-container,
+        body.dark-mode .post-card,
         body.dark-mode .modal-content,
-        body.dark-mode .chat-container .mensaje.receptor,
-        body.dark-mode .conv-item,
-        body.dark-mode .ubicacion-section,
-        body.dark-mode .fotos-extra-area,
-        body.dark-mode .upload-area {
-            background: #1e293b;
-            color: #e2e8f0;
-            border-color: #334155;
+        body.dark-mode .profile-menu,
+        body.dark-mode .search-panel {
+            background: #1e1e1e;
+            color: #e0e0e0;
         }
-        body.dark-mode .objeto-info p,
-        body.dark-mode .subtitle,
-        body.dark-mode .logo-area p {
-            color: #94a3b8;
-        }
-        body.dark-mode .search-bar,
-        body.dark-mode .cat-btn,
-        body.dark-mode input,
-        body.dark-mode textarea,
-        body.dark-mode select {
-            background: #334155;
-            color: #e2e8f0;
-            border-color: #475569;
-        }
-        body.dark-mode .cat-btn.active {
-            background: #059669;
-            color: white;
-        }
-        body.dark-mode .badge-ubicacion {
-            background: #3b82f6;
-            color: white;
-        }
-        body.dark-mode .chat-input input {
-            background: #334155;
-            color: #e2e8f0;
-            border-color: #475569;
-        }
-        
-        .container {
-            max-width: 1300px;
+
+        .app-container {
+            max-width: 600px;
             margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
-        .main-header {
+
+        body.dark-mode .app-container {
+            background: #121212;
+        }
+
+        /* Header */
+        .app-header {
             background: white;
-            border-radius: 32px;
-            padding: 20px 28px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(5, 150, 105, 0.1);
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .logo-area h1 {
-            font-size: 1.8rem;
+
+        body.dark-mode .app-header {
+            background: #1e1e1e;
+            border-bottom-color: #333;
+        }
+
+        .logo {
+            font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #059669, #10b981);
+            background: linear-gradient(135deg, #1877f2, #0e5fd9);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
         }
-        body.dark-mode .logo-area h1 {
-            background: linear-gradient(135deg, #10b981, #34d399);
-            background-clip: text;
-            -webkit-background-clip: text;
-        }
-        .logo-area p {
-            font-size: 0.85rem;
-            color: #475569;
-        }
-        .header-buttons {
+
+        .header-actions {
             display: flex;
-            gap: 12px;
+            gap: 16px;
             align-items: center;
         }
-        .dark-mode-btn {
-            background: #64748b;
+
+        .icon-btn {
+            background: none;
             border: none;
-            border-radius: 40px;
-            padding: 8px 16px;
+            font-size: 1.3rem;
             cursor: pointer;
-            font-size: 1.2rem;
-            transition: 0.2s;
-        }
-        .dark-mode-btn:hover {
-            transform: scale(1.05);
-        }
-        .search-section {
-            background: white;
-            border-radius: 28px;
-            padding: 20px 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        }
-        .search-bar {
-            background: #f1f5f9;
-            border-radius: 60px;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .search-bar input {
-            border: none;
-            background: transparent;
-            font-size: 1rem;
-            width: 100%;
-            outline: none;
-        }
-        .categories {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .cat-btn {
-            background: #f1f5f9;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #334155;
-        }
-        .cat-btn.active {
-            background: #059669;
-            color: white;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 24px;
-            margin-top: 8px;
-        }
-        .objeto-card {
-            background: white;
-            border-radius: 28px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            border: 1px solid #eef2ff;
-            position: relative;
-        }
-        .objeto-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
-        }
-        .imagen-principal {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            background: #f1f5f9;
-            cursor: pointer;
-        }
-        .miniaturas {
-            display: flex;
-            gap: 4px;
+            color: #65676b;
             padding: 8px;
-            background: white;
-            border-top: 1px solid #eef2ff;
-            overflow-x: auto;
-        }
-        body.dark-mode .miniaturas {
-            background: #1e293b;
-            border-top-color: #334155;
-        }
-        .miniatura {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 12px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: 0.2s;
-        }
-        .miniatura:hover {
-            border-color: #059669;
-            transform: scale(1.05);
-        }
-        .miniatura.activa {
-            border-color: #059669;
-        }
-        .objeto-info {
-            padding: 16px;
-        }
-        .categoria-badge {
-            background: #dcfce7;
-            color: #166534;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 4px 12px;
-            border-radius: 30px;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-        body.dark-mode .categoria-badge {
-            background: #064e3b;
-            color: #86efac;
-        }
-        .badge {
-            background: #059669;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 12px;
-            display: inline-block;
-            margin: 8px 8px 8px 0;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .badge:hover {
-            transform: scale(1.02);
-        }
-        .badge-ubicacion {
-            background: #e0e7ff;
-            color: #1e40af;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 4px 4px 4px 0;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        body.dark-mode .badge-ubicacion {
-            background: #3b82f6;
-            color: white;
-        }
-        .badge-intercambiado {
-            background: #6b7280;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 4px 0;
-        }
-        .badge-expiracion {
-            background: #e67e22;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 4px 0;
-        }
-        .badge-sospechoso {
-            background: #f59e0b;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 4px 0;
-        }
-        .favorito-btn {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(255,255,255,0.9);
-            border: none;
             border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             transition: 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 10;
         }
-        body.dark-mode .favorito-btn {
-            background: rgba(30,41,59,0.9);
-            color: white;
+
+        .icon-btn:hover {
+            background: #f0f2f5;
         }
-        .favorito-btn:hover {
-            transform: scale(1.1);
-        }
-        .favorito-btn.activo {
-            color: #eab308;
-        }
-        .btn-primary {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn-primary:hover {
-            background: #047857;
-            transform: scale(1.02);
-        }
-        .google-btn {
-            background: #4285f4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 100%;
-            max-width: 320px;
-            margin: 0 auto;
-            padding: 12px 24px;
-            border-radius: 40px;
-            color: white;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-        }
-        .intercambiar-btn {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 12px;
-            width: 100%;
-            font-weight: 500;
-        }
-        .whatsapp-btn {
-            background: #25D366;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 8px;
-            width: 100%;
-            font-size: 13px;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .whatsapp-btn:hover {
-            background: #128C7E;
-            transform: scale(1.02);
-        }
-        .reportar-btn {
-            background: #f59e0b;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 8px;
-            width: 100%;
-            font-size: 13px;
-        }
-        .eliminar-btn {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 12px;
-            width: 100%;
-            font-weight: 500;
-        }
-        .intercambiado-btn {
-            background: #6b7280;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 12px;
-            width: 100%;
-            font-weight: 500;
-        }
-        .btn-como-llegar {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 8px;
-            width: 100%;
-            font-size: 13px;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-como-llegar:hover {
-            background: #2563eb;
-            transform: scale(1.02);
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
+
+        /* Panel de búsqueda deslizable */
+        .search-panel {
+            position: absolute;
+            top: 60px;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
+            right: 0;
             background: white;
-            border-radius: 32px;
-            max-width: 500px;
-            width: 90%;
-            padding: 24px;
-            text-align: center;
-        }
-        .modal-content img {
-            width: 100%;
-            border-radius: 20px;
-            margin: 16px 0;
-        }
-        .modal-foto {
-            max-width: 90vw;
-            max-height: 80vh;
-        }
-        .modal-foto img {
-            width: auto;
-            max-height: 70vh;
-        }
-        .foto-preview {
-            display: inline-block;
-            position: relative;
-            margin: 8px;
-        }
-        .foto-preview img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 12px;
-        }
-        .foto-preview button {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #dc2626;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .chat-container {
-            background: #f8fafc;
-            border-radius: 24px;
             padding: 16px;
-            max-height: 400px;
-            overflow-y: auto;
+            border-bottom: 1px solid #e0e0e0;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            z-index: 99;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .mensaje {
-            background: white;
-            border-radius: 20px;
-            padding: 10px 16px;
-            margin-bottom: 12px;
-            max-width: 80%;
+
+        .search-panel.open {
+            transform: translateY(0);
         }
-        .mensaje.emisor {
-            background: #059669;
-            color: white;
-            margin-left: auto;
-        }
-        .mensaje.receptor {
-            background: #e2e8f0;
-        }
-        body.dark-mode .mensaje.receptor {
-            background: #334155;
-            color: #e2e8f0;
-        }
-        .mensaje-imagen {
-            max-width: 200px;
-            border-radius: 12px;
-            margin-top: 8px;
-            cursor: pointer;
-        }
-        .mensaje small {
-            font-size: 10px;
-            opacity: 0.7;
-            display: block;
-        }
-        .chat-input {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-        .chat-input input {
-            flex: 1;
+
+        .search-panel input {
+            width: 100%;
             padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 40px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
             outline: none;
+            font-size: 16px;
         }
-        .chat-input button {
-            padding: 12px 20px;
-        }
-        .adjuntar-btn {
-            background: #64748b;
-            padding: 12px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-        .login-card {
-            text-align: center;
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 600px;
+            margin: 0 auto;
             background: white;
-            border-radius: 32px;
-            padding: 32px;
-            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 16px 20px;
+            border-top: 1px solid #e0e0e0;
+            z-index: 100;
         }
-        .user-info {
-            background: #eef2ff;
-            padding: 12px 20px;
-            border-radius: 60px;
-            text-align: center;
+
+        body.dark-mode .bottom-nav {
+            background: #1e1e1e;
+            border-top-color: #333;
+        }
+
+        .nav-item-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #65676b;
+            font-size: 0.75rem;
+            transition: 0.2s;
+            padding: 4px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-item-bottom i {
+            font-size: 1.5rem;
+        }
+
+        .nav-item-bottom.active {
+            color: #1877f2;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        /* Post Cards */
+        .post-card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .post-header {
+            padding: 12px 16px;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 12px;
-            flex-wrap: wrap;
         }
-        .user-avatar {
+
+        .post-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
             cursor: pointer;
         }
-        .logout-btn {
-            background: #64748b;
-            padding: 8px 20px;
-            border-radius: 40px;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-        .nav-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 12px;
-        }
-        body.dark-mode .nav-buttons {
-            border-bottom-color: #334155;
-        }
-        .nav-btn {
-            background: none;
-            border: none;
-            padding: 8px 24px;
-            font-size: 1rem;
+
+        .post-user-name {
             font-weight: 600;
             cursor: pointer;
-            border-radius: 40px;
-            transition: 0.2s;
-            color: #475569;
         }
-        body.dark-mode .nav-btn {
-            color: #94a3b8;
+
+        .post-time {
+            font-size: 11px;
+            color: #65676b;
         }
-        .nav-btn.active {
-            background: #059669;
-            color: white;
+
+        .post-title {
+            font-weight: 600;
+            margin: 0 16px 8px;
         }
-        .upload-area {
-            border: 3px dashed #cbd5e1;
-            border-radius: 24px;
-            padding: 40px;
-            text-align: center;
+
+        .post-description {
+            color: #1b1f23;
+            margin: 0 16px 12px;
+            line-height: 1.4;
+        }
+
+        /* Grid de imágenes */
+        .post-media {
+            margin: 8px 0;
+        }
+
+        .grid-media {
+            display: grid;
+            gap: 2px;
+        }
+
+        .grid-media-1 { grid-template-columns: 1fr; }
+        .grid-media-2 { grid-template-columns: 1fr 1fr; }
+        .grid-media-3, .grid-media-4 { grid-template-columns: 1fr 1fr; }
+
+        .media-item {
+            position: relative;
             cursor: pointer;
-            background: #f8fafc;
-            transition: 0.2s;
-        }
-        .upload-area:hover {
-            border-color: #059669;
-            background: #f0fdf4;
-        }
-        .fotos-extra-area {
-            margin-top: 16px;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 20px;
-        }
-        .fotos-preview-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 12px;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 16px;
-            margin: 10px 0;
-            border: 1px solid #cbd5e1;
-            border-radius: 60px;
-            font-size: 1rem;
-            outline: none;
-        }
-        textarea {
-            border-radius: 20px;
-            resize: vertical;
-        }
-        .progress-container {
-            background: #e2e8f0;
-            border-radius: 40px;
-            margin: 16px 0;
             overflow: hidden;
+            background: #f0f2f5;
+            min-height: 200px;
         }
-        .progress-bar {
-            width: 0%;
-            height: 8px;
-            background: #059669;
-            transition: width 0.2s;
-        }
-        .conv-item {
-            padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
-            cursor: pointer;
-            transition: 0.2s;
-            border-radius: 16px;
-        }
-        .conv-item:hover {
-            background: #f1f5f9;
-        }
-        .status-success, .status-error, .status-info {
-            padding: 12px;
-            border-radius: 60px;
-            margin-top: 12px;
-            text-align: center;
-        }
-        .status-success { background: #bbf7d0; color: #166534; }
-        .status-error { background: #fee2e2; color: #991b1b; }
-        .status-info { background: #dbeafe; color: #1e3a8a; }
-        body.dark-mode .status-success { background: #064e3b; color: #86efac; }
-        body.dark-mode .status-error { background: #7f1d1d; color: #fecaca; }
-        body.dark-mode .status-info { background: #1e3a8a; color: #93c5fd; }
-        .ubicacion-section {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 16px;
-            margin: 16px 0;
-        }
-        #mapa {
-            height: 250px;
+
+        .media-item img, .media-item video {
             width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-count {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 4px 8px;
             border-radius: 20px;
-            z-index: 1;
+            font-size: 12px;
         }
-        .leaflet-control-attribution {
-            font-size: 9px;
-        }
-        .rating {
+
+        .post-actions {
+            padding: 8px 16px;
+            border-top: 1px solid #e0e0e0;
             display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
             justify-content: center;
             gap: 8px;
-            margin: 16px 0;
-        }
-        .star {
-            font-size: 32px;
-            cursor: pointer;
-            color: #cbd5e1;
+            color: #65676b;
             transition: 0.2s;
         }
-        .star.selected {
-            color: #eab308;
+
+        .action-btn:hover {
+            background: #f0f2f5;
         }
-        .perfil-card {
+
+        /* Chat */
+        .chat-container {
             background: white;
-            border-radius: 28px;
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 140px);
+        }
+
+        .chat-header {
+            padding: 16px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #f5f5f5;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 20px;
+            word-wrap: break-word;
+        }
+
+        .message-received {
+            background: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-sent {
+            background: #1877f2;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-input-container {
+            padding: 12px 16px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 24px;
+            background: #f0f2f5;
+            outline: none;
+        }
+
+        .chat-send-btn {
+            background: #1877f2;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Perfil */
+        .profile-card {
+            background: white;
+            border-radius: 16px;
             padding: 24px;
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
-        .perfil-avatar {
-            width: 80px;
-            height: 80px;
+
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             object-fit: cover;
             margin-bottom: 16px;
+            cursor: pointer;
         }
-        .nuevo-mensaje-indicador {
-            background: #ef4444;
+
+        .edit-profile-btn {
+            background: #1877f2;
             color: white;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 10px;
-            margin-left: 8px;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            cursor: pointer;
         }
-        .nivel-badge {
-            background: linear-gradient(135deg, #f59e0b, #eab308);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 12px;
-            display: inline-block;
-            margin: 8px 0;
+
+        /* Menú desplegable */
+        .profile-menu {
+            position: absolute;
+            top: 60px;
+            right: 16px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 250px;
+            z-index: 200;
+            display: none;
+            overflow: hidden;
         }
-        .puntos-badge {
-            background: #3b82f6;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 12px;
-            display: inline-block;
-            margin: 4px 0;
+
+        .profile-menu.show {
+            display: block;
         }
-        .insignia {
-            display: inline-block;
-            margin: 4px;
-            font-size: 20px;
-            cursor: help;
+
+        .profile-menu-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.2s;
         }
-        @media (max-width: 700px) {
-            .grid { grid-template-columns: 1fr; }
+
+        .profile-menu-item:hover {
+            background: #f0f2f5;
         }
+
+        /* Modales */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 90%;
+            width: 400px;
+            padding: 24px;
+        }
+
+        .loading { text-align: center; padding: 40px; color: #65676b; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="main-header">
-        <div class="logo-area">
-            <h1>🔄 Intercambia</h1>
-            <p>Trueque de objetos - Encuentra lo que buscas</p>
-        </div>
-        <div class="header-buttons">
-            <button id="darkModeBtn" class="dark-mode-btn">🌙</button>
-            <div id="userInfo" class="user-info" style="display:none;"></div>
+<div class="app-container" id="app">
+    <div class="app-header">
+        <div class="logo">🔄 Intercambia</div>
+        <div class="header-actions">
+            <button class="icon-btn" id="searchBtn"><i class="fas fa-search"></i></button>
+            <button class="icon-btn" id="profileBtn"><i class="fas fa-user-circle"></i></button>
         </div>
     </div>
 
-    <!-- Login con Google -->
-    <div class="login-card" id="loginSection">
-        <h2>🔐 Bienvenido a Intercambia</h2>
-        <p style="margin: 16px 0; color: #475569;">Inicia sesión para publicar objetos, intercambiar y chatear</p>
-        <button id="googleLoginBtn" class="google-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24">
-                <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Iniciar sesión con Google
-        </button>
-        <button id="logoutBtn" style="display:none;" class="logout-btn">Cerrar sesión</button>
+    <!-- Panel de búsqueda deslizable -->
+    <div class="search-panel" id="searchPanel">
+        <input type="text" id="searchInput" placeholder="Buscar por título o usuario..." autocomplete="off">
+        <div id="searchResults" style="margin-top: 12px;"></div>
     </div>
 
-    <!-- App principal -->
-    <div id="appSections" style="display:none;">
-        <div class="search-section">
-            <div class="search-bar">
-                <span>🔍</span>
-                <input type="text" id="searchInput" placeholder="Buscar por título o usuario...">
-            </div>
-            <div class="categories">
-                <button class="cat-btn active" data-cat="all">Todos</button>
-                <button class="cat-btn" data-cat="Electrónica">📱 Electrónica</button>
-                <button class="cat-btn" data-cat="Ropa">👕 Ropa</button>
-                <button class="cat-btn" data-cat="Libros">📚 Libros</button>
-                <button class="cat-btn" data-cat="Mascotas">🐾 Mascotas</button>
-                <button class="cat-btn" data-cat="Hogar">🏠 Hogar</button>
-                <button class="cat-btn" data-cat="Deportes">⚽ Deportes</button>
-            </div>
+    <!-- Menú desplegable de perfil -->
+    <div class="profile-menu" id="profileMenu">
+        <div class="profile-menu-item" onclick="cambiarTab('perfil')">
+            <i class="fas fa-user"></i> <span>Mi Perfil</span>
         </div>
-
-        <div class="nav-buttons">
-            <button class="nav-btn active" data-tab="feed">📦 Objetos disponibles</button>
-            <button class="nav-btn" data-tab="favoritos">⭐ Favoritos</button>
-            <button class="nav-btn" data-tab="publicar">➕ Publicar objeto</button>
-            <button class="nav-btn" data-tab="misobjetos">📋 Mis objetos</button>
-            <button class="nav-btn" data-tab="chats">💬 Mis conversaciones</button>
-            <button class="nav-btn" data-tab="perfil">👤 Mi perfil</button>
+        <div class="profile-menu-item" onclick="cambiarTab('misobjetos')">
+            <i class="fas fa-box"></i> <span>Mis Publicaciones</span>
         </div>
-
-        <div id="tab-feed"><div id="feedGrid" class="grid">Cargando objetos...</div></div>
-        <div id="tab-favoritos" style="display:none;"><div id="favoritosGrid" class="grid">Cargando favoritos...</div></div>
-        
-        <div id="tab-publicar" style="display:none;">
-            <div style="background: white; border-radius: 28px; padding: 24px;">
-                <h3>📸 Publicar un objeto</h3>
-                <input type="text" id="titulo" placeholder="Título del objeto">
-                <select id="categoria">
-                    <option value="Electrónica">📱 Electrónica</option>
-                    <option value="Ropa">👕 Ropa</option>
-                    <option value="Libros">📚 Libros</option>
-                    <option value="Mascotas">🐾 Mascotas</option>
-                    <option value="Hogar">🏠 Hogar</option>
-                    <option value="Deportes">⚽ Deportes</option>
-                </select>
-                <textarea id="descripcion" rows="3" placeholder="Descripción..."></textarea>
-                
-                <div class="ubicacion-section">
-                    <label>📸 Fotos (máx 5)</label>
-                    <div class="upload-area" id="uploadAreaPrincipal">
-                        <div>📁 Foto principal</div>
-                        <input type="file" id="fotoPrincipal" accept="image/*" style="display:none;">
-                    </div>
-                    <div id="fotoPrincipalPreview" style="margin-top:12px; display:none;">
-                        <div class="foto-preview">
-                            <img id="principalPreviewImg" src="">
-                            <button id="eliminarPrincipal">✕</button>
-                        </div>
-                    </div>
-                    <div class="fotos-extra-area">
-                        <div class="upload-area" id="uploadAreaExtra" style="padding:20px;">
-                            <div>📁 Fotos adicionales (hasta 4)</div>
-                            <input type="file" id="fotosExtra" accept="image/*" multiple style="display:none;">
-                        </div>
-                        <div id="fotosExtraPreview" class="fotos-preview-container"></div>
-                    </div>
-                </div>
-                
-                <div class="ubicacion-section">
-                    <label>📍 Ubicación</label>
-                    <div style="display:flex; gap:10px; margin:10px 0; flex-wrap:wrap;">
-                        <button type="button" id="ubicarBtn" style="background:#3b82f6; padding:10px 16px; width:auto;">📍 Usar mi ubicación</button>
-                        <input type="text" id="direccionInput" placeholder="Ej: Av. Los Paltos 321, Quilpué" style="flex:1;">
-                    </div>
-                    <div id="mapaContainer" style="display:none;"><div id="mapa"></div><p style="font-size:12px;">🖱️ Haz clic en el mapa</p></div>
-                    <input type="hidden" id="latitud"><input type="hidden" id="longitud">
-                </div>
-                
-                <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
-                <button id="previewBtn" class="btn-primary">📸 Vista previa</button>
-                <div id="pubStatus"></div>
-            </div>
+        <div class="profile-menu-item" onclick="cargarFavoritosEnFeed()">
+            <i class="fas fa-bookmark"></i> <span>Favoritos</span>
         </div>
-
-        <div id="tab-misobjetos" style="display:none;"><div id="misObjetosGrid" class="grid">Cargando...</div></div>
-        
-        <div id="tab-chats" style="display:none;">
-            <div id="listaChats"></div>
-            <div id="chatDetalle" style="margin-top:24px; display:none;">
-                <div style="background: white; border-radius: 28px; padding: 20px;">
-                    <h4 id="chatTitulo"></h4>
-                    <div id="chatMensajes" class="chat-container"></div>
-                    <div id="valorarSection" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid #e2e8f0;">
-                        <h4>⭐ Calificar intercambio</h4>
-                        <div class="rating" id="ratingStars">
-                            <span class="star" data-value="1">☆</span><span class="star" data-value="2">☆</span><span class="star" data-value="3">☆</span><span class="star" data-value="4">☆</span><span class="star" data-value="5">☆</span>
-                        </div>
-                        <textarea id="comentarioValoracion" rows="2" placeholder="Comentario (opcional)"></textarea>
-                        <button id="enviarValoracionBtn" class="btn-primary">Enviar valoración</button>
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" id="nuevoMensaje" placeholder="Escribe un mensaje...">
-                        <button id="adjuntarArchivoBtn" class="adjuntar-btn">📎</button>
-                        <input type="file" id="archivoAdjunto" accept="image/*,application/pdf" style="display:none;">
-                        <button id="enviarMensajeBtn" style="background:#059669;">Enviar</button>
-                    </div>
-                </div>
-            </div>
+        <div class="profile-menu-item" id="darkModeToggle">
+            <i class="fas fa-moon"></i> <span>Modo oscuro</span>
         </div>
+        <div class="profile-menu-item" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> <span>Cerrar sesión</span>
+        </div>
+    </div>
 
-        <div id="tab-perfil" style="display:none;"><div id="perfilContent"></div></div>
+    <div class="main-content" id="mainContent">
+        <div class="loading">Cargando...</div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-item-bottom active" data-tab="feed"><i class="fas fa-home"></i><span>Inicio</span></button>
+        <button class="nav-item-bottom" data-tab="publicar"><i class="fas fa-plus-circle"></i><span>Publicar</span></button>
+        <button class="nav-item-bottom" data-tab="chats"><i class="fas fa-comment-dots"></i><span>Mensajes</span></button>
     </div>
 </div>
 
-<!-- Modales -->
-<div id="previewModal" class="modal"><div class="modal-content"><h3>📋 ¿Publicar este objeto?</h3><img id="previewImg" src=""><p><strong id="previewTitulo"></strong></p><p id="previewDesc"></p><p><span class="categoria-badge" id="previewCategoria"></span></p><p id="previewUbicacion"></p><div id="previewFotosExtra"></div><button id="confirmarPublicarBtn" class="btn-primary">✅ Sí, publicar</button><button id="cancelarPublicarBtn" style="margin-top:12px; background:#e2e8f0; padding:10px; border-radius:40px;">Cancelar</button></div></div>
-<div id="fotoModal" class="modal"><div class="modal-content modal-foto" style="background:transparent;"><img id="fotoModalImg" src=""><button onclick="document.getElementById('fotoModal').style.display='none'" style="margin-top:16px; background:white; padding:8px 20px; border-radius:40px;">Cerrar</button></div></div>
+<!-- Modal editar perfil -->
+<div id="editProfileModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Editar perfil</h3>
+        <div style="text-align: center; margin: 16px 0;">
+            <img id="editAvatar" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; cursor: pointer;">
+        </div>
+        <input type="text" id="editNombre" placeholder="Nombre de usuario" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px;">
+        <input type="url" id="editFoto" placeholder="URL de la foto de perfil" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px;">
+        <button id="guardarPerfilBtn" style="background: #1877f2; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%;">Guardar cambios</button>
+        <button onclick="closeEditProfileModal()" style="background: none; border: none; margin-top: 12px; width: 100%; cursor: pointer;">Cancelar</button>
+    </div>
+</div>
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
@@ -917,92 +519,25 @@
     
     let currentUser = null;
     let authToken = null;
-    let chatActual = { objetoId: null, otroUsuario: null, titulo: null, objetoIntercambiado: false };
-    let pendingPublication = null;
-    let map = null, marker = null, mapaVisible = false;
+    let currentTab = 'feed';
     let favoritos = new Set();
     let fotosSeleccionadas = [];
-    let valoracionPendiente = { id_objeto: null, calificado: null };
-    let pollingInterval = null;
+    let map = null, marker = null;
+    let chatActual = { objetoId: null, otroUsuario: null, otroNombre: null };
     let ultimoMensajeId = 0;
-    let sonido = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
-    
-    // Niveles y puntos del usuario
-    let puntosUsuario = 0;
-    let nivelUsuario = 1;
-    
+    let pollingInterval = null;
+    let todosLosObjetos = [];
+
     // ========== MODO OSCURO ==========
     function initDarkMode() {
         const darkMode = localStorage.getItem('darkMode') === 'true';
         if (darkMode) document.body.classList.add('dark-mode');
-        document.getElementById('darkModeBtn').textContent = darkMode ? '☀️' : '🌙';
     }
-    document.getElementById('darkModeBtn').onclick = () => {
+    document.getElementById('darkModeToggle').onclick = () => {
         document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('darkMode', isDark);
-        document.getElementById('darkModeBtn').textContent = isDark ? '☀️' : '🌙';
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
     };
-    
-    // ========== SONIDO ==========
-    function reproducirSonido() {
-        sonido.play().catch(e => console.log('Error reproduciendo sonido:', e));
-    }
-    
-    // ========== NIVELES E INSIGNIAS ==========
-    function calcularNivel(puntos) {
-        if (puntos < 100) return { nivel: 1, nombre: "🌱 Principiante", siguiente: 100 - puntos };
-        if (puntos < 300) return { nivel: 2, nombre: "🌟 Explorador", siguiente: 300 - puntos };
-        if (puntos < 600) return { nivel: 3, nombre: "🤝 Intercambiador", siguiente: 600 - puntos };
-        if (puntos < 1000) return { nivel: 4, nombre: "⭐ Experto", siguiente: 1000 - puntos };
-        return { nivel: 5, nombre: "👑 Maestro", siguiente: 0 };
-    }
-    
-    function obtenerInsignias(puntos, objetos, intercambiados, valoraciones) {
-        const insignias = [];
-        if (objetos >= 1) insignias.push({ emoji: "📸", nombre: "Primera publicación", desc: "Publicaste tu primer objeto" });
-        if (objetos >= 5) insignias.push({ emoji: "📸📸", nombre: "Fotógrafo", desc: "Publicaste 5 objetos" });
-        if (objetos >= 10) insignias.push({ emoji: "🏆", nombre: "Coleccionista", desc: "Publicaste 10 objetos" });
-        if (intercambiados >= 1) insignias.push({ emoji: "🤝", nombre: "Primer intercambio", desc: "Completaste tu primer intercambio" });
-        if (intercambiados >= 3) insignias.push({ emoji: "🤝🤝", nombre: "Negociador", desc: "Completaste 3 intercambios" });
-        if (valoraciones >= 1 && (valoraciones / objetos) >= 0.5) insignias.push({ emoji: "⭐", nombre: "Bien valorado", desc: "Recibiste buenas valoraciones" });
-        if (puntos >= 500) insignias.push({ emoji: "🔥", nombre: "Dedicado", desc: "Alcanzaste 500 puntos" });
-        return insignias;
-    }
-    
-    async function actualizarPuntos(accion) {
-        if (!currentUser) return;
-        let incremento = 0;
-        switch(accion) {
-            case 'publicar': incremento = 10; break;
-            case 'intercambiar': incremento = 25; break;
-            case 'valorar': incremento = 5; break;
-            case 'recibir_valoracion': incremento = 10; break;
-            default: return;
-        }
-        puntosUsuario += incremento;
-        const nivelInfo = calcularNivel(puntosUsuario);
-        nivelUsuario = nivelInfo.nivel;
-        localStorage.setItem(`puntos_${currentUser.email}`, puntosUsuario);
-        
-        const notif = document.createElement('div');
-        notif.className = 'status-info';
-        notif.innerText = `✨ +${incremento} puntos! ${nivelInfo.nombre}`;
-        notif.style.position = 'fixed';
-        notif.style.bottom = '20px';
-        notif.style.right = '20px';
-        notif.style.zIndex = '1000';
-        notif.style.maxWidth = '250px';
-        document.body.appendChild(notif);
-        setTimeout(() => notif.remove(), 3000);
-    }
-    
-    // ========== COMPARTIR WHATSAPP ==========
-    function compartirWhatsApp(titulo, url) {
-        const text = encodeURIComponent(`📦 Mira este objeto en Intercambia: ${titulo}\n${url}`);
-        window.open(`https://wa.me/?text=${text}`, '_blank');
-    }
-    
+
     // ========== ONESIGNAL ==========
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
@@ -1011,78 +546,33 @@
             notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' },
         });
     });
+
     async function guardarOneSignalId(email) {
         try {
             const OneSignal = window.OneSignal;
             const userId = await OneSignal.User.getPushSubscriptionId();
-            if (userId) await fetch(`${WORKER_URL}/guardar-onesignal-id`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ onesignal_id: userId }) });
+            if (userId) {
+                await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ onesignal_id: userId })
+                });
+            }
         } catch(e) { console.error(e); }
     }
-    
-    // ========== UBICACIÓN ==========
-    function initMapa(lat = -33.4489, lng = -70.6693) {
-        if (map) map.remove();
-        map = L.map('mapa').setView([lat, lng], 15);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-        marker.on('dragend', () => { const pos = marker.getLatLng(); document.getElementById('latitud').value = pos.lat; document.getElementById('longitud').value = pos.lng; obtenerDireccionDesdeCoordenadas(pos.lat, pos.lng); });
-        map.on('click', (e) => { marker.setLatLng(e.latlng); document.getElementById('latitud').value = e.latlng.lat; document.getElementById('longitud').value = e.latlng.lng; obtenerDireccionDesdeCoordenadas(e.latlng.lat, e.latlng.lng); });
-    }
-    async function obtenerDireccionDesdeCoordenadas(lat, lng) {
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=es`);
-            const data = await res.json();
-            if (data.address) {
-                const partes = [];
-                if (data.address.road) partes.push(data.address.road);
-                if (data.address.house_number) partes.push(data.address.house_number);
-                if (data.address.suburb) partes.push(data.address.suburb);
-                if (data.address.city || data.address.town) partes.push(data.address.city || data.address.town);
-                if (partes.length) document.getElementById('direccionInput').value = partes.join(', ');
-                else if (data.display_name) document.getElementById('direccionInput').value = data.display_name.split(',')[0];
-            }
-        } catch(e) {}
-    }
-    async function obtenerCoordenadasDesdeDireccion(direccion) {
-        if (!direccion || direccion.length < 5) return null;
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}&limit=1&accept-language=es`);
-            const data = await res.json();
-            if (data.length) {
-                const lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon);
-                document.getElementById('latitud').value = lat;
-                document.getElementById('longitud').value = lng;
-                if (mapaVisible && map) { marker.setLatLng([lat, lng]); map.setView([lat, lng], 15); }
-                return { lat, lng };
-            }
-        } catch(e) {}
-        return null;
-    }
-    function usarMiUbicacion() {
-        if (!navigator.geolocation) { alert('No soporta geolocalización'); return; }
-        document.getElementById('ubicarBtn').disabled = true;
-        navigator.geolocation.getCurrentPosition(pos => {
-            const { latitude, longitude } = pos.coords;
-            document.getElementById('latitud').value = latitude;
-            document.getElementById('longitud').value = longitude;
-            if (!mapaVisible) { document.getElementById('mapaContainer').style.display = 'block'; mapaVisible = true; setTimeout(() => initMapa(latitude, longitude), 100); }
-            else if (map) { marker.setLatLng([latitude, longitude]); map.setView([latitude, longitude], 15); }
-            obtenerDireccionDesdeCoordenadas(latitude, longitude);
-            document.getElementById('ubicarBtn').disabled = false;
-        }, () => { alert('No se pudo obtener ubicación'); document.getElementById('ubicarBtn').disabled = false; });
-    }
-    function abrirGoogleMaps(lat, lng, direccion) {
-        const query = direccion && direccion.length > 5 ? encodeURIComponent(direccion) : `${lat},${lng}`;
-        window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}&travelmode=driving`, '_blank');
-    }
-    
+
     // ========== AUTENTICACIÓN ==========
     function getTokenFromURL() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
-        if (token) { localStorage.setItem('auth_token', token); window.history.replaceState({}, document.title, window.location.pathname); return token; }
+        if (token) {
+            localStorage.setItem('auth_token', token);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return token;
+        }
         return localStorage.getItem('auth_token');
     }
+
     async function verifyToken(token) {
         try {
             const res = await fetch(`${WORKER_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -1090,9 +580,43 @@
             return (await res.json()).user;
         } catch(e) { return null; }
     }
+
     function loginWithGoogle() { window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`; }
-    function logout() { localStorage.removeItem('auth_token'); currentUser = null; authToken = null; updateUIForUser(); }
-    
+    function logout() { localStorage.removeItem('auth_token'); authToken = null; currentUser = null; location.reload(); }
+
+    // ========== ESTADO DEL USUARIO ==========
+    async function verificarEstadoUsuario() {
+        const res = await fetch(`${WORKER_URL}/estado-usuario`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+        return res.json();
+    }
+
+    async function aceptarTerminos() {
+        await fetch(`${WORKER_URL}/aceptar-terminos`, { method: 'POST', headers: { 'Authorization': `Bearer ${authToken}` } });
+    }
+
+    async function guardarNombreUsuario(nombre) {
+        const res = await fetch(`${WORKER_URL}/actualizar-nombre`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            body: JSON.stringify({ nombre_usuario: nombre })
+        });
+        return res.json();
+    }
+
+    async function actualizarPerfil(nombre, fotoUrl) {
+        const res = await fetch(`${WORKER_URL}/actualizar-perfil`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            body: JSON.stringify({ nombre_usuario: nombre, foto_perfil: fotoUrl })
+        });
+        return res.json();
+    }
+
+    async function obtenerTerminos() {
+        const res = await fetch(`${WORKER_URL}/terminos`);
+        return res.json();
+    }
+
     // ========== API ==========
     async function apiFetch(path, options = {}) {
         const headers = options.headers || {};
@@ -1104,481 +628,484 @@
         }
         return res.json();
     }
+
     async function publicarObjeto(titulo, descripcion, categoria, fotos) {
         const form = new FormData();
         form.append('titulo', titulo);
         form.append('descripcion', `${categoria} | ${descripcion}`);
-        form.append('latitud', document.getElementById('latitud').value || '');
-        form.append('longitud', document.getElementById('longitud').value || '');
-        form.append('direccion', document.getElementById('direccionInput').value || '');
+        form.append('latitud', document.getElementById('latitud')?.value || '');
+        form.append('longitud', document.getElementById('longitud')?.value || '');
+        form.append('direccion', document.getElementById('direccionInput')?.value || '');
         for (let i = 0; i < Math.min(fotos.length, 5); i++) form.append(`foto_${i}`, fotos[i]);
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
-    async function obtenerObjetos(propios = false) { return propios ? await apiFetch('/mis-objetos') : await apiFetch('/objetos'); }
+
+    async function obtenerObjetos(propios = false) { 
+        const objetos = propios ? await apiFetch('/mis-objetos') : await apiFetch('/objetos');
+        todosLosObjetos = objetos;
+        return objetos;
+    }
     async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
     async function marcarIntercambiado(id) { return await apiFetch(`/objeto/${id}`, { method: 'PATCH' }); }
     async function reportarObjeto(id, motivo) { return await apiFetch('/reporte', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id, motivo }) }); }
-    async function enviarMensaje(objetoId, receptor, mensaje, archivo = null) {
-        if (archivo) {
-            const form = new FormData();
-            form.append('id_objeto', objetoId);
-            form.append('receptor', receptor);
-            form.append('mensaje', mensaje);
-            form.append('archivo', archivo);
-            const headers = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
-            const res = await fetch(`${WORKER_URL}/mensaje`, { method: 'POST', headers, body: form });
-            if (!res.ok) throw new Error(await res.text());
-            return res.json();
-        }
-        return await apiFetch('/mensaje', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
-    }
-    async function obtenerMensajes(objetoId, otro) { return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otro)}`); }
-    async function obtenerMisConversaciones() { return await apiFetch('/mis-conversaciones'); }
-    async function obtenerFavoritos() { return await apiFetch('/favoritos'); }
     async function agregarFavorito(id) { return await apiFetch('/favoritos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id }) }); }
     async function quitarFavorito(id) { return await apiFetch('/favoritos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id }) }); }
+    async function obtenerFavoritos() { return await apiFetch('/favoritos'); }
     async function obtenerPerfil() { return await apiFetch('/perfil'); }
     async function obtenerPerfilUsuario(email) { return await apiFetch(`/usuario?email=${encodeURIComponent(email)}`); }
-    async function valorarUsuario(id, calificado, puntuacion, comentario) { return await apiFetch('/valorar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id, calificado, puntuacion, comentario }) }); }
-    
-    // ========== MULTIPLES FOTOS ==========
-    function actualizarPrevisualizaciones() {
-        if (fotosSeleccionadas.length) {
-            const reader = new FileReader();
-            reader.onload = e => { document.getElementById('principalPreviewImg').src = e.target.result; document.getElementById('fotoPrincipalPreview').style.display = 'block'; };
-            reader.readAsDataURL(fotosSeleccionadas[0]);
-        } else document.getElementById('fotoPrincipalPreview').style.display = 'none';
-        const container = document.getElementById('fotosExtraPreview');
-        container.innerHTML = '';
-        for (let i = 1; i < fotosSeleccionadas.length; i++) {
-            const file = fotosSeleccionadas[i];
-            const reader = new FileReader();
-            reader.onload = (idx => e => {
-                const div = document.createElement('div'); div.className = 'foto-preview';
-                div.innerHTML = `<img src="${e.target.result}" style="width:80px;height:80px;object-fit:cover;border-radius:12px;"><button onclick="eliminarFotoExtra(${idx})">✕</button>`;
-                container.appendChild(div);
-            })(i);
-            reader.readAsDataURL(file);
+    async function obtenerMisConversaciones() { return await apiFetch('/mis-conversaciones'); }
+    async function obtenerMensajes(objetoId, otro) { return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otro)}`); }
+    async function enviarMensaje(objetoId, receptor, mensaje) {
+        return await apiFetch('/mensaje', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
+    }
+
+    // ========== BUSCADOR INTERNO ==========
+    function toggleSearchPanel() {
+        const panel = document.getElementById('searchPanel');
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open')) {
+            document.getElementById('searchInput').focus();
         }
     }
-    window.eliminarFotoExtra = function(idx) { fotosSeleccionadas.splice(idx, 1); actualizarPrevisualizaciones(); };
-    document.getElementById('fotoPrincipal').onchange = e => { if (e.target.files.length) { if (fotosSeleccionadas.length) fotosSeleccionadas[0] = e.target.files[0]; else fotosSeleccionadas.push(e.target.files[0]); actualizarPrevisualizaciones(); } };
-    document.getElementById('fotosExtra').onchange = e => { for (const f of Array.from(e.target.files)) if (fotosSeleccionadas.length < 5) fotosSeleccionadas.push(f); actualizarPrevisualizaciones(); e.target.value = ''; };
-    document.getElementById('eliminarPrincipal').onclick = () => { if (fotosSeleccionadas.length) fotosSeleccionadas.splice(0,1); actualizarPrevisualizaciones(); };
-    
-    // ========== UI ==========
-    function updateUIForUser() {
-        const loginSection = document.getElementById('loginSection');
-        const appSections = document.getElementById('appSections');
-        const userInfoDiv = document.getElementById('userInfo');
-        const googleBtn = document.getElementById('googleLoginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (currentUser) {
-            loginSection.style.display = 'none';
-            googleBtn.style.display = 'none';
-            logoutBtn.style.display = 'inline-block';
-            userInfoDiv.style.display = 'flex';
-            const puntosGuardados = localStorage.getItem(`puntos_${currentUser.email}`);
-            puntosUsuario = puntosGuardados ? parseInt(puntosGuardados) : 0;
-            const nivelInfo = calcularNivel(puntosUsuario);
-            userInfoDiv.innerHTML = `<img src="${currentUser.picture}" class="user-avatar" onclick="verMiPerfil()"><span onclick="verMiPerfil()" style="cursor:pointer;">👤 ${currentUser.name || currentUser.email}</span><span class="puntos-badge">⭐ ${puntosUsuario} pts</span><span class="nivel-badge">${nivelInfo.nombre}</span>`;
-            appSections.style.display = 'block';
-            cargarFeed(); cargarMisObjetos(); cargarFavoritos();
-            guardarOneSignalId(currentUser.email);
+
+    function buscarEnFeed() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.querySelectorAll('.post-card');
+        let visibleCount = 0;
+        cards.forEach(card => {
+            const titulo = card.querySelector('.post-title')?.innerText.toLowerCase() || '';
+            const usuario = card.querySelector('.post-user-name')?.innerText.toLowerCase() || '';
+            if (titulo.includes(term) || usuario.includes(term)) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        const searchResults = document.getElementById('searchResults');
+        if (term && visibleCount === 0) {
+            searchResults.innerHTML = '<div style="padding: 12px; text-align: center; color: #65676b;">No se encontraron resultados</div>';
         } else {
-            loginSection.style.display = 'block';
-            googleBtn.style.display = 'flex';
-            logoutBtn.style.display = 'none';
-            userInfoDiv.style.display = 'none';
-            appSections.style.display = 'none';
+            searchResults.innerHTML = '';
         }
     }
-    
-    function verMiPerfil() {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector('[data-tab="perfil"]').classList.add('active');
-        document.querySelectorAll('[id^="tab-"]').forEach(d => d.style.display = 'none');
-        document.getElementById('tab-perfil').style.display = 'block';
-        cargarMiPerfil();
+
+    // ========== PERFIL - EDITAR ==========
+    function openEditProfileModal() {
+        document.getElementById('editAvatar').src = currentUser?.picture || '';
+        document.getElementById('editNombre').value = currentUser?.nombre_usuario || '';
+        document.getElementById('editFoto').value = currentUser?.picture || '';
+        document.getElementById('editProfileModal').style.display = 'flex';
     }
-    window.verPerfilUsuario = async function(email) {
-        const perfil = await obtenerPerfilUsuario(email);
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.style.display = 'flex';
-        modal.innerHTML = `<div class="modal-content"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(email)}" style="width:80px;border-radius:50%"><h3>${escapeHtml(email)}</h3><div class="rating">${[1,2,3,4,5].map(i => `<span class="star ${perfil.promedio_valoracion >= i ? 'selected' : ''}" style="font-size:24px;">★</span>`).join('')}</div><p>⭐ ${perfil.promedio_valoracion.toFixed(1)} (${perfil.total_valoraciones} valoraciones)</p><button onclick="this.closest('.modal').remove()" class="btn-primary">Cerrar</button></div>`;
-        document.body.appendChild(modal);
-        modal.onclick = e => { if (e.target === modal) modal.remove(); };
-    };
-    
+
+    function closeEditProfileModal() {
+        document.getElementById('editProfileModal').style.display = 'none';
+    }
+
+    async function guardarPerfil() {
+        const nuevoNombre = document.getElementById('editNombre').value;
+        const nuevaFoto = document.getElementById('editFoto').value;
+        if (nuevoNombre.length < 3) { alert('El nombre debe tener al menos 3 caracteres'); return; }
+        const res = await actualizarPerfil(nuevoNombre, nuevaFoto);
+        if (res.error) { alert(res.error); return; }
+        currentUser.nombre_usuario = nuevoNombre;
+        currentUser.picture = nuevaFoto;
+        closeEditProfileModal();
+        cargarMiPerfil();
+        alert('Perfil actualizado');
+    }
+
+    // ========== RENDERIZADO ==========
+    function renderPostCard(obj) {
+        const todasLasFotos = [obj.url];
+        if (obj.fotos_extra) for (const f of obj.fotos_extra) todasLasFotos.push(f.url);
+        
+        const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
+        const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
+        
+        let gridClass = 'grid-media-1';
+        if (todasLasFotos.length === 2) gridClass = 'grid-media-2';
+        if (todasLasFotos.length >= 3) gridClass = 'grid-media-3';
+        
+        let mediaHtml = `<div class="grid-media ${gridClass}">`;
+        for (let i = 0; i < Math.min(todasLasFotos.length, 4); i++) {
+            const url = todasLasFotos[i];
+            mediaHtml += `
+                <div class="media-item" onclick="verDetalle(${obj.id})">
+                    <img src="${url}" loading="lazy">
+                    ${i === 3 && todasLasFotos.length > 4 ? `<div class="media-count">+${todasLasFotos.length - 4}</div>` : ''}
+                </div>
+            `;
+        }
+        mediaHtml += `</div>`;
+        
+        return `
+            <div class="post-card" data-id="${obj.id}">
+                <div class="post-header">
+                    <img src="${obj.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(obj.usuario)}" class="post-avatar" onclick="verPerfilUsuario('${escapeHtml(obj.usuario)}')">
+                    <div style="flex:1">
+                        <div class="post-user-name" onclick="verPerfilUsuario('${escapeHtml(obj.usuario)}')">${escapeHtml(obj.nombre_usuario || obj.usuario)}</div>
+                        <div class="post-time">${new Date(obj.fecha).toLocaleString()}</div>
+                        ${obj.direccion ? `<div class="post-location"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(obj.direccion)}</div>` : ''}
+                    </div>
+                </div>
+                <div class="post-title">${escapeHtml(obj.titulo)}</div>
+                <div class="post-description">${escapeHtml(descripcion.substring(0, 120))}</div>
+                ${todasLasFotos.length ? mediaHtml : ''}
+                <div class="post-actions">
+                    ${obj.usuario !== currentUser?.email ? `
+                        <button class="action-btn" onclick="toggleFavorito(${obj.id}, this)"><i class="fa-${favoritos.has(obj.id) ? 'solid' : 'regular'} fa-star"></i> ${favoritos.has(obj.id) ? 'Guardado' : 'Guardar'}</button>
+                        <button class="action-btn" onclick="abrirChat(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')"><i class="fa-regular fa-message"></i> Intercambiar</button>
+                    ` : `
+                        <button class="action-btn" onclick="marcarIntercambiadoPrompt(${obj.id})"><i class="fa-regular fa-check-circle"></i> Marcar</button>
+                        <button class="action-btn" onclick="eliminarObjetoPrompt(${obj.id})"><i class="fa-regular fa-trash-can"></i> Eliminar</button>
+                    `}
+                </div>
+            </div>
+        `;
+    }
+
     async function cargarMiPerfil() {
         const perfil = await obtenerPerfil();
-        const nivelInfo = calcularNivel(puntosUsuario);
-        const insignias = obtenerInsignias(puntosUsuario, perfil.objetos.length, perfil.objetos.filter(o => o.intercambiado === 1).length, perfil.valoraciones.length);
-        const html = `
-            <div class="perfil-card">
-                <img src="${currentUser.picture}" class="perfil-avatar">
-                <h2>${escapeHtml(currentUser.name)}</h2>
-                <p>${currentUser.email}</p>
-                <div><span class="nivel-badge">${nivelInfo.nombre}</span> <span class="puntos-badge">⭐ ${puntosUsuario} puntos</span></div>
-                <div class="rating" style="justify-content:center; margin:16px 0;">${[1,2,3,4,5].map(i => `<span class="star ${perfil.promedio_valoracion >= i ? 'selected' : ''}" style="font-size:24px;">★</span>`).join('')}</div>
-                <p>⭐ ${perfil.promedio_valoracion.toFixed(1)} (${perfil.total_valoraciones} valoraciones)</p>
-                <div style="margin-top:16px;">${insignias.map(i => `<span class="insignia" title="${i.desc}">${i.emoji}</span>`).join('')}</div>
-                ${nivelInfo.siguiente > 0 ? `<p style="margin-top:16px;">📈 Faltan ${nivelInfo.siguiente} puntos para el siguiente nivel</p>` : '<p>🏆 ¡Has alcanzado el nivel máximo!</p>'}
+        document.getElementById('mainContent').innerHTML = `
+            <div class="profile-card">
+                <img src="${currentUser?.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser?.nombre_usuario || currentUser?.email)}" class="profile-avatar-large" onclick="openEditProfileModal()">
+                <h2>${escapeHtml(currentUser?.nombre_usuario || currentUser?.email)}</h2>
+                <p>${currentUser?.email}</p>
+                <p>⭐ ${perfil.promedio_valoracion?.toFixed(1) || 0} (${perfil.total_valoraciones || 0} valoraciones)</p>
+                <p>📦 ${perfil.objetos?.length || 0} publicaciones</p>
+                <button class="edit-profile-btn" onclick="openEditProfileModal()">Editar perfil</button>
             </div>
-            <div class="card" style="background:white; border-radius:28px; padding:24px; margin-bottom:24px;"><h3>📦 Mis objetos (${perfil.objetos.length})</h3><div class="grid">${perfil.objetos.map(o => `<div class="objeto-card"><img src="${o.url}"><div class="objeto-info"><strong>${escapeHtml(o.titulo)}</strong><p>${escapeHtml((o.descripcion?.split('|')[1]?.trim() || o.descripcion || '').substring(0,80))}</p></div></div>`).join('') || '<p>No has publicado nada aún.</p>'}</div></div>
-            <div class="card" style="background:white; border-radius:28px; padding:24px;"><h3>⭐ Mis valoraciones</h3>${perfil.valoraciones.map(v => `<div style="padding:12px; border-bottom:1px solid #e2e8f0;"><div class="rating">${[1,2,3,4,5].map(i => `<span class="star ${v.puntuacion >= i ? 'selected' : ''}" style="font-size:16px;">★</span>`).join('')}</div><p>${escapeHtml(v.comentario || 'Sin comentario')}</p><small>por ${escapeHtml(v.calificador)}</small></div>`).join('') || '<p>Aún no tienes valoraciones.</p>'}</div>
+            <h3 style="margin: 16px 0 8px;">Mis publicaciones</h3>
+            ${perfil.objetos?.length ? perfil.objetos.map(renderPostCard).join('') : '<div class="loading">No has publicado nada aún</div>'}
         `;
-        document.getElementById('perfilContent').innerHTML = html;
     }
-    
-    function mostrarFotoAmpliada(url) { document.getElementById('fotoModalImg').src = url; document.getElementById('fotoModal').style.display = 'flex'; }
-    
-    function crearMiniaturas(objeto, card) {
-        const todas = [objeto.url];
-        if (objeto.fotos_extra) objeto.fotos_extra.forEach(f => todas.push(f.url));
-        if (todas.length <= 1) return;
-        const div = document.createElement('div'); div.className = 'miniaturas';
-        todas.forEach((url, i) => {
-            const min = document.createElement('img'); min.src = url; min.className = 'miniatura';
-            if (i === 0) min.classList.add('activa');
-            min.onclick = () => { card.querySelector('.imagen-principal').src = url; card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa')); min.classList.add('activa'); };
-            div.appendChild(min);
-        });
-        card.insertBefore(div, card.querySelector('.objeto-info'));
+
+    function renderConversacion(conv) {
+        return `
+            <div class="conversation-item" onclick="abrirChatConversacion(${conv.id_objeto}, '${escapeHtml(conv.otroUsuario)}', '${escapeHtml(conv.titulo)}')">
+                <img src="https://ui-avatars.com/api/?name=${escapeHtml(conv.otroUsuario)}" class="conversation-avatar">
+                <div class="conversation-info">
+                    <div class="conversation-name">${escapeHtml(conv.titulo)}</div>
+                    <div class="conversation-last-msg">${escapeHtml(conv.otroUsuario)}</div>
+                </div>
+                <div class="conversation-time">${new Date(conv.ultimaFecha).toLocaleTimeString()}</div>
+            </div>
+        `;
     }
-    
-    function filtrarObjetos() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const cat = document.querySelector('.cat-btn.active').dataset.cat;
-        document.querySelectorAll('.objeto-card').forEach(card => {
-            const titulo = card.querySelector('.objeto-info strong')?.innerText.toLowerCase() || '';
-            const usuario = card.querySelector('.badge')?.innerText.toLowerCase() || '';
-            const categoria = card.dataset.cat || '';
-            card.style.display = (titulo.includes(term) || usuario.includes(term)) && (cat === 'all' || categoria === cat) ? 'block' : 'none';
-        });
-    }
-    
-    async function cargarFavoritos() {
-        try {
-            const favs = await obtenerFavoritos();
-            const grid = document.getElementById('favoritosGrid');
-            if (!favs.length) { grid.innerHTML = '<div style="text-align:center;padding:40px;">⭐ No tienes favoritos aún.</div>'; return; }
-            grid.innerHTML = favs.map(o => `
-                <div class="objeto-card" data-cat="${o.descripcion?.split('|')[0]?.trim() || 'General'}">
-                    <img class="imagen-principal" src="${o.url}" onclick="mostrarFotoAmpliada('${o.url}')">
-                    <div class="objeto-info">
-                        <strong>${escapeHtml(o.titulo)}</strong>
-                        <p>${escapeHtml((o.descripcion?.split('|')[1]?.trim() || o.descripcion || '').substring(0,80))}</p>
-                        <span class="badge" onclick="verPerfilUsuario('${escapeHtml(o.usuario)}')">👤 ${escapeHtml(o.usuario)}</span>
-                        <button class="intercambiar-btn" onclick="abrirChatConObjeto(${o.id}, '${escapeHtml(o.usuario)}', '${escapeHtml(o.titulo)}')">💬 Intercambiar</button>
+
+    function renderChat(objetoId, otroUsuario, titulo) {
+        return `
+            <div class="chat-container">
+                <div class="chat-header">
+                    <button class="chat-header-back" onclick="volverAListaChats()"><i class="fas fa-arrow-left"></i></button>
+                    <div class="chat-header-info">
+                        <div class="chat-header-name">${escapeHtml(titulo)}</div>
+                        <div style="font-size: 12px; color: #65676b;">con ${escapeHtml(otroUsuario)}</div>
                     </div>
                 </div>
-            `).join('');
-            for (const o of favs) {
-                const card = document.querySelector(`.objeto-card .imagen-principal[src="${o.url}"]`).parentElement;
-                if (o.fotos_extra?.length) crearMiniaturas(o, card);
-                else card.querySelector('.imagen-principal').onclick = () => mostrarFotoAmpliada(card.querySelector('.imagen-principal').src);
-            }
-        } catch(e) { console.error(e); }
-    }
-    
-    async function cargarFeed() {
-        try {
-            const objetos = await obtenerObjetos(false);
-            const feedDiv = document.getElementById('feedGrid');
-            if (!objetos.length) { feedDiv.innerHTML = '<div style="text-align:center;padding:40px;">📭 No hay objetos publicados aún.</div>'; return; }
-            feedDiv.innerHTML = objetos.map(o => {
-                const cat = o.descripcion?.split('|')[0]?.trim() || 'General';
-                const desc = o.descripcion?.split('|')[1]?.trim() || o.descripcion || '';
-                const urlBase = window.location.href.split('?')[0];
-                return `
-                    <div class="objeto-card" data-cat="${cat}">
-                        <button class="favorito-btn ${favoritos.has(o.id) ? 'activo' : ''}" onclick="toggleFavorito(${o.id}, this)">${favoritos.has(o.id) ? '★' : '☆'}</button>
-                        <img class="imagen-principal" src="${o.url}" onclick="mostrarFotoAmpliada('${o.url}')">
-                        <div class="objeto-info">
-                            <span class="categoria-badge">${escapeHtml(cat)}</span>
-                            <strong>${escapeHtml(o.titulo)}</strong>
-                            <p>${escapeHtml(desc.substring(0,80))}</p>
-                            <span class="badge" onclick="verPerfilUsuario('${escapeHtml(o.usuario)}')">👤 ${escapeHtml(o.usuario)}</span>
-                            ${o.direccion ? `<span class="badge-ubicacion" onclick="abrirGoogleMaps(${o.latitud}, ${o.longitud}, '${escapeHtml(o.direccion)}')">📍 ${escapeHtml(o.direccion)}</span>` : ''}
-                            ${o.sospechoso ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
-                            ${o.usuario !== currentUser?.email ? `
-                                <button class="intercambiar-btn" onclick="abrirChatConObjeto(${o.id}, '${escapeHtml(o.usuario)}', '${escapeHtml(o.titulo)}')">💬 Intercambiar</button>
-                                <button class="whatsapp-btn" onclick="compartirWhatsApp('${escapeHtml(o.titulo)}', '${urlBase}?objeto=${o.id}')">📱 Compartir en WhatsApp</button>
-                                <button class="reportar-btn" onclick="reportarObjetoPrompt(${o.id})">⚠️ Reportar</button>
-                            ` : '<span style="font-size:12px;">(tu objeto)</span>'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            for (const o of objetos) {
-                const card = document.querySelector(`.objeto-card .imagen-principal[src="${o.url}"]`).parentElement;
-                if (o.fotos_extra?.length) crearMiniaturas(o, card);
-                else card.querySelector('.imagen-principal').onclick = () => mostrarFotoAmpliada(card.querySelector('.imagen-principal').src);
-            }
-            filtrarObjetos();
-        } catch(e) { document.getElementById('feedGrid').innerHTML = '<div style="text-align:center;padding:40px;">❌ Error</div>'; }
-    }
-    
-    async function cargarMisObjetos() {
-        try {
-            const objetos = await obtenerObjetos(true);
-            const div = document.getElementById('misObjetosGrid');
-            if (!objetos.length) { div.innerHTML = '<div style="text-align:center;padding:40px;">📭 No has publicado nada aún.</div>'; return; }
-            div.innerHTML = objetos.map(o => `
-                <div class="objeto-card">
-                    <img class="imagen-principal" src="${o.url}" onclick="mostrarFotoAmpliada('${o.url}')">
-                    <div class="objeto-info">
-                        <strong>${escapeHtml(o.titulo)}</strong>
-                        <p>${escapeHtml((o.descripcion?.split('|')[1]?.trim() || o.descripcion || '').substring(0,80))}</p>
-                        ${o.direccion ? `<span class="badge-ubicacion">📍 ${escapeHtml(o.direccion)}</span>` : ''}
-                        ${o.intercambiado ? '<span class="badge-intercambiado">✅ Ya intercambiado</span>' : `<span class="badge-expiracion">⏰ Expira: ${new Date(o.expira).toLocaleDateString()}</span>`}
-                        ${o.sospechoso ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
-                        ${!o.intercambiado ? `<button class="intercambiado-btn" onclick="marcarIntercambiadoPrompt(${o.id})">✅ Marcar intercambiado</button>` : ''}
-                        <button class="eliminar-btn" onclick="eliminarObjetoPrompt(${o.id})">🗑️ Eliminar</button>
-                    </div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Escribe un mensaje...">
+                    <button class="chat-send-btn" id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
                 </div>
-            `).join('');
-            for (const o of objetos) {
-                const card = document.querySelector(`.objeto-card .imagen-principal[src="${o.url}"]`).parentElement;
-                if (o.fotos_extra?.length) crearMiniaturas(o, card);
-                else card.querySelector('.imagen-principal').onclick = () => mostrarFotoAmpliada(card.querySelector('.imagen-principal').src);
-            }
-        } catch(e) { console.error(e); }
+            </div>
+        `;
     }
+
+    // ========== FUNCIONES GLOBALES ==========
+    window.verDetalle = async (id) => {
+        const obj = todosLosObjetos.find(o => o.id === id);
+        if (!obj) return;
+        const todasLasFotos = [obj.url];
+        if (obj.fotos_extra) for (const f of obj.fotos_extra) todasLasFotos.push(f.url);
+        
+        document.getElementById('modalTitulo').innerText = obj.titulo;
+        document.getElementById('modalDescripcion').innerHTML = `<p>${escapeHtml(obj.descripcion)}</p>`;
+        document.getElementById('modalUbicacion').innerHTML = obj.direccion ? `<p><i class="fas fa-map-marker-alt"></i> ${escapeHtml(obj.direccion)}</p>` : '';
+        
+        let galleryHtml = '';
+        for (const url of todasLasFotos) {
+            galleryHtml += `<img src="${url}" style="width: 100%; border-radius: 8px; margin-bottom: 8px;" onclick="window.open('${url}', '_blank')">`;
+        }
+        document.getElementById('modalGallery').innerHTML = galleryHtml;
+        document.getElementById('modalActions').innerHTML = `
+            ${obj.usuario !== currentUser?.email ? `<button class="action-btn" onclick="abrirChat(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')"><i class="fa-regular fa-message"></i> Intercambiar</button>` : ''}
+            <button class="action-btn" onclick="reportarObjetoPrompt(${obj.id})"><i class="fa-regular fa-flag"></i> Reportar</button>
+        `;
+        document.getElementById('detailModal').style.display = 'flex';
+    };
     
-    async function toggleFavorito(id, btn) {
-        if (favoritos.has(id)) { await quitarFavorito(id); favoritos.delete(id); btn.classList.remove('activo'); btn.innerHTML = '☆'; }
-        else { await agregarFavorito(id); favoritos.add(id); btn.classList.add('activo'); btn.innerHTML = '★'; }
-    }
+    window.closeModal = () => { document.getElementById('detailModal').style.display = 'none'; };
+    window.verPerfilUsuario = async (email) => {
+        const perfil = await obtenerPerfilUsuario(email);
+        alert(`Perfil de ${email}\n⭐ ${perfil.promedio_valoracion?.toFixed(1) || 0} (${perfil.total_valoraciones || 0} valoraciones)\n📦 ${perfil.objetos?.length || 0} publicaciones`);
+    };
     
-    async function marcarIntercambiadoPrompt(id) { if (confirm('¿Marcar como intercambiado?')) { await marcarIntercambiado(id); await actualizarPuntos('intercambiar'); cargarMisObjetos(); cargarFeed(); alert('✅ Marcado'); } }
-    async function eliminarObjetoPrompt(id) { if (confirm('¿Eliminar?')) { await eliminarObjeto(id); cargarMisObjetos(); cargarFeed(); alert('✅ Eliminado'); } }
-    async function reportarObjetoPrompt(id) { const motivo = prompt('Motivo del reporte:'); if (motivo) { await reportarObjeto(id, motivo); alert('✅ Reporte enviado'); } }
+    window.toggleFavorito = async (id, btn) => {
+        if (favoritos.has(id)) { await quitarFavorito(id); favoritos.delete(id); btn.innerHTML = '<i class="fa-regular fa-star"></i> Guardar'; }
+        else { await agregarFavorito(id); favoritos.add(id); btn.innerHTML = '<i class="fa-solid fa-star"></i> Guardado'; }
+    };
     
-    function compartirWhatsApp(titulo, url) { window.open(`https://wa.me/?text=${encodeURIComponent(`📦 ${titulo} - ${url}`)}`, '_blank'); }
+    window.marcarIntercambiadoPrompt = async (id) => { if (confirm('¿Marcar como intercambiado?')) { await marcarIntercambiado(id); cargarFeed(); } };
+    window.eliminarObjetoPrompt = async (id) => { if (confirm('¿Eliminar?')) { await eliminarObjeto(id); cargarFeed(); cargarMisObjetos(); } };
+    window.reportarObjetoPrompt = async (id) => { const motivo = prompt('Motivo:'); if (motivo) await reportarObjeto(id, motivo); alert('Reporte enviado'); };
     
-    // ========== CHAT CON POLLING ==========
-    async function cargarMensajes() {
-        if (!chatActual.objetoId) return;
-        try {
-            const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
-            const cont = document.getElementById('chatMensajes');
-            const hayNuevos = msgs.length && (ultimoMensajeId === 0 || msgs[msgs.length-1].id > ultimoMensajeId);
-            if (hayNuevos && ultimoMensajeId !== 0) reproducirSonido();
-            if (hayNuevos || ultimoMensajeId === 0) {
-                cont.innerHTML = msgs.map(m => `
-                    <div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}">
-                        <strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}
-                        ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="mostrarFotoAmpliada('${m.archivo_url}')"></div>` : ''}
-                        <small>${new Date(m.fecha).toLocaleString()}</small>
-                    </div>
-                `).join('');
-                cont.scrollTop = cont.scrollHeight;
-                if (msgs.length) ultimoMensajeId = msgs[msgs.length-1].id;
-            }
-            if (!chatActual.objetoIntercambiado) {
-                const objetos = await obtenerObjetos(false);
-                const obj = objetos.find(o => o.id === chatActual.objetoId);
-                if (obj?.intercambiado && obj.usuario !== currentUser?.email) {
-                    document.getElementById('valorarSection').style.display = 'block';
-                    chatActual.objetoIntercambiado = true;
-                    valoracionPendiente = { id_objeto: chatActual.objetoId, calificado: chatActual.otroUsuario };
-                    document.querySelectorAll('#ratingStars .star').forEach(s => s.onclick = function() {
-                        const val = parseInt(this.dataset.value);
-                        document.querySelectorAll('#ratingStars .star').forEach((st,i) => { if (i < val) { st.innerHTML = '★'; st.classList.add('selected'); } else { st.innerHTML = '☆'; st.classList.remove('selected'); } });
-                    });
-                }
-            }
-            const header = document.getElementById('chatTitulo');
-            if (hayNuevos && document.getElementById('tab-chats').style.display !== 'block') {
-                if (!header.querySelector('.nuevo-mensaje-indicador')) {
-                    const badge = document.createElement('span'); badge.className = 'nuevo-mensaje-indicador'; badge.innerText = 'Nuevo';
-                    header.appendChild(badge);
-                    setTimeout(() => badge.remove(), 5000);
-                }
-            }
-        } catch(e) { console.error(e); }
-    }
-    
-    function iniciarPolling() { if (pollingInterval) clearInterval(pollingInterval); pollingInterval = setInterval(() => { if (chatActual.objetoId && document.getElementById('tab-chats').style.display === 'block') cargarMensajes(); }, 5000); }
-    function detenerPolling() { if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } }
-    
-    window.abrirChatConObjeto = async function(id, otro, titulo) {
-        detenerPolling();
-        ultimoMensajeId = 0;
-        chatActual = { objetoId: id, otroUsuario: otro, titulo, objetoIntercambiado: false };
-        document.getElementById('chatTitulo').innerHTML = `💬 ${escapeHtml(titulo)}<br><small>Conversando con <span style="cursor:pointer;color:#3b82f6;" onclick="verPerfilUsuario('${escapeHtml(otro)}')">${escapeHtml(otro)}</span></small>`;
-        document.getElementById('chatDetalle').style.display = 'block';
-        document.getElementById('valorarSection').style.display = 'none';
+    window.abrirChat = async (id, usuario, titulo) => {
+        chatActual = { objetoId: id, otroUsuario: usuario, otroNombre: titulo };
+        document.getElementById('mainContent').innerHTML = renderChat(id, usuario, titulo);
         await cargarMensajes();
         iniciarPolling();
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector('[data-tab="chats"]').classList.add('active');
-        document.querySelectorAll('[id^="tab-"]').forEach(d => d.style.display = 'none');
-        document.getElementById('tab-chats').style.display = 'block';
+    };
+    
+    window.abrirChatConversacion = async (id, usuario, titulo) => {
+        chatActual = { objetoId: id, otroUsuario: usuario, otroNombre: titulo };
+        document.getElementById('mainContent').innerHTML = renderChat(id, usuario, titulo);
+        await cargarMensajes();
+        iniciarPolling();
+    };
+    
+    window.volverAListaChats = () => {
+        detenerPolling();
         cargarListaConversaciones();
     };
     
+    async function cargarMensajes() {
+        if (!chatActual.objetoId) return;
+        const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
+        const container = document.getElementById('chatMessages');
+        if (!msgs.length) { container.innerHTML = '<div style="text-align:center; padding:20px;">✨ No hay mensajes aún</div>'; return; }
+        container.innerHTML = msgs.map(m => `
+            <div class="message-bubble ${m.emisor === currentUser?.email ? 'message-sent' : 'message-received'}">
+                ${escapeHtml(m.mensaje)}
+                <div class="message-time">${new Date(m.fecha).toLocaleTimeString()}</div>
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+        if (msgs.length) ultimoMensajeId = msgs[msgs.length-1].id;
+    }
+    
     async function enviarMensajeChat() {
-        const input = document.getElementById('nuevoMensaje');
+        const input = document.getElementById('chatInput');
         const texto = input.value.trim();
-        const archivoInput = document.getElementById('archivoAdjunto');
-        const archivo = archivoInput.files[0];
-        if (!texto && !archivo) return;
+        if (!texto || !chatActual.objetoId) return;
         input.value = '';
-        if (archivo) {
-            await enviarMensaje(chatActual.objetoId, chatActual.otroUsuario, texto || '', archivo);
-            archivoInput.value = '';
-        } else {
-            await enviarMensaje(chatActual.objetoId, chatActual.otroUsuario, texto);
-        }
+        await enviarMensaje(chatActual.objetoId, chatActual.otroUsuario, texto);
         await cargarMensajes();
     }
     
-    async function cargarListaConversaciones() {
-        try {
-            const convs = await obtenerMisConversaciones();
-            const div = document.getElementById('listaChats');
-            if (!convs.length) { div.innerHTML = '<p style="text-align:center;padding:20px;">💬 No hay conversaciones aún.</p>'; return; }
-            div.innerHTML = convs.map(c => `<div class="conv-item" onclick="abrirChatConObjeto(${c.id_objeto}, '${escapeHtml(c.otroUsuario)}', '${escapeHtml(c.titulo)}')"><strong>📦 ${escapeHtml(c.titulo)}</strong><br>💬 con ${escapeHtml(c.otroUsuario)}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small></div>`).join('');
-        } catch(e) { console.error(e); }
+    function iniciarPolling() {
+        if (pollingInterval) clearInterval(pollingInterval);
+        pollingInterval = setInterval(() => {
+            if (chatActual.objetoId && document.getElementById('chatMessages')) cargarMensajes();
+        }, 5000);
     }
     
-    document.getElementById('enviarValoracionBtn').onclick = async () => {
-        const stars = document.querySelectorAll('#ratingStars .star');
-        let punt = 0;
-        stars.forEach((s,i) => { if (s.innerHTML === '★') punt = i+1; });
-        if (!punt) { alert('Selecciona puntuación'); return; }
-        await valorarUsuario(valoracionPendiente.id_objeto, valoracionPendiente.calificado, punt, document.getElementById('comentarioValoracion').value);
-        await actualizarPuntos('valorar');
-        alert('✅ Valoración enviada');
-        document.getElementById('valorarSection').style.display = 'none';
-        document.getElementById('comentarioValoracion').value = '';
-        stars.forEach(s => { s.innerHTML = '☆'; s.classList.remove('selected'); });
-    };
+    function detenerPolling() {
+        if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+    }
     
-    function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-    function showStatus(msg, type, id='pubStatus') { const d = document.getElementById(id); if (d) { d.className = `status-${type}`; d.innerText = msg; setTimeout(() => { d.className = ''; d.innerText = ''; }, 3000); } }
+    async function cargarListaConversaciones() {
+        const convs = await obtenerMisConversaciones();
+        if (!convs.length) {
+            document.getElementById('mainContent').innerHTML = '<div class="loading">💬 No hay conversaciones aún</div>';
+            return;
+        }
+        document.getElementById('mainContent').innerHTML = `<div class="conversation-list">${convs.map(renderConversacion).join('')}</div>`;
+    }
     
-    // ========== PUBLICACIÓN ==========
-    document.getElementById('previewBtn').onclick = () => {
-        const titulo = document.getElementById('titulo').value;
-        const categoria = document.getElementById('categoria').value;
-        const desc = document.getElementById('descripcion').value;
-        const dir = document.getElementById('direccionInput').value;
-        if (!fotosSeleccionadas.length) { showStatus('❌ Selecciona al menos una foto', 'error'); return; }
-        if (!titulo || !desc) { showStatus('❌ Completa título y descripción', 'error'); return; }
-        const reader = new FileReader();
-        reader.onload = e => {
-            document.getElementById('previewImg').src = e.target.result;
-            document.getElementById('previewTitulo').innerText = titulo;
-            document.getElementById('previewDesc').innerText = desc;
-            document.getElementById('previewCategoria').innerText = categoria;
-            document.getElementById('previewUbicacion').innerHTML = dir ? `📍 ${escapeHtml(dir)}` : '📍 Sin ubicación';
-            const previewFotos = document.getElementById('previewFotosExtra');
-            previewFotos.innerHTML = '';
-            for (let i = 1; i < Math.min(fotosSeleccionadas.length,5); i++) {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(fotosSeleccionadas[i]);
-                img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:12px;';
-                previewFotos.appendChild(img);
-            }
-            pendingPublication = { titulo, categoria, desc, fotos: [...fotosSeleccionadas] };
-            document.getElementById('previewModal').style.display = 'flex';
+    async function cargarFeed() {
+        const objetos = await obtenerObjetos(false);
+        if (!objetos.length) {
+            document.getElementById('mainContent').innerHTML = '<div class="loading">📭 No hay objetos publicados aún</div>';
+            return;
+        }
+        document.getElementById('mainContent').innerHTML = objetos.map(renderPostCard).join('');
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchResults').innerHTML = '';
+    }
+    
+    async function cargarMisObjetos() {
+        const objetos = await obtenerObjetos(true);
+        if (!objetos.length) {
+            document.getElementById('mainContent').innerHTML = '<div class="loading">📭 No has publicado nada aún</div>';
+            return;
+        }
+        document.getElementById('mainContent').innerHTML = objetos.map(renderPostCard).join('');
+    }
+    
+    async function cargarFavoritosEnFeed() {
+        const favs = await obtenerFavoritos();
+        if (!favs.length) {
+            document.getElementById('mainContent').innerHTML = '<div class="loading">⭐ No tienes objetos guardados</div>';
+            return;
+        }
+        document.getElementById('mainContent').innerHTML = favs.map(renderPostCard).join('');
+    }
+    
+    function renderPublicarForm() {
+        document.getElementById('mainContent').innerHTML = `
+            <div style="background: white; border-radius: 16px; padding: 20px;">
+                <h3 style="margin-bottom: 16px;">Crear nueva publicación</h3>
+                <input type="text" id="titulo" placeholder="Título del objeto" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px;">
+                <select id="categoria" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px;">
+                    <option value="Electrónica">📱 Electrónica</option>
+                    <option value="Ropa">👕 Ropa</option>
+                    <option value="Libros">📚 Libros</option>
+                    <option value="Mascotas">🐾 Mascotas</option>
+                    <option value="Hogar">🏠 Hogar</option>
+                    <option value="Deportes">⚽ Deportes</option>
+                </select>
+                <textarea id="descripcion" rows="3" placeholder="Descripción..." style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px;"></textarea>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <button type="button" id="ubicarBtn" style="background: #f0f2f5; border: none; padding: 8px 16px; border-radius: 8px;"><i class="fas fa-map-marker-alt"></i> Ubicación</button>
+                    <input type="text" id="direccionInput" placeholder="Dirección" style="flex: 1; padding: 8px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                </div>
+                <div id="mapaContainer" style="display:none; margin-bottom: 12px;"><div id="mapa" style="height: 200px;"></div></div>
+                <input type="hidden" id="latitud"><input type="hidden" id="longitud">
+                <div class="upload-area" id="uploadArea" style="border: 2px dashed #e0e0e0; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 12px;">
+                    <i class="fas fa-camera" style="font-size: 24px;"></i>
+                    <div>Haz clic para seleccionar fotos (máx 5)</div>
+                    <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+                </div>
+                <div id="fotosPreview" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;"></div>
+                <button id="publicarBtn" style="background: #1877f2; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 600;">Publicar</button>
+            </div>
+        `;
+        setupUploadEventos();
+    }
+    
+    function setupUploadEventos() {
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        uploadArea.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => {
+            fotosSeleccionadas = Array.from(e.target.files);
+            const preview = document.getElementById('fotosPreview');
+            preview.innerHTML = fotosSeleccionadas.map((f, i) => `<div style="position: relative;"><img src="${URL.createObjectURL(f)}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;"><button onclick="eliminarFoto(${i})" style="position: absolute; top: -8px; right: -8px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px;">✕</button></div>`).join('');
         };
-        reader.readAsDataURL(fotosSeleccionadas[0]);
-    };
+        window.eliminarFoto = (idx) => { fotosSeleccionadas.splice(idx, 1); document.getElementById('fotosPreview').innerHTML = fotosSeleccionadas.map((f, i) => `<div><img src="${URL.createObjectURL(f)}" style="width: 80px;"><button onclick="eliminarFoto(${i})">✕</button></div>`).join(''); };
+        document.getElementById('publicarBtn').onclick = async () => {
+            const titulo = document.getElementById('titulo').value;
+            const categoria = document.getElementById('categoria').value;
+            const descripcion = document.getElementById('descripcion').value;
+            if (!titulo || !descripcion || !fotosSeleccionadas.length) { alert('Completa todos los campos'); return; }
+            await publicarObjeto(titulo, descripcion, categoria, fotosSeleccionadas);
+            alert('Publicado!');
+            cambiarTab('feed');
+        };
+        document.getElementById('ubicarBtn').onclick = () => {
+            if (navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => {
+                document.getElementById('latitud').value = pos.coords.latitude;
+                document.getElementById('longitud').value = pos.coords.longitude;
+                document.getElementById('mapaContainer').style.display = 'block';
+                setTimeout(() => initMapa(pos.coords.latitude, pos.coords.longitude), 100);
+            });
+        };
+    }
     
-    document.getElementById('confirmarPublicarBtn').onclick = async () => {
-        if (!pendingPublication) return;
-        const { titulo, categoria, desc, fotos } = pendingPublication;
-        const pb = document.getElementById('progressBar');
-        try {
-            let prog = 0, int = setInterval(() => { prog = Math.min(prog+10,90); pb.style.width = `${prog}%`; }, 200);
-            await publicarObjeto(titulo, desc, categoria, fotos);
-            clearInterval(int); pb.style.width = '100%';
-            await actualizarPuntos('publicar');
-            showStatus('✅ Objeto publicado', 'success');
-            setTimeout(() => pb.style.width = '0%', 2000);
-            document.getElementById('titulo').value = '';
-            document.getElementById('descripcion').value = '';
-            document.getElementById('direccionInput').value = '';
-            document.getElementById('latitud').value = '';
-            document.getElementById('longitud').value = '';
-            document.getElementById('fotoPrincipalPreview').style.display = 'none';
-            document.getElementById('fotosExtraPreview').innerHTML = '';
-            document.getElementById('mapaContainer').style.display = 'none';
-            mapaVisible = false;
-            fotosSeleccionadas = [];
-            document.getElementById('previewModal').style.display = 'none';
-            pendingPublication = null;
-            cargarMisObjetos(); cargarFeed();
-        } catch(e) { showStatus('❌ Error: ' + e.message, 'error'); pb.style.width = '0%'; }
-    };
+    function initMapa(lat, lng) {
+        if (map) map.remove();
+        map = L.map('mapa').setView([lat, lng], 15);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        marker.on('dragend', () => { document.getElementById('latitud').value = marker.getLatLng().lat; document.getElementById('longitud').value = marker.getLatLng().lng; });
+    }
     
-    document.getElementById('cancelarPublicarBtn').onclick = () => { document.getElementById('previewModal').style.display = 'none'; pendingPublication = null; };
-    
-    // ========== EVENTOS ==========
-    window.mostrarFotoAmpliada = mostrarFotoAmpliada;
-    window.toggleFavorito = toggleFavorito;
-    window.marcarIntercambiadoPrompt = marcarIntercambiadoPrompt;
-    window.eliminarObjetoPrompt = eliminarObjetoPrompt;
-    window.reportarObjetoPrompt = reportarObjetoPrompt;
-    window.abrirGoogleMaps = abrirGoogleMaps;
-    window.verMiPerfil = verMiPerfil;
-    window.compartirWhatsApp = compartirWhatsApp;
-    
-    document.getElementById('googleLoginBtn').onclick = loginWithGoogle;
-    document.getElementById('logoutBtn').onclick = logout;
-    document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
-    document.getElementById('nuevoMensaje').addEventListener('keypress', e => { if (e.key === 'Enter') enviarMensajeChat(); });
-    document.getElementById('adjuntarArchivoBtn').onclick = () => document.getElementById('archivoAdjunto').click();
-    document.getElementById('searchInput').addEventListener('input', filtrarObjetos);
-    document.querySelectorAll('.cat-btn').forEach(btn => btn.addEventListener('click', () => {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        filtrarObjetos();
-    }));
-    document.getElementById('ubicarBtn').onclick = usarMiUbicacion;
-    document.getElementById('uploadAreaPrincipal').onclick = () => document.getElementById('fotoPrincipal').click();
-    document.getElementById('uploadAreaExtra').onclick = () => document.getElementById('fotosExtra').click();
-    
-    let timeoutBusqueda;
-    document.getElementById('direccionInput').addEventListener('input', e => {
-        clearTimeout(timeoutBusqueda);
-        const dir = e.target.value;
-        if (dir.length > 5) timeoutBusqueda = setTimeout(() => { obtenerCoordenadasDesdeDireccion(dir); if (!mapaVisible) { document.getElementById('mapaContainer').style.display = 'block'; mapaVisible = true; setTimeout(() => initMapa(), 100); } }, 800);
-    });
-    
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const tab = btn.dataset.tab;
-        document.querySelectorAll('[id^="tab-"]').forEach(d => d.style.display = 'none');
-        document.getElementById(`tab-${tab}`).style.display = 'block';
+    function cambiarTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.nav-item-bottom').forEach(el => el.classList.remove('active'));
+        document.querySelector(`.nav-item-bottom[data-tab="${tab}"]`).classList.add('active');
+        document.getElementById('searchPanel').classList.remove('open');
         if (tab === 'feed') cargarFeed();
-        if (tab === 'favoritos') cargarFavoritos();
-        if (tab === 'misobjetos') cargarMisObjetos();
+        if (tab === 'publicar') renderPublicarForm();
         if (tab === 'chats') cargarListaConversaciones();
         if (tab === 'perfil') cargarMiPerfil();
-        if (tab !== 'chats') detenerPolling();
-    }));
+        if (tab === 'misobjetos') cargarMisObjetos();
+    }
+    
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
     
     // ========== INICIALIZACIÓN ==========
     async function init() {
         initDarkMode();
         const token = getTokenFromURL();
-        if (token) { authToken = token; const user = await verifyToken(token); if (user) currentUser = user; else { localStorage.removeItem('auth_token'); authToken = null; } }
-        updateUIForUser();
-        if (currentUser) {
-            const favs = await obtenerFavoritos();
-            favoritos = new Set(favs.map(f => f.id));
-            const savedPuntos = localStorage.getItem(`puntos_${currentUser.email}`);
-            if (savedPuntos) puntosUsuario = parseInt(savedPuntos);
+        if (token) {
+            authToken = token;
+            const user = await verifyToken(token);
+            if (user) {
+                currentUser = user;
+                const estado = await verificarEstadoUsuario();
+                if (!estado.terminos_aceptados) {
+                    const terminos = await obtenerTerminos();
+                    document.getElementById('terminosTexto').innerHTML = `<div>${terminos.terminos.secciones.map(s => `<h4>${s.titulo}</h4><p>${s.contenido}</p>`).join('')}</div>`;
+                    document.getElementById('terminosModal').style.display = 'flex';
+                    document.getElementById('aceptarTerminosBtn').onclick = async () => {
+                        if (!document.getElementById('aceptoTerminos').checked) { alert('Debes aceptar los términos'); return; }
+                        await aceptarTerminos();
+                        document.getElementById('terminosModal').style.display = 'none';
+                        if (!estado.nombre_usuario) document.getElementById('nombreModal').style.display = 'flex';
+                        else location.reload();
+                    };
+                } else if (!estado.nombre_usuario) {
+                    document.getElementById('nombreModal').style.display = 'flex';
+                    document.getElementById('guardarNombreBtn').onclick = async () => {
+                        const nombre = document.getElementById('nombreUsuarioInput').value;
+                        if (nombre.length < 3) { document.getElementById('nombreError').innerText = 'Mínimo 3 caracteres'; return; }
+                        const res = await guardarNombreUsuario(nombre);
+                        if (res.error) { document.getElementById('nombreError').innerText = res.error; return; }
+                        document.getElementById('nombreModal').style.display = 'none';
+                        location.reload();
+                    };
+                } else {
+                    currentUser.nombre_usuario = estado.nombre_usuario;
+                    cargarFeed();
+                    const favs = await obtenerFavoritos();
+                    favoritos = new Set(favs.map(f => f.id));
+                    guardarOneSignalId(currentUser.email);
+                }
+            } else {
+                localStorage.removeItem('auth_token');
+                location.reload();
+            }
+        }
+        
+        document.querySelectorAll('.nav-item-bottom').forEach(el => el.addEventListener('click', () => cambiarTab(el.dataset.tab)));
+        
+        // Menú perfil
+        const profileBtn = document.getElementById('profileBtn');
+        const profileMenu = document.getElementById('profileMenu');
+        profileBtn.onclick = (e) => {
+            e.stopPropagation();
+            profileMenu.classList.toggle('show');
+        };
+        document.addEventListener('click', () => profileMenu.classList.remove('show'));
+        
+        // Búsqueda interna
+        document.getElementById('searchBtn').onclick = toggleSearchPanel;
+        document.getElementById('searchInput').addEventListener('input', buscarEnFeed);
+        
+        // Botón enviar mensaje
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'sendMessageBtn' || e.target.parentElement?.id === 'sendMessageBtn') {
+                enviarMensajeChat();
+            }
+        });
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('chatInput') && document.activeElement === document.getElementById('chatInput')) {
+                enviarMensajeChat();
+            }
+        });
+        
+        // Modal editar perfil
+        document.getElementById('guardarPerfilBtn').onclick = guardarPerfil;
+        
+        const loginBtn = document.getElementById('loginButton');
+        if (!currentUser && document.getElementById('loginButton')) {
+            document.getElementById('loginButton').innerHTML = '<button onclick="loginWithGoogle()" style="background: #1877f2; color: white; border: none; border-radius: 8px; padding: 8px 16px;">Iniciar sesión</button>';
         }
     }
+    window.loginWithGoogle = loginWithGoogle;
     init();
 </script>
 </body>
