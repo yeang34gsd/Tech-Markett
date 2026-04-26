@@ -2,638 +2,1034 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Intercambia - Trueque de objetos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet (mapa) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh; }
-        .app-container { max-width: 600px; margin: 0 auto; background: #f0f2f5; min-height: 100vh; }
-        .header { background: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; }
-        .logo { font-size: 1.4rem; font-weight: 700; color: #1877f2; }
-        .screen { padding: 24px; background: white; margin: 20px; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .screen h2 { margin-bottom: 20px; }
-        .google-btn { background: #1877f2; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        input { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 16px; margin-bottom: 16px; }
-        .btn-primary { background: #1877f2; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; }
-        .terminos-texto { max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
-        .post-card { background: white; border-radius: 12px; margin: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .post-header { padding: 12px; display: flex; align-items: center; gap: 10px; }
-        .post-avatar { width: 40px; height: 40px; border-radius: 50%; background: #1877f2; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
-        .post-user-name { font-weight: 600; }
-        .post-time { font-size: 11px; color: #65676b; }
-        .post-title { font-weight: 600; padding: 0 12px 8px; }
-        .post-description { padding: 0 12px 12px; color: #1b1f23; }
-        .post-image { width: 100%; max-height: 300px; object-fit: cover; cursor: pointer; }
-        .post-actions { padding: 8px 12px; border-top: 1px solid #e0e0e0; display: flex; gap: 8px; flex-wrap: wrap; }
-        .action-btn { flex: 1; padding: 8px; background: none; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 80px; transition: 0.2s; }
-        .action-btn:hover { background: #f0f2f5; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: white; display: flex; justify-content: space-around; padding: 10px 16px; border-top: 1px solid #e0e0e0; }
-        .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #65676b; font-size: 12px; cursor: pointer; padding: 4px 12px; border-radius: 8px; }
-        .nav-item.active { color: #1877f2; }
-        .nav-item i { font-size: 1.4rem; }
-        .publish-form { background: white; margin: 16px; padding: 20px; border-radius: 16px; }
-        .upload-area { border: 2px dashed #e0e0e0; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 16px; }
-        .loading { text-align: center; padding: 40px; color: #65676b; }
-        textarea { font-family: inherit; font-size: 14px; width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 16px; resize: vertical; }
-        .error-message { color: red; text-align: center; margin: 10px; }
-        .debug-panel { background: #f0f0f0; padding: 8px; font-size: 10px; border-top: 1px solid #ddd; position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; display: none; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            padding-bottom: 70px;
+        }
+
+        /* Modo oscuro */
+        body.dark-mode {
+            background: #18191a;
+            color: #e4e6eb;
+        }
+
+        /* ========== BARRA SUPERIOR (ESTILO FACEBOOK) ========== */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e4e6eb;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        body.dark-mode .top-bar {
+            background: #242526;
+            border-bottom-color: #3e4042;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #059669, #10b981);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .top-bar-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .top-icon {
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #050505;
+        }
+        body.dark-mode .top-icon {
+            color: #e4e6eb;
+        }
+        .top-icon:hover {
+            background: #e4e6eb;
+        }
+        body.dark-mode .top-icon:hover {
+            background: #3e4042;
+        }
+
+        /* Contenedor principal */
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 70px 12px 20px;
+        }
+
+        /* Tarjetas estilo Facebook */
+        .card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        body.dark-mode .card {
+            background: #242526;
+        }
+
+        /* Header de publicación */
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 12px;
+        }
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .post-info {
+            flex: 1;
+        }
+        .post-nombre {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .post-fecha {
+            font-size: 0.7rem;
+            color: #65676b;
+        }
+
+        /* Galería de fotos estilo Facebook */
+        .foto-grid {
+            display: grid;
+            gap: 2px;
+            background: #f0f2f5;
+        }
+        body.dark-mode .foto-grid {
+            background: #18191a;
+        }
+        .foto-grid-1 { grid-template-columns: 1fr; }
+        .foto-grid-2 { grid-template-columns: 1fr 1fr; }
+        .foto-grid-3 { grid-template-columns: 1fr 1fr; }
+        .foto-grid-3 .foto-item:first-child { grid-row: span 2; }
+        .foto-grid-4 { grid-template-columns: 1fr 1fr; }
+        .foto-item {
+            position: relative;
+            cursor: pointer;
+            background: #e4e6eb;
+            min-height: 150px;
+            overflow: hidden;
+        }
+        .foto-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            aspect-ratio: 1 / 1;
+        }
+        .foto-mas {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        /* Visor de fotos (Lightbox) */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 1000;
+            flex-direction: column;
+        }
+        .lightbox.active {
+            display: flex;
+        }
+        .lightbox-header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 16px;
+            background: rgba(0,0,0,0.5);
+        }
+        .lightbox-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+        }
+        .lightbox-img {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .lightbox-img img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+        .lightbox-nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px;
+            background: rgba(0,0,0,0.5);
+        }
+        .lightbox-prev, .lightbox-next {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 32px;
+            padding: 12px 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Menú desplegable del perfil */
+        .dropdown-menu {
+            position: absolute;
+            top: 60px;
+            right: 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            z-index: 200;
+            min-width: 220px;
+            overflow: hidden;
+            display: none;
+        }
+        body.dark-mode .dropdown-menu {
+            background: #242526;
+        }
+        .dropdown-menu.active {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .dropdown-item:hover {
+            background: #e4e6eb;
+        }
+        body.dark-mode .dropdown-item:hover {
+            background: #3e4042;
+        }
+
+        /* Modal de términos */
+        .modal-terminos {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-terminos.active {
+            display: flex;
+        }
+        .terminos-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 90%;
+            width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        body.dark-mode .terminos-content {
+            background: #242526;
+        }
+        .terminos-texto {
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 16px 0;
+            white-space: pre-wrap;
+            background: #f0f2f5;
+            padding: 12px;
+            border-radius: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        body.dark-mode .terminos-texto {
+            background: #3a3b3c;
+        }
+
+        /* Pantallas */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        /* Formulario publicación */
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin: 16px 0;
+        }
+        .foto-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .foto-preview {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        .foto-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .foto-preview button {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+        button {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-secundario {
+            background: #6c757d;
+        }
+        .grid-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .item-lista {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        body.dark-mode .item-lista {
+            background: #242526;
+        }
+        .item-lista img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            background: #f0f2f5;
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .mensaje {
+            margin-bottom: 12px;
+            display: flex;
+        }
+        .mensaje.emisor {
+            justify-content: flex-end;
+        }
+        .mensaje .bubble {
+            max-width: 70%;
+            padding: 8px 12px;
+            border-radius: 18px;
+            background: #e4e6eb;
+        }
+        .mensaje.emisor .bubble {
+            background: #059669;
+            color: white;
+        }
+        .chat-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .chat-input input {
+            flex: 1;
+            margin: 0;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-<div class="app-container" id="app">
-    <div class="header">
-        <div class="logo">🔄 Intercambia</div>
-    </div>
 
-    <!-- Pantalla de login -->
-    <div id="loginScreen" class="screen">
-        <h2>Bienvenido a Intercambia</h2>
-        <p style="margin-bottom: 20px; color: #65676b;">Inicia sesión para comenzar</p>
-        <button class="google-btn" id="googleLoginBtn">
-            <i class="fab fa-google"></i> Iniciar sesión con Google
-        </button>
-        <div id="loginError" class="error-message"></div>
-    </div>
-
-    <!-- Pantalla de términos -->
-    <div id="terminosScreen" class="screen" style="display:none;">
-        <h2>Términos y Condiciones</h2>
-        <div class="terminos-texto" id="terminosTexto">Cargando...</div>
-        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-            <input type="checkbox" id="aceptoTerminos"> Acepto los términos y condiciones
-        </label>
-        <button class="btn-primary" id="aceptarTerminosBtn">Aceptar y continuar</button>
-    </div>
-
-    <!-- Pantalla de nombre de usuario -->
-    <div id="nombreScreen" class="screen" style="display:none;">
-        <h2>Elige un nombre de usuario</h2>
-        <p style="margin-bottom: 16px; color: #65676b;">Este nombre será visible para todos</p>
-        <input type="text" id="nombreUsuario" placeholder="Ej: JuanPerez">
-        <div id="nombreError" style="color: red; font-size: 12px; margin-bottom: 16px;"></div>
-        <button class="btn-primary" id="guardarNombreBtn">Guardar</button>
-    </div>
-
-    <!-- App principal -->
-    <div id="appScreen" style="display:none;">
-        <div id="feedContainer" class="loading">Cargando...</div>
-    </div>
-
-    <!-- Bottom navigation -->
-    <div class="bottom-nav" id="bottomNav" style="display:none;">
-        <button class="nav-item active" data-tab="feed"><i class="fas fa-home"></i><span>Inicio</span></button>
-        <button class="nav-item" data-tab="publicar"><i class="fas fa-plus-circle"></i><span>Publicar</span></button>
-        <button class="nav-item" data-tab="perfil"><i class="fas fa-user"></i><span>Perfil</span></button>
-        <button class="nav-item" data-tab="misobjetos"><i class="fas fa-box"></i><span>Mis objetos</span></button>
-    </div>
-    
-    <!-- Debug panel -->
-    <div class="debug-panel" id="debugPanel">
-        <span id="debugStatus"></span>
+<!-- Barra superior estilo Facebook -->
+<div class="top-bar">
+    <div class="logo">🔄 Intercambia</div>
+    <div class="top-bar-actions">
+        <button class="top-icon" id="homeBtn" title="Inicio">🏠</button>
+        <button class="top-icon" id="publishBtn" title="Publicar">➕</button>
+        <button class="top-icon" id="searchBtn" title="Buscar">🔍</button>
+        <button class="top-icon" id="messagesBtn" title="Mensajes">💬</button>
+        <button class="top-icon" id="profileBtn" title="Perfil">👤</button>
     </div>
 </div>
 
+<!-- Menú desplegable del perfil -->
+<div class="dropdown-menu" id="profileDropdown">
+    <div class="dropdown-item" id="dropdownMisObjetos">📦 Mis objetos</div>
+    <div class="dropdown-item" id="dropdownFavoritos">⭐ Favoritos</div>
+    <div class="dropdown-item" id="dropdownDarkMode">🌙 Modo oscuro</div>
+    <div class="dropdown-item" id="dropdownLogout">🚪 Cerrar sesión</div>
+</div>
+
+<!-- Modal de términos y condiciones -->
+<div class="modal-terminos" id="terminosModal">
+    <div class="terminos-content">
+        <h3>📜 Términos y Condiciones</h3>
+        <div class="terminos-texto" id="terminosTexto">Cargando...</div>
+        <input type="text" id="nombreUsuarioInput" placeholder="Elige un nombre de usuario (público)" style="margin-top: 16px;">
+        <button id="aceptarTerminosBtn" style="margin-top: 16px;">✅ Acepto los términos</button>
+        <button id="cancelarTerminosBtn" style="margin-top: 8px; background: #6c757d;">❌ Cancelar</button>
+    </div>
+</div>
+
+<!-- Contenedor principal -->
+<div class="container" id="appContainer">
+    <div id="feedScreen" class="screen active"></div>
+    <div id="publishScreen" class="screen">
+        <div class="card" style="padding: 16px;">
+            <h3>📸 Publicar objeto</h3>
+            <input type="text" id="titulo" placeholder="Título del objeto">
+            <select id="categoria">
+                <option value="Electrónica">📱 Electrónica</option>
+                <option value="Ropa">👕 Ropa</option>
+                <option value="Libros">📚 Libros</option>
+                <option value="Mascotas">🐾 Mascotas</option>
+                <option value="Hogar">🏠 Hogar</option>
+                <option value="Deportes">⚽ Deportes</option>
+            </select>
+            <textarea id="descripcion" rows="3" placeholder="Descripción del objeto..."></textarea>
+            
+            <label>📸 Fotos (máx 5)</label>
+            <div class="upload-area" id="uploadAreaPrincipal">
+                <div>📁 Haz clic para seleccionar fotos</div>
+                <input type="file" id="fotosInput" accept="image/*" multiple style="display:none;">
+            </div>
+            <div id="fotosPreview" class="foto-preview-container"></div>
+            
+            <label>📍 Ubicación (opcional)</label>
+            <input type="text" id="direccionInput" placeholder="Ej: Av. Los Paltos 321, Quilpué">
+            
+            <button id="publicarBtn" style="margin-top: 16px;">✅ Publicar</button>
+            <div id="pubStatus" class="status-info" style="display:none;"></div>
+        </div>
+    </div>
+    <div id="searchScreen" class="screen">
+        <div class="card" style="padding: 16px;">
+            <input type="text" id="searchInput" placeholder="Buscar por título o usuario...">
+            <div id="searchResults" class="grid-lista" style="margin-top: 16px;"></div>
+        </div>
+    </div>
+    <div id="messagesScreen" class="screen">
+        <div class="card" style="padding: 16px;">
+            <h3>💬 Conversaciones</h3>
+            <div id="listaChats"></div>
+            <div id="chatDetalle" style="display:none; margin-top: 16px;">
+                <h4 id="chatTitulo"></h4>
+                <div id="chatMensajes" class="chat-container"></div>
+                <div class="chat-input">
+                    <input type="text" id="nuevoMensaje" placeholder="Escribe un mensaje...">
+                    <button id="enviarMensajeBtn">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="misObjetosScreen" class="screen">
+        <div id="misObjetosGrid" class="grid-lista"></div>
+    </div>
+    <div id="favoritosScreen" class="screen">
+        <div id="favoritosGrid" class="grid-lista"></div>
+    </div>
+</div>
+
+<!-- OneSignal SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
     // ========== CONFIGURACIÓN ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
-    const DEBUG = true; // Cambiar a false para producción
+    const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
     
     let currentUser = null;
     let authToken = null;
-    let currentTab = 'feed';
-    let favoritosIds = new Set();
-    
-    // ========== DEBUG ==========
-    function log(message, data) {
-        if (!DEBUG) return;
-        console.log(`[${new Date().toLocaleTimeString()}] ${message}`, data || '');
-        const debugPanel = document.getElementById('debugPanel');
-        if (debugPanel) {
-            document.getElementById('debugStatus').innerHTML = message;
-            debugPanel.style.display = 'block';
-            setTimeout(() => {
-                if (document.getElementById('debugStatus').innerHTML === message) {
-                    debugPanel.style.display = 'none';
-                }
-            }, 3000);
-        }
-    }
-    
-    // ========== TOKEN ==========
+    let favoritos = new Set();
+    let paginaActual = 'feed';
+    let lightboxFotos = [];
+    let lightboxIndex = 0;
+    let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
+    let pollingInterval = null;
+    let fotosSeleccionadas = [];
+
+    // ========== AUTENTICACIÓN ==========
     function getTokenFromURL() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
         if (token) {
-            log('Token encontrado en URL, guardando...');
             localStorage.setItem('auth_token', token);
             window.history.replaceState({}, document.title, window.location.pathname);
             return token;
         }
-        const savedToken = localStorage.getItem('auth_token');
-        if (savedToken) log('Token encontrado en localStorage');
-        return savedToken;
+        return localStorage.getItem('auth_token');
     }
-    
-    function saveToken(token) {
-        localStorage.setItem('auth_token', token);
-        authToken = token;
-        log('Token guardado');
-    }
-    
-    // ========== AUTH ==========
+
     async function verifyToken(token) {
-        log('Verificando token...');
         try {
-            const res = await fetch(`${WORKER_URL}/auth/me`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            log('Respuesta /auth/me:', res.status);
-            if (!res.ok) {
-                log('Error en /auth/me:', await res.text());
-                return null;
-            }
-            const data = await res.json();
-            log('Usuario obtenido:', data.user?.email);
-            return data.user;
-        } catch(e) { 
-            log('Error en verifyToken:', e.message);
-            return null; 
+            const res = await fetch(`${WORKER_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) return null;
+            return (await res.json()).user;
+        } catch(e) { return null; }
+    }
+
+    function loginWithGoogle() {
+        window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`;
+    }
+
+    async function verificarRegistro() {
+        const res = await fetch(`${WORKER_URL}/verificar-nombre`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (!data.tiene_nombre) {
+            await cargarTerminos();
+        } else {
+            cargarFeed();
         }
     }
-    
-    function loginWithGoogle() {
-        const redirectUrl = window.location.href.split('?')[0];
-        const authUrl = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
-        log('Redirigiendo a:', authUrl);
-        window.location.href = authUrl;
+
+    async function cargarTerminos() {
+        const res = await fetch(`${WORKER_URL}/terminos`);
+        const terminos = await res.json();
+        document.getElementById('terminosTexto').innerText = terminos.contenido;
+        document.getElementById('terminosModal').classList.add('active');
     }
-    
+
+    async function registrarUsuario(nombreUsuario) {
+        const res = await fetch(`${WORKER_URL}/registro`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            body: JSON.stringify({ nombre_usuario: nombreUsuario, acepto_terminos: true })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('terminosModal').classList.remove('active');
+            cargarFeed();
+        } else {
+            alert(data.error);
+        }
+    }
+
     // ========== API ==========
     async function apiFetch(path, options = {}) {
         const headers = options.headers || {};
-        if (authToken) {
-            headers['Authorization'] = `Bearer ${authToken}`;
-        } else {
-            log('apiFetch sin authToken:', path);
-        }
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
         const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
-        if (!res.ok) {
-            const error = await res.text();
-            log(`Error en ${path}:`, error);
-            throw new Error(error);
-        }
+        if (!res.ok) throw new Error(await res.text());
         return res.json();
     }
-    
-    async function verificarEstadoUsuario() {
-        log('Verificando estado de usuario...');
-        const res = await fetch(`${WORKER_URL}/estado-usuario`, {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        if (!res.ok) throw new Error('Error al verificar estado');
-        const data = await res.json();
-        log('Estado usuario:', data);
-        return data;
-    }
-    
-    async function aceptarTerminos() {
-        log('Aceptando términos...');
-        await fetch(`${WORKER_URL}/aceptar-terminos`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });
-        log('Términos aceptados');
-    }
-    
-    async function guardarNombreUsuario(nombre) {
-        log('Guardando nombre de usuario:', nombre);
-        const res = await fetch(`${WORKER_URL}/actualizar-nombre`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-            body: JSON.stringify({ nombre_usuario: nombre })
-        });
-        const data = await res.json();
-        log('Respuesta guardar nombre:', data);
-        return data;
-    }
-    
-    async function obtenerTerminos() {
-        log('Obteniendo términos...');
-        const res = await fetch(`${WORKER_URL}/terminos`);
-        return res.json();
-    }
-    
-    async function obtenerObjetos() {
-        log('Obteniendo objetos...');
-        return await apiFetch('/objetos');
-    }
-    
-    async function obtenerMisObjetos() {
-        return await apiFetch('/mis-objetos');
-    }
-    
-    async function obtenerPerfil() {
-        return await apiFetch('/perfil');
-    }
-    
-    async function obtenerFavoritos() {
-        const favs = await apiFetch('/favoritos');
-        favoritosIds = new Set(favs.map(f => f.id));
-        return favs;
-    }
-    
-    async function agregarFavorito(id) {
-        await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) });
-        favoritosIds.add(id);
-    }
-    
-    async function quitarFavorito(id) {
-        await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) });
-        favoritosIds.delete(id);
-    }
-    
-    async function eliminarObjeto(id) {
-        await apiFetch(`/objeto/${id}`, { method: 'DELETE' });
-    }
-    
-    async function marcarIntercambiado(id) {
-        await apiFetch(`/objeto/${id}`, { method: 'PATCH' });
-    }
-    
-    async function reportarObjeto(id, motivo) {
-        await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
-    }
-    
-    async function publicarObjeto(titulo, descripcion, file) {
+
+    async function obtenerObjetos() { return await apiFetch('/objetos'); }
+    async function obtenerMisObjetos() { return await apiFetch('/mis-objetos'); }
+    async function obtenerFavoritos() { return await apiFetch('/favoritos'); }
+    async function agregarFavorito(id) { return await apiFetch('/favoritos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id }) }); }
+    async function quitarFavorito(id) { return await apiFetch('/favoritos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id }) }); }
+    async function obtenerConversaciones() { return await apiFetch('/mis-conversaciones'); }
+    async function obtenerMensajes(objetoId, otro) { return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otro)}`); }
+    async function enviarMensaje(objetoId, receptor, mensaje) { return await apiFetch('/mensaje', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) }); }
+    async function reportarObjeto(id, motivo) { return await apiFetch('/reporte', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id, motivo }) }); }
+    async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
+
+    async function publicarObjeto(titulo, descripcion, categoria, fotos, direccion) {
         const form = new FormData();
         form.append('titulo', titulo);
-        form.append('descripcion', descripcion);
-        form.append('foto_0', file);
-        form.append('latitud', '');
-        form.append('longitud', '');
-        form.append('direccion', '');
+        form.append('descripcion', `${categoria} | ${descripcion}`);
+        if (direccion) form.append('direccion', direccion);
+        for (let i = 0; i < Math.min(fotos.length, 5); i++) {
+            form.append(`foto_${i}`, fotos[i]);
+        }
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
-    
-    // ========== RENDER ==========
-    function escapeHtml(str) {
-        if (str === undefined || str === null) return '';
-        if (typeof str === 'number') return str.toString();
-        return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
-    }
-    
-    function renderPostCard(obj) {
-        const esFavorito = favoritosIds.has(obj.id);
-        const fecha = new Date(obj.fecha).toLocaleString();
-        const descripcion = obj.descripcion || '';
-        const nombreMostrar = obj.nombre_usuario || (obj.usuario ? obj.usuario.split('@')[0] : 'Usuario');
-        
-        return `
-            <div class="post-card" data-id="${obj.id}">
-                <div class="post-header">
-                    <div class="post-avatar">${escapeHtml(nombreMostrar.charAt(0).toUpperCase())}</div>
-                    <div>
-                        <div class="post-user-name">${escapeHtml(nombreMostrar)}</div>
-                        <div class="post-time">${fecha}</div>
+
+    // ========== LIGHTBOX (VISOR DE FOTOS) ==========
+    function abrirLightbox(fotos, index) {
+        lightboxFotos = fotos;
+        lightboxIndex = index;
+        let lightbox = document.getElementById('lightbox');
+        if (!lightbox) {
+            const lightboxHTML = `
+                <div id="lightbox" class="lightbox">
+                    <div class="lightbox-header">
+                        <button class="lightbox-close" id="lightboxClose">✕</button>
+                    </div>
+                    <div class="lightbox-img">
+                        <img id="lightboxImg" src="">
+                    </div>
+                    <div class="lightbox-nav">
+                        <button class="lightbox-prev" id="lightboxPrev">‹</button>
+                        <button class="lightbox-next" id="lightboxNext">›</button>
                     </div>
                 </div>
-                <div class="post-title">${escapeHtml(obj.titulo)}</div>
-                <div class="post-description">${escapeHtml(descripcion.substring(0, 150))}</div>
-                ${obj.url ? `<img src="${obj.url}" class="post-image" onclick="window.open('${obj.url}', '_blank')">` : ''}
-                <div class="post-actions">
-                    <button class="action-btn" onclick="toggleFavorito(${obj.id}, this)">
-                        <i class="fa-${esFavorito ? 'solid' : 'regular'} fa-star"></i> ${esFavorito ? 'Guardado' : 'Guardar'}
-                    </button>
-                    ${obj.usuario !== currentUser?.email ? `
-                        <button class="action-btn" onclick="alert('Chat con ${escapeHtml(nombreMostrar)} - Próximamente')">
-                            <i class="fa-regular fa-message"></i> Intercambiar
-                        </button>
-                        <button class="action-btn" onclick="reportarObjetoPrompt(${obj.id})">
-                            <i class="fa-regular fa-flag"></i> Reportar
-                        </button>
-                    ` : `
-                        <button class="action-btn" onclick="marcarIntercambiadoPrompt(${obj.id})">
-                            <i class="fa-regular fa-check-circle"></i> Intercambiado
-                        </button>
-                        <button class="action-btn" onclick="eliminarObjetoPrompt(${obj.id})">
-                            <i class="fa-regular fa-trash-can"></i> Eliminar
-                        </button>
-                    `}
-                </div>
-            </div>
-        `;
+            `;
+            document.body.insertAdjacentHTML('beforeend', lightboxHTML);
+            document.getElementById('lightboxClose').onclick = () => document.getElementById('lightbox').classList.remove('active');
+            document.getElementById('lightboxPrev').onclick = () => { lightboxIndex = (lightboxIndex - 1 + lightboxFotos.length) % lightboxFotos.length; actualizarLightbox(); };
+            document.getElementById('lightboxNext').onclick = () => { lightboxIndex = (lightboxIndex + 1) % lightboxFotos.length; actualizarLightbox(); };
+            lightbox = document.getElementById('lightbox');
+        }
+        actualizarLightbox();
+        lightbox.classList.add('active');
     }
-    
-    async function renderFeed() {
-        const container = document.getElementById('feedContainer');
-        if (!container) return;
-        container.innerHTML = '<div class="loading">Cargando...</div>';
+
+    function actualizarLightbox() {
+        const img = document.getElementById('lightboxImg');
+        if (img && lightboxFotos[lightboxIndex]) {
+            img.src = lightboxFotos[lightboxIndex];
+        }
+    }
+
+    // ========== RENDERIZAR GALERÍA ==========
+    function renderizarGaleria(objeto) {
+        const fotos = [objeto.url];
+        if (objeto.fotos_extra) fotos.push(...objeto.fotos_extra.map(f => f.url));
+        if (fotos.length === 0) return '';
+        
+        const gridClass = `foto-grid-${Math.min(fotos.length, 4)}`;
+        let html = `<div class="foto-grid ${gridClass}">`;
+        
+        fotos.slice(0, 4).forEach((foto, idx) => {
+            let extraHtml = '';
+            if (idx === 3 && fotos.length > 4) {
+                extraHtml = `<div class="foto-mas">+${fotos.length - 4}</div>`;
+            }
+            html += `
+                <div class="foto-item" onclick="window.abrirLightbox(${JSON.stringify(fotos)}, ${idx})">
+                    <img src="${foto}" loading="lazy">
+                    ${extraHtml}
+                </div>
+            `;
+        });
+        html += `</div>`;
+        return html;
+    }
+
+    // ========== RENDERIZAR FEED ==========
+    async function cargarFeed() {
+        const container = document.getElementById('feedScreen');
+        container.innerHTML = '<div style="text-align:center; padding:40px;">Cargando...</div>';
+        
         try {
             const objetos = await obtenerObjetos();
-            if (!objetos || !objetos.length) {
-                container.innerHTML = '<div class="loading">📭 No hay objetos publicados aún</div>';
+            const favs = await obtenerFavoritos();
+            favoritos = new Set(favs.map(f => f.id));
+            
+            if (!objetos.length) {
+                container.innerHTML = '<div style="text-align:center; padding:40px;">📭 No hay objetos publicados aún.</div>';
                 return;
             }
-            container.innerHTML = objetos.map(renderPostCard).join('');
-            log(`Feed renderizado: ${objetos.length} objetos`);
-        } catch(e) {
-            log('Error renderFeed:', e.message);
-            container.innerHTML = '<div class="loading">❌ Error al cargar. Intenta de nuevo.</div>';
-        }
-    }
-    
-    async function renderMisObjetos() {
-        const container = document.getElementById('feedContainer');
-        if (!container) return;
-        container.innerHTML = '<div class="loading">Cargando...</div>';
-        try {
-            const objetos = await obtenerMisObjetos();
-            if (!objetos || !objetos.length) {
-                container.innerHTML = '<div class="loading">📭 No has publicado nada aún</div>';
-                return;
+            
+            let html = '';
+            for (const obj of objetos) {
+                const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
+                const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
+                const esFavorito = favoritos.has(obj.id);
+                
+                html += `
+                    <div class="card">
+                        <div class="post-header">
+                            <img src="${currentUser?.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(obj.usuario)}" class="post-avatar">
+                            <div class="post-info">
+                                <div class="post-nombre">${escapeHtml(obj.usuario)}</div>
+                                <div class="post-fecha">${new Date(obj.fecha).toLocaleDateString()}</div>
+                            </div>
+                            <button class="top-icon favorito-btn" onclick="toggleFavorito(${obj.id}, this)" style="font-size:1.2rem;">${esFavorito ? '★' : '☆'}</button>
+                        </div>
+                        <div style="padding: 0 16px 12px;">
+                            <strong>${escapeHtml(obj.titulo)}</strong>
+                            <p style="margin-top:4px; color:#65676b;">${escapeHtml(descripcion.substring(0, 100))}</p>
+                            ${obj.direccion ? `<span style="background:#e4e6eb; padding:4px 12px; border-radius:20px; font-size:12px; display:inline-block;">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
+                        </div>
+                        ${renderizarGaleria(obj)}
+                        <div style="padding: 12px; display: flex; gap: 12px; border-top: 1px solid #e4e6eb;">
+                            <button class="intercambiar-btn" onclick="abrirChatConObjeto(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')" style="flex:1; background:#059669; padding:8px; border-radius:8px;">💬 Intercambiar</button>
+                            <button class="reportar-btn" onclick="reportarObjetoPrompt(${obj.id})" style="flex:1; background:#f59e0b; padding:8px; border-radius:8px;">⚠️ Reportar</button>
+                        </div>
+                    </div>
+                `;
             }
-            container.innerHTML = objetos.map(renderPostCard).join('');
+            container.innerHTML = html;
         } catch(e) {
-            container.innerHTML = '<div class="loading">❌ Error</div>';
+            container.innerHTML = '<div style="text-align:center; padding:40px;">❌ Error al cargar</div>';
         }
     }
-    
-    async function renderPerfil() {
-        const container = document.getElementById('feedContainer');
-        if (!container) return;
-        container.innerHTML = '<div class="loading">Cargando...</div>';
-        try {
-            const perfil = await obtenerPerfil();
-            const nombreMostrar = perfil.nombre_usuario || (currentUser ? currentUser.email.split('@')[0] : 'Usuario');
-            container.innerHTML = `
-                <div class="screen" style="margin: 16px; text-align: center;">
-                    <div class="post-avatar" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 16px;">${escapeHtml(nombreMostrar.charAt(0).toUpperCase())}</div>
-                    <h3>${escapeHtml(nombreMostrar)}</h3>
-                    <p style="color: #65676b;">${currentUser ? currentUser.email : ''}</p>
-                    <p>⭐ ${perfil.promedio_valoracion?.toFixed(1) || 0} (${perfil.total_valoraciones || 0} valoraciones)</p>
-                    <p>📦 ${perfil.objetos?.length || 0} publicaciones</p>
-                </div>
-                <h3 style="padding: 0 16px;">Mis publicaciones</h3>
-                ${perfil.objetos?.length ? perfil.objetos.map(renderPostCard).join('') : '<div class="loading">No has publicado nada aún</div>'}
-            `;
-        } catch(e) {
-            container.innerHTML = '<div class="loading">❌ Error</div>';
-        }
-    }
-    
-    function renderPublicarForm() {
-        let fotoSeleccionada = null;
-        const container = document.getElementById('feedContainer');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div class="publish-form">
-                <h3>Crear publicación</h3>
-                <input type="text" id="titulo" placeholder="Título del objeto">
-                <textarea id="descripcion" rows="4" placeholder="Descripción del objeto..."></textarea>
-                <div class="upload-area" id="uploadArea">
-                    <i class="fas fa-camera"></i>
-                    <div>Haz clic para seleccionar una foto</div>
-                    <input type="file" id="fileInput" accept="image/*" style="display:none;">
-                </div>
-                <button class="btn-primary" id="publicarBtn">Publicar</button>
-            </div>
-        `;
-        
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        if (uploadArea) {
-            uploadArea.onclick = () => fileInput.click();
-        }
-        if (fileInput) {
-            fileInput.onchange = (e) => {
-                if (e.target.files.length) {
-                    fotoSeleccionada = e.target.files[0];
-                    uploadArea.innerHTML = `<i class="fas fa-check-circle" style="color:green"></i><div>${fotoSeleccionada.name}</div>`;
-                }
-            };
-        }
-        
-        const publicarBtn = document.getElementById('publicarBtn');
-        if (publicarBtn) {
-            publicarBtn.onclick = async () => {
-                const titulo = document.getElementById('titulo').value;
-                const descripcion = document.getElementById('descripcion').value;
-                if (!titulo || !descripcion || !fotoSeleccionada) {
-                    alert('Completa todos los campos');
-                    return;
-                }
-                try {
-                    await publicarObjeto(titulo, descripcion, fotoSeleccionada);
-                    alert('¡Publicado!');
-                    cambiarTab('misobjetos');
-                } catch(e) {
-                    alert('Error: ' + e.message);
-                }
-            };
-        }
-    }
-    
-    // ========== ACCIONES ==========
-    window.toggleFavorito = async (id, btn) => {
-        if (favoritosIds.has(id)) {
+
+    // ========== FUNCIONES GLOBALES ==========
+    window.abrirLightbox = abrirLightbox;
+    window.toggleFavorito = async function(id, btn) {
+        if (favoritos.has(id)) {
             await quitarFavorito(id);
-            btn.innerHTML = '<i class="fa-regular fa-star"></i> Guardar';
+            favoritos.delete(id);
+            btn.innerHTML = '☆';
         } else {
             await agregarFavorito(id);
-            btn.innerHTML = '<i class="fa-solid fa-star"></i> Guardado';
+            favoritos.add(id);
+            btn.innerHTML = '★';
         }
     };
-    
-    window.marcarIntercambiadoPrompt = async (id) => {
-        if (confirm('¿Marcar este objeto como intercambiado?')) {
-            await marcarIntercambiado(id);
-            cambiarTab(currentTab);
-            alert('Marcado como intercambiado');
-        }
-    };
-    
-    window.eliminarObjetoPrompt = async (id) => {
-        if (confirm('¿Eliminar esta publicación?')) {
-            await eliminarObjeto(id);
-            cambiarTab(currentTab);
-            alert('Publicación eliminada');
-        }
-    };
-    
-    window.reportarObjetoPrompt = async (id) => {
-        const motivo = prompt('Motivo del reporte:');
+    window.reportarObjetoPrompt = async function(id) {
+        const motivo = prompt('¿Por qué reportas este objeto?');
         if (motivo) {
             await reportarObjeto(id, motivo);
-            alert('Reporte enviado');
+            alert('✅ Reporte enviado');
         }
     };
-    
-    async function cambiarTab(tab) {
-        currentTab = tab;
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(el => el.classList.remove('active'));
-        const activeItem = document.querySelector(`.nav-item[data-tab="${tab}"]`);
-        if (activeItem) activeItem.classList.add('active');
-        
-        if (tab === 'feed') await renderFeed();
-        if (tab === 'misobjetos') await renderMisObjetos();
-        if (tab === 'perfil') await renderPerfil();
-        if (tab === 'publicar') renderPublicarForm();
+    window.abrirChatConObjeto = async function(id, usuario, titulo) {
+        chatActual = { objetoId: id, otroUsuario: usuario, titulo };
+        document.getElementById('chatTitulo').innerHTML = `💬 ${escapeHtml(titulo)}<br><small>Conversando con ${escapeHtml(usuario)}</small>`;
+        document.getElementById('chatDetalle').style.display = 'block';
+        await cargarMensajes();
+        if (pollingInterval) clearInterval(pollingInterval);
+        pollingInterval = setInterval(cargarMensajes, 5000);
+        cambiarPantalla('messages');
+    };
+
+    async function cargarMensajes() {
+        if (!chatActual.objetoId) return;
+        const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
+        const cont = document.getElementById('chatMensajes');
+        if (!msgs.length) {
+            cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún.</p>';
+            return;
+        }
+        cont.innerHTML = msgs.map(m => `
+            <div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : ''}">
+                <div class="bubble">
+                    <strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}
+                    <div style="font-size:10px; opacity:0.7;">${new Date(m.fecha).toLocaleString()}</div>
+                </div>
+            </div>
+        `).join('');
+        cont.scrollTop = cont.scrollHeight;
     }
-    
-    // ========== INICIALIZACIÓN PRINCIPAL ==========
-    async function init() {
-        log('Iniciando aplicación...');
-        
-        // Configurar botón de login
-        const googleBtn = document.getElementById('googleLoginBtn');
-        if (googleBtn) {
-            googleBtn.onclick = () => loginWithGoogle();
-        }
-        
-        // Obtener token
-        const token = getTokenFromURL();
-        
-        // Si no hay token, mostrar login
-        if (!token) {
-            log('No hay token, mostrando login');
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('terminosScreen').style.display = 'none';
-            document.getElementById('nombreScreen').style.display = 'none';
-            document.getElementById('appScreen').style.display = 'none';
-            document.getElementById('bottomNav').style.display = 'none';
+
+    async function enviarMensajeChat() {
+        const input = document.getElementById('nuevoMensaje');
+        const texto = input.value.trim();
+        if (!texto || !chatActual.objetoId) return;
+        await enviarMensaje(chatActual.objetoId, chatActual.otroUsuario, texto);
+        input.value = '';
+        await cargarMensajes();
+    }
+
+    async function cargarMisObjetos() {
+        const objetos = await obtenerMisObjetos();
+        const container = document.getElementById('misObjetosGrid');
+        if (!objetos.length) {
+            container.innerHTML = '<div style="text-align:center; padding:40px;">📭 No has publicado nada aún.</div>';
             return;
         }
-        
-        // Guardar token
-        authToken = token;
-        
-        // Verificar token con el backend
-        const user = await verifyToken(token);
-        
-        if (!user) {
-            log('Token inválido, limpiando y mostrando login');
-            localStorage.removeItem('auth_token');
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('terminosScreen').style.display = 'none';
-            document.getElementById('nombreScreen').style.display = 'none';
-            document.getElementById('appScreen').style.display = 'none';
-            document.getElementById('bottomNav').style.display = 'none';
+        container.innerHTML = objetos.map(obj => `
+            <div class="item-lista">
+                <img src="${obj.url}">
+                <div style="flex:1;">
+                    <strong>${escapeHtml(obj.titulo)}</strong>
+                    <div style="font-size:12px; color:#65676b;">${new Date(obj.fecha).toLocaleDateString()}</div>
+                </div>
+                <button onclick="eliminarObjetoPrompt(${obj.id})" style="background:#dc2626; padding:8px; width:auto;">🗑️</button>
+            </div>
+        `).join('');
+    }
+
+    async function cargarFavoritos() {
+        const objetos = await obtenerFavoritos();
+        const container = document.getElementById('favoritosGrid');
+        if (!objetos.length) {
+            container.innerHTML = '<div style="text-align:center; padding:40px;">⭐ No tienes favoritos aún.</div>';
             return;
         }
-        
-        currentUser = user;
-        log('Usuario autenticado:', user.email);
-        
-        // Verificar estado del usuario
-        let estado;
-        try {
-            estado = await verificarEstadoUsuario();
-        } catch(e) {
-            log('Error al verificar estado:', e.message);
-            document.getElementById('loginError').innerHTML = 'Error de conexión. Intenta de nuevo.';
+        container.innerHTML = objetos.map(obj => `
+            <div class="item-lista">
+                <img src="${obj.url}">
+                <div style="flex:1;">
+                    <strong>${escapeHtml(obj.titulo)}</strong>
+                    <div style="font-size:12px; color:#65676b;">${new Date(obj.fecha).toLocaleDateString()}</div>
+                </div>
+                <button onclick="window.abrirChatConObjeto(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')" style="background:#059669; padding:8px; width:auto;">💬</button>
+            </div>
+        `).join('');
+    }
+
+    async function cargarConversaciones() {
+        const convs = await obtenerConversaciones();
+        const container = document.getElementById('listaChats');
+        if (!convs.length) {
+            container.innerHTML = '<div style="text-align:center; padding:40px;">💬 No hay conversaciones aún.</div>';
             return;
         }
-        
-        // Validar términos aceptados (0, false, null, undefined = no aceptado)
-        const terminosAceptados = estado.terminos_aceptados === 1 || estado.terminos_aceptados === true;
-        const tieneNombre = estado.nombre_usuario && estado.nombre_usuario.length > 0;
-        
-        log('Estado usuario - Términos:', terminosAceptados, 'Nombre:', tieneNombre);
-        
-        // Caso 1: No ha aceptado términos
-        if (!terminosAceptados) {
-            log('Mostrando pantalla de términos');
-            const terminos = await obtenerTerminos();
-            const terminosHtml = terminos.terminos?.secciones?.map(s => `<h4>${s.titulo}</h4><p>${s.contenido}</p>`).join('') || '<p>Términos y condiciones de Intercambia</p>';
-            document.getElementById('terminosTexto').innerHTML = terminosHtml;
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('terminosScreen').style.display = 'block';
-            document.getElementById('nombreScreen').style.display = 'none';
-            document.getElementById('appScreen').style.display = 'none';
-            document.getElementById('bottomNav').style.display = 'none';
-            
-            const aceptarBtn = document.getElementById('aceptarTerminosBtn');
-            if (aceptarBtn) {
-                aceptarBtn.onclick = async () => {
-                    const check = document.getElementById('aceptoTerminos');
-                    if (!check || !check.checked) {
-                        alert('Debes aceptar los términos para continuar');
-                        return;
-                    }
-                    await aceptarTerminos();
-                    // Recargar para actualizar estado
-                    window.location.href = window.location.href.split('?')[0];
-                };
-            }
+        container.innerHTML = convs.map(c => `
+            <div class="item-lista" onclick="abrirChatConObjeto(${c.id_objeto}, '${escapeHtml(c.otroUsuario)}', '${escapeHtml(c.titulo)}')">
+                <div style="width:40px;height:40px;background:#059669;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;">📦</div>
+                <div style="flex:1;">
+                    <strong>${escapeHtml(c.titulo)}</strong>
+                    <div style="font-size:12px;">con ${escapeHtml(c.otroUsuario)}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function buscar() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const objetos = await obtenerObjetos();
+        const resultados = objetos.filter(o => 
+            o.titulo.toLowerCase().includes(term) || 
+            o.usuario.toLowerCase().includes(term)
+        );
+        const container = document.getElementById('searchResults');
+        if (!resultados.length) {
+            container.innerHTML = '<div style="text-align:center; padding:20px;">No se encontraron resultados</div>';
             return;
         }
-        
-        // Caso 2: No tiene nombre de usuario
-        if (!tieneNombre) {
-            log('Mostrando pantalla de nombre de usuario');
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('terminosScreen').style.display = 'none';
-            document.getElementById('nombreScreen').style.display = 'block';
-            document.getElementById('appScreen').style.display = 'none';
-            document.getElementById('bottomNav').style.display = 'none';
-            
-            const guardarBtn = document.getElementById('guardarNombreBtn');
-            if (guardarBtn) {
-                guardarBtn.onclick = async () => {
-                    const nombre = document.getElementById('nombreUsuario').value.trim();
-                    if (nombre.length < 3) {
-                        document.getElementById('nombreError').innerText = 'El nombre debe tener al menos 3 caracteres';
-                        return;
-                    }
-                    if (nombre.length > 30) {
-                        document.getElementById('nombreError').innerText = 'El nombre no puede tener más de 30 caracteres';
-                        return;
-                    }
-                    const res = await guardarNombreUsuario(nombre);
-                    if (res.error) {
-                        document.getElementById('nombreError').innerText = res.error;
-                        return;
-                    }
-                    // Recargar para actualizar estado
-                    window.location.href = window.location.href.split('?')[0];
-                };
-            }
-            return;
+        container.innerHTML = resultados.map(obj => `
+            <div class="item-lista">
+                <img src="${obj.url}">
+                <div style="flex:1;">
+                    <strong>${escapeHtml(obj.titulo)}</strong>
+                    <div style="font-size:12px;">${escapeHtml(obj.usuario)}</div>
+                </div>
+                <button onclick="window.abrirChatConObjeto(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')" style="background:#059669; padding:8px; width:auto;">💬</button>
+            </div>
+        `).join('');
+    }
+
+    window.eliminarObjetoPrompt = async function(id) {
+        if (confirm('¿Eliminar esta publicación?')) {
+            await eliminarObjeto(id);
+            cargarMisObjetos();
+            cargarFeed();
         }
+    };
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
+    }
+
+    function cambiarPantalla(pantalla) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(`${pantalla}Screen`).classList.add('active');
+        paginaActual = pantalla;
         
-        // Caso 3: Usuario completamente registrado - mostrar app
-        log('Usuario completo, mostrando app');
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('terminosScreen').style.display = 'none';
-        document.getElementById('nombreScreen').style.display = 'none';
-        document.getElementById('appScreen').style.display = 'block';
-        document.getElementById('bottomNav').style.display = 'flex';
-        
-        // Cargar datos iniciales
-        try {
-            await obtenerFavoritos();
-            await renderFeed();
-        } catch(e) {
-            log('Error al cargar datos iniciales:', e.message);
-        }
-        
-        // Configurar navegación
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(el => {
-            el.addEventListener('click', () => cambiarTab(el.dataset.tab));
+        if (pantalla === 'feed') cargarFeed();
+        if (pantalla === 'misObjetos') cargarMisObjetos();
+        if (pantalla === 'favoritos') cargarFavoritos();
+        if (pantalla === 'messages') cargarConversaciones();
+    }
+
+    // ========== PUBLICACIÓN ==========
+    function actualizarPrevisualizacionFotos() {
+        const container = document.getElementById('fotosPreview');
+        container.innerHTML = '';
+        fotosSeleccionadas.forEach((file, idx) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'foto-preview';
+                div.innerHTML = `
+                    <img src="${e.target.result}">
+                    <button onclick="eliminarFotoSeleccionada(${idx})">✕</button>
+                `;
+                container.appendChild(div);
+            };
+            reader.readAsDataURL(file);
         });
     }
-    
-    // Iniciar la aplicación cuando el DOM esté listo
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
+
+    window.eliminarFotoSeleccionada = function(idx) {
+        fotosSeleccionadas.splice(idx, 1);
+        actualizarPrevisualizacionFotos();
+    };
+
+    document.getElementById('uploadAreaPrincipal').onclick = () => document.getElementById('fotosInput').click();
+    document.getElementById('fotosInput').onchange = (e) => {
+        const archivos = Array.from(e.target.files);
+        fotosSeleccionadas.push(...archivos);
+        if (fotosSeleccionadas.length > 5) fotosSeleccionadas = fotosSeleccionadas.slice(0, 5);
+        actualizarPrevisualizacionFotos();
+    };
+
+    document.getElementById('publicarBtn').onclick = async () => {
+        const titulo = document.getElementById('titulo').value;
+        const categoria = document.getElementById('categoria').value;
+        const descripcion = document.getElementById('descripcion').value;
+        const direccion = document.getElementById('direccionInput').value;
+        
+        if (!titulo || !descripcion) {
+            alert('Completa título y descripción');
+            return;
+        }
+        if (fotosSeleccionadas.length === 0) {
+            alert('Selecciona al menos una foto');
+            return;
+        }
+        
+        try {
+            await publicarObjeto(titulo, descripcion, categoria, fotosSeleccionadas, direccion);
+            alert('✅ Objeto publicado');
+            fotosSeleccionadas = [];
+            document.getElementById('titulo').value = '';
+            document.getElementById('descripcion').value = '';
+            document.getElementById('direccionInput').value = '';
+            document.getElementById('fotosPreview').innerHTML = '';
+            document.getElementById('fotosInput').value = '';
+            cambiarPantalla('feed');
+        } catch(e) {
+            alert('Error: ' + e.message);
+        }
+    };
+
+    // ========== EVENTOS ==========
+    document.getElementById('homeBtn').onclick = () => cambiarPantalla('feed');
+    document.getElementById('publishBtn').onclick = () => cambiarPantalla('publish');
+    document.getElementById('searchBtn').onclick = () => cambiarPantalla('search');
+    document.getElementById('messagesBtn').onclick = () => cambiarPantalla('messages');
+    document.getElementById('profileBtn').onclick = () => {
+        const dropdown = document.getElementById('profileDropdown');
+        dropdown.classList.toggle('active');
+    };
+    document.getElementById('dropdownMisObjetos').onclick = () => {
+        document.getElementById('profileDropdown').classList.remove('active');
+        cambiarPantalla('misObjetos');
+    };
+    document.getElementById('dropdownFavoritos').onclick = () => {
+        document.getElementById('profileDropdown').classList.remove('active');
+        cambiarPantalla('favoritos');
+    };
+    document.getElementById('dropdownDarkMode').onclick = () => {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        document.getElementById('profileDropdown').classList.remove('active');
+    };
+    document.getElementById('dropdownLogout').onclick = () => {
+        localStorage.removeItem('auth_token');
+        window.location.href = '/';
+    };
+    document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
+    document.getElementById('nuevoMensaje').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') enviarMensajeChat();
+    });
+    document.getElementById('searchInput').addEventListener('input', buscar);
+    document.getElementById('aceptarTerminosBtn').onclick = () => {
+        const nombre = document.getElementById('nombreUsuarioInput').value.trim();
+        if (!nombre) {
+            alert('Debes elegir un nombre de usuario');
+            return;
+        }
+        registrarUsuario(nombre);
+    };
+    document.getElementById('cancelarTerminosBtn').onclick = () => {
+        alert('Debes aceptar los términos para usar la plataforma');
+    };
+
+    // Cerrar dropdown
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#profileBtn') && !e.target.closest('#profileDropdown')) {
+            document.getElementById('profileDropdown').classList.remove('active');
+        }
+    });
+
+    // Modo oscuro persistente
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
     }
+
+    // ========== INICIALIZACIÓN ==========
+    async function init() {
+        const token = getTokenFromURL();
+        if (token) {
+            authToken = token;
+            const user = await verifyToken(token);
+            if (user) {
+                currentUser = user;
+                await verificarRegistro();
+            } else {
+                localStorage.removeItem('auth_token');
+                location.reload();
+            }
+        } else {
+            loginWithGoogle();
+        }
+    }
+    init();
 </script>
 </body>
 </html>
