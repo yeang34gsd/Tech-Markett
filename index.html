@@ -27,7 +27,7 @@
         .post-description { padding: 0 12px 12px; color: #1b1f23; }
         .post-image { width: 100%; max-height: 300px; object-fit: cover; cursor: pointer; }
         .post-actions { padding: 8px 12px; border-top: 1px solid #e0e0e0; display: flex; gap: 8px; flex-wrap: wrap; }
-        .action-btn { flex: 1; padding: 8px; background: none; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 80px; }
+        .action-btn { flex: 1; padding: 8px; background: none; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 80px; transition: 0.2s; }
         .action-btn:hover { background: #f0f2f5; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: white; display: flex; justify-content: space-around; padding: 10px 16px; border-top: 1px solid #e0e0e0; }
         .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #65676b; font-size: 12px; cursor: pointer; padding: 4px 12px; border-radius: 8px; }
@@ -36,7 +36,9 @@
         .publish-form { background: white; margin: 16px; padding: 20px; border-radius: 16px; }
         .upload-area { border: 2px dashed #e0e0e0; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 16px; }
         .loading { text-align: center; padding: 40px; color: #65676b; }
-        textarea { font-family: inherit; font-size: 14px; }
+        textarea { font-family: inherit; font-size: 14px; width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 16px; resize: vertical; }
+        .error-message { color: red; text-align: center; margin: 10px; }
+        .debug-panel { background: #f0f0f0; padding: 8px; font-size: 10px; border-top: 1px solid #ddd; position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; display: none; }
     </style>
 </head>
 <body>
@@ -52,6 +54,7 @@
         <button class="google-btn" id="googleLoginBtn">
             <i class="fab fa-google"></i> Iniciar sesión con Google
         </button>
+        <div id="loginError" class="error-message"></div>
     </div>
 
     <!-- Pantalla de términos -->
@@ -85,130 +88,184 @@
         <button class="nav-item" data-tab="perfil"><i class="fas fa-user"></i><span>Perfil</span></button>
         <button class="nav-item" data-tab="misobjetos"><i class="fas fa-box"></i><span>Mis objetos</span></button>
     </div>
+    
+    <!-- Debug panel -->
+    <div class="debug-panel" id="debugPanel">
+        <span id="debugStatus"></span>
+    </div>
 </div>
 
 <script>
     // ========== CONFIGURACIÓN ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
+    const DEBUG = true; // Cambiar a false para producción
     
     let currentUser = null;
     let authToken = null;
     let currentTab = 'feed';
     let favoritosIds = new Set();
-
+    
+    // ========== DEBUG ==========
+    function log(message, data) {
+        if (!DEBUG) return;
+        console.log(`[${new Date().toLocaleTimeString()}] ${message}`, data || '');
+        const debugPanel = document.getElementById('debugPanel');
+        if (debugPanel) {
+            document.getElementById('debugStatus').innerHTML = message;
+            debugPanel.style.display = 'block';
+            setTimeout(() => {
+                if (document.getElementById('debugStatus').innerHTML === message) {
+                    debugPanel.style.display = 'none';
+                }
+            }, 3000);
+        }
+    }
+    
     // ========== TOKEN ==========
     function getTokenFromURL() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
         if (token) {
+            log('Token encontrado en URL, guardando...');
             localStorage.setItem('auth_token', token);
             window.history.replaceState({}, document.title, window.location.pathname);
             return token;
         }
-        return localStorage.getItem('auth_token');
+        const savedToken = localStorage.getItem('auth_token');
+        if (savedToken) log('Token encontrado en localStorage');
+        return savedToken;
     }
-
+    
+    function saveToken(token) {
+        localStorage.setItem('auth_token', token);
+        authToken = token;
+        log('Token guardado');
+    }
+    
     // ========== AUTH ==========
     async function verifyToken(token) {
+        log('Verificando token...');
         try {
             const res = await fetch(`${WORKER_URL}/auth/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!res.ok) return null;
+            log('Respuesta /auth/me:', res.status);
+            if (!res.ok) {
+                log('Error en /auth/me:', await res.text());
+                return null;
+            }
             const data = await res.json();
+            log('Usuario obtenido:', data.user?.email);
             return data.user;
         } catch(e) { 
-            console.error('Error verifying token:', e);
+            log('Error en verifyToken:', e.message);
             return null; 
         }
     }
-
+    
     function loginWithGoogle() {
         const redirectUrl = window.location.href.split('?')[0];
-        window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
+        const authUrl = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
+        log('Redirigiendo a:', authUrl);
+        window.location.href = authUrl;
     }
-
+    
     // ========== API ==========
     async function apiFetch(path, options = {}) {
         const headers = options.headers || {};
-        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+        } else {
+            log('apiFetch sin authToken:', path);
+        }
         const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
         if (!res.ok) {
             const error = await res.text();
+            log(`Error en ${path}:`, error);
             throw new Error(error);
         }
         return res.json();
     }
-
+    
     async function verificarEstadoUsuario() {
+        log('Verificando estado de usuario...');
         const res = await fetch(`${WORKER_URL}/estado-usuario`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         if (!res.ok) throw new Error('Error al verificar estado');
-        return res.json();
+        const data = await res.json();
+        log('Estado usuario:', data);
+        return data;
     }
-
+    
     async function aceptarTerminos() {
+        log('Aceptando términos...');
         await fetch(`${WORKER_URL}/aceptar-terminos`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
+        log('Términos aceptados');
     }
-
+    
     async function guardarNombreUsuario(nombre) {
+        log('Guardando nombre de usuario:', nombre);
         const res = await fetch(`${WORKER_URL}/actualizar-nombre`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
             body: JSON.stringify({ nombre_usuario: nombre })
         });
-        return res.json();
+        const data = await res.json();
+        log('Respuesta guardar nombre:', data);
+        return data;
     }
-
+    
     async function obtenerTerminos() {
+        log('Obteniendo términos...');
         const res = await fetch(`${WORKER_URL}/terminos`);
         return res.json();
     }
-
+    
     async function obtenerObjetos() {
+        log('Obteniendo objetos...');
         return await apiFetch('/objetos');
     }
-
+    
     async function obtenerMisObjetos() {
         return await apiFetch('/mis-objetos');
     }
-
+    
     async function obtenerPerfil() {
         return await apiFetch('/perfil');
     }
-
+    
     async function obtenerFavoritos() {
         const favs = await apiFetch('/favoritos');
         favoritosIds = new Set(favs.map(f => f.id));
         return favs;
     }
-
+    
     async function agregarFavorito(id) {
         await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) });
         favoritosIds.add(id);
     }
-
+    
     async function quitarFavorito(id) {
         await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) });
         favoritosIds.delete(id);
     }
-
+    
     async function eliminarObjeto(id) {
         await apiFetch(`/objeto/${id}`, { method: 'DELETE' });
     }
-
+    
     async function marcarIntercambiado(id) {
         await apiFetch(`/objeto/${id}`, { method: 'PATCH' });
     }
-
+    
     async function reportarObjeto(id, motivo) {
         await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
     }
-
+    
     async function publicarObjeto(titulo, descripcion, file) {
         const form = new FormData();
         form.append('titulo', titulo);
@@ -219,18 +276,24 @@
         form.append('direccion', '');
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
-
+    
     // ========== RENDER ==========
+    function escapeHtml(str) {
+        if (str === undefined || str === null) return '';
+        if (typeof str === 'number') return str.toString();
+        return String(str).replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
+    }
+    
     function renderPostCard(obj) {
         const esFavorito = favoritosIds.has(obj.id);
         const fecha = new Date(obj.fecha).toLocaleString();
         const descripcion = obj.descripcion || '';
-        const nombreMostrar = obj.nombre_usuario || obj.usuario.split('@')[0];
+        const nombreMostrar = obj.nombre_usuario || (obj.usuario ? obj.usuario.split('@')[0] : 'Usuario');
         
         return `
             <div class="post-card" data-id="${obj.id}">
                 <div class="post-header">
-                    <div class="post-avatar">${nombreMostrar.charAt(0).toUpperCase()}</div>
+                    <div class="post-avatar">${escapeHtml(nombreMostrar.charAt(0).toUpperCase())}</div>
                     <div>
                         <div class="post-user-name">${escapeHtml(nombreMostrar)}</div>
                         <div class="post-time">${fecha}</div>
@@ -262,29 +325,32 @@
             </div>
         `;
     }
-
+    
     async function renderFeed() {
         const container = document.getElementById('feedContainer');
+        if (!container) return;
         container.innerHTML = '<div class="loading">Cargando...</div>';
         try {
             const objetos = await obtenerObjetos();
-            if (!objetos.length) {
+            if (!objetos || !objetos.length) {
                 container.innerHTML = '<div class="loading">📭 No hay objetos publicados aún</div>';
                 return;
             }
             container.innerHTML = objetos.map(renderPostCard).join('');
+            log(`Feed renderizado: ${objetos.length} objetos`);
         } catch(e) {
-            console.error(e);
-            container.innerHTML = '<div class="loading">❌ Error al cargar</div>';
+            log('Error renderFeed:', e.message);
+            container.innerHTML = '<div class="loading">❌ Error al cargar. Intenta de nuevo.</div>';
         }
     }
-
+    
     async function renderMisObjetos() {
         const container = document.getElementById('feedContainer');
+        if (!container) return;
         container.innerHTML = '<div class="loading">Cargando...</div>';
         try {
             const objetos = await obtenerMisObjetos();
-            if (!objetos.length) {
+            if (!objetos || !objetos.length) {
                 container.innerHTML = '<div class="loading">📭 No has publicado nada aún</div>';
                 return;
             }
@@ -293,18 +359,19 @@
             container.innerHTML = '<div class="loading">❌ Error</div>';
         }
     }
-
+    
     async function renderPerfil() {
         const container = document.getElementById('feedContainer');
+        if (!container) return;
         container.innerHTML = '<div class="loading">Cargando...</div>';
         try {
             const perfil = await obtenerPerfil();
-            const nombreMostrar = perfil.nombre_usuario || currentUser.email.split('@')[0];
+            const nombreMostrar = perfil.nombre_usuario || (currentUser ? currentUser.email.split('@')[0] : 'Usuario');
             container.innerHTML = `
                 <div class="screen" style="margin: 16px; text-align: center;">
-                    <div class="post-avatar" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 16px;">${nombreMostrar.charAt(0).toUpperCase()}</div>
+                    <div class="post-avatar" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 16px;">${escapeHtml(nombreMostrar.charAt(0).toUpperCase())}</div>
                     <h3>${escapeHtml(nombreMostrar)}</h3>
-                    <p style="color: #65676b;">${currentUser.email}</p>
+                    <p style="color: #65676b;">${currentUser ? currentUser.email : ''}</p>
                     <p>⭐ ${perfil.promedio_valoracion?.toFixed(1) || 0} (${perfil.total_valoraciones || 0} valoraciones)</p>
                     <p>📦 ${perfil.objetos?.length || 0} publicaciones</p>
                 </div>
@@ -315,10 +382,13 @@
             container.innerHTML = '<div class="loading">❌ Error</div>';
         }
     }
-
+    
     function renderPublicarForm() {
         let fotoSeleccionada = null;
-        document.getElementById('feedContainer').innerHTML = `
+        const container = document.getElementById('feedContainer');
+        if (!container) return;
+        
+        container.innerHTML = `
             <div class="publish-form">
                 <h3>Crear publicación</h3>
                 <input type="text" id="titulo" placeholder="Título del objeto">
@@ -334,31 +404,38 @@
         
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        uploadArea.onclick = () => fileInput.click();
-        fileInput.onchange = (e) => {
-            if (e.target.files.length) {
-                fotoSeleccionada = e.target.files[0];
-                uploadArea.innerHTML = `<i class="fas fa-check-circle" style="color:green"></i><div>${fotoSeleccionada.name}</div>`;
-            }
-        };
+        if (uploadArea) {
+            uploadArea.onclick = () => fileInput.click();
+        }
+        if (fileInput) {
+            fileInput.onchange = (e) => {
+                if (e.target.files.length) {
+                    fotoSeleccionada = e.target.files[0];
+                    uploadArea.innerHTML = `<i class="fas fa-check-circle" style="color:green"></i><div>${fotoSeleccionada.name}</div>`;
+                }
+            };
+        }
         
-        document.getElementById('publicarBtn').onclick = async () => {
-            const titulo = document.getElementById('titulo').value;
-            const descripcion = document.getElementById('descripcion').value;
-            if (!titulo || !descripcion || !fotoSeleccionada) {
-                alert('Completa todos los campos');
-                return;
-            }
-            try {
-                await publicarObjeto(titulo, descripcion, fotoSeleccionada);
-                alert('¡Publicado!');
-                cambiarTab('misobjetos');
-            } catch(e) {
-                alert('Error: ' + e.message);
-            }
-        };
+        const publicarBtn = document.getElementById('publicarBtn');
+        if (publicarBtn) {
+            publicarBtn.onclick = async () => {
+                const titulo = document.getElementById('titulo').value;
+                const descripcion = document.getElementById('descripcion').value;
+                if (!titulo || !descripcion || !fotoSeleccionada) {
+                    alert('Completa todos los campos');
+                    return;
+                }
+                try {
+                    await publicarObjeto(titulo, descripcion, fotoSeleccionada);
+                    alert('¡Publicado!');
+                    cambiarTab('misobjetos');
+                } catch(e) {
+                    alert('Error: ' + e.message);
+                }
+            };
+        }
     }
-
+    
     // ========== ACCIONES ==========
     window.toggleFavorito = async (id, btn) => {
         if (favoritosIds.has(id)) {
@@ -396,30 +473,33 @@
     
     async function cambiarTab(tab) {
         currentTab = tab;
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add('active');
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(el => el.classList.remove('active'));
+        const activeItem = document.querySelector(`.nav-item[data-tab="${tab}"]`);
+        if (activeItem) activeItem.classList.add('active');
         
         if (tab === 'feed') await renderFeed();
         if (tab === 'misobjetos') await renderMisObjetos();
         if (tab === 'perfil') await renderPerfil();
         if (tab === 'publicar') renderPublicarForm();
     }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
-    }
-
+    
     // ========== INICIALIZACIÓN PRINCIPAL ==========
     async function init() {
-        // Botón de login
-        document.getElementById('googleLoginBtn').onclick = () => loginWithGoogle();
+        log('Iniciando aplicación...');
+        
+        // Configurar botón de login
+        const googleBtn = document.getElementById('googleLoginBtn');
+        if (googleBtn) {
+            googleBtn.onclick = () => loginWithGoogle();
+        }
         
         // Obtener token
         const token = getTokenFromURL();
         
         // Si no hay token, mostrar login
         if (!token) {
+            log('No hay token, mostrando login');
             document.getElementById('loginScreen').style.display = 'block';
             document.getElementById('terminosScreen').style.display = 'none';
             document.getElementById('nombreScreen').style.display = 'none';
@@ -435,7 +515,7 @@
         const user = await verifyToken(token);
         
         if (!user) {
-            // Token inválido
+            log('Token inválido, limpiando y mostrando login');
             localStorage.removeItem('auth_token');
             document.getElementById('loginScreen').style.display = 'block';
             document.getElementById('terminosScreen').style.display = 'none';
@@ -446,23 +526,27 @@
         }
         
         currentUser = user;
+        log('Usuario autenticado:', user.email);
         
-        // Verificar estado del usuario (términos y nombre)
+        // Verificar estado del usuario
         let estado;
         try {
             estado = await verificarEstadoUsuario();
         } catch(e) {
-            console.error('Error al verificar estado:', e);
-            document.getElementById('loginScreen').style.display = 'block';
+            log('Error al verificar estado:', e.message);
+            document.getElementById('loginError').innerHTML = 'Error de conexión. Intenta de nuevo.';
             return;
         }
         
-        // Convertir valores a booleanos/números correctamente
+        // Validar términos aceptados (0, false, null, undefined = no aceptado)
         const terminosAceptados = estado.terminos_aceptados === 1 || estado.terminos_aceptados === true;
         const tieneNombre = estado.nombre_usuario && estado.nombre_usuario.length > 0;
         
+        log('Estado usuario - Términos:', terminosAceptados, 'Nombre:', tieneNombre);
+        
         // Caso 1: No ha aceptado términos
         if (!terminosAceptados) {
+            log('Mostrando pantalla de términos');
             const terminos = await obtenerTerminos();
             const terminosHtml = terminos.terminos?.secciones?.map(s => `<h4>${s.titulo}</h4><p>${s.contenido}</p>`).join('') || '<p>Términos y condiciones de Intercambia</p>';
             document.getElementById('terminosTexto').innerHTML = terminosHtml;
@@ -472,48 +556,57 @@
             document.getElementById('appScreen').style.display = 'none';
             document.getElementById('bottomNav').style.display = 'none';
             
-            document.getElementById('aceptarTerminosBtn').onclick = async () => {
-                if (!document.getElementById('aceptoTerminos').checked) {
-                    alert('Debes aceptar los términos para continuar');
-                    return;
-                }
-                await aceptarTerminos();
-                // Recargar para que el estado se actualice
-                window.location.href = window.location.href.split('?')[0];
-            };
+            const aceptarBtn = document.getElementById('aceptarTerminosBtn');
+            if (aceptarBtn) {
+                aceptarBtn.onclick = async () => {
+                    const check = document.getElementById('aceptoTerminos');
+                    if (!check || !check.checked) {
+                        alert('Debes aceptar los términos para continuar');
+                        return;
+                    }
+                    await aceptarTerminos();
+                    // Recargar para actualizar estado
+                    window.location.href = window.location.href.split('?')[0];
+                };
+            }
             return;
         }
         
         // Caso 2: No tiene nombre de usuario
         if (!tieneNombre) {
+            log('Mostrando pantalla de nombre de usuario');
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('terminosScreen').style.display = 'none';
             document.getElementById('nombreScreen').style.display = 'block';
             document.getElementById('appScreen').style.display = 'none';
             document.getElementById('bottomNav').style.display = 'none';
             
-            document.getElementById('guardarNombreBtn').onclick = async () => {
-                const nombre = document.getElementById('nombreUsuario').value.trim();
-                if (nombre.length < 3) {
-                    document.getElementById('nombreError').innerText = 'El nombre debe tener al menos 3 caracteres';
-                    return;
-                }
-                if (nombre.length > 30) {
-                    document.getElementById('nombreError').innerText = 'El nombre no puede tener más de 30 caracteres';
-                    return;
-                }
-                const res = await guardarNombreUsuario(nombre);
-                if (res.error) {
-                    document.getElementById('nombreError').innerText = res.error;
-                    return;
-                }
-                // Recargar para que el estado se actualice
-                window.location.href = window.location.href.split('?')[0];
-            };
+            const guardarBtn = document.getElementById('guardarNombreBtn');
+            if (guardarBtn) {
+                guardarBtn.onclick = async () => {
+                    const nombre = document.getElementById('nombreUsuario').value.trim();
+                    if (nombre.length < 3) {
+                        document.getElementById('nombreError').innerText = 'El nombre debe tener al menos 3 caracteres';
+                        return;
+                    }
+                    if (nombre.length > 30) {
+                        document.getElementById('nombreError').innerText = 'El nombre no puede tener más de 30 caracteres';
+                        return;
+                    }
+                    const res = await guardarNombreUsuario(nombre);
+                    if (res.error) {
+                        document.getElementById('nombreError').innerText = res.error;
+                        return;
+                    }
+                    // Recargar para actualizar estado
+                    window.location.href = window.location.href.split('?')[0];
+                };
+            }
             return;
         }
         
         // Caso 3: Usuario completamente registrado - mostrar app
+        log('Usuario completo, mostrando app');
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('terminosScreen').style.display = 'none';
         document.getElementById('nombreScreen').style.display = 'none';
@@ -525,17 +618,22 @@
             await obtenerFavoritos();
             await renderFeed();
         } catch(e) {
-            console.error('Error al cargar datos iniciales:', e);
+            log('Error al cargar datos iniciales:', e.message);
         }
         
         // Configurar navegación
-        document.querySelectorAll('.nav-item').forEach(el => {
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(el => {
             el.addEventListener('click', () => cambiarTab(el.dataset.tab));
         });
     }
     
-    // Iniciar la aplicación
-    init();
+    // Iniciar la aplicación cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 </script>
 </body>
 </html>
