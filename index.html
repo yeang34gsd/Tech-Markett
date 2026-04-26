@@ -2,14 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intercambia - Trueque de objetos</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * {
             margin: 0;
@@ -18,32 +14,24 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: #f0f2f5;
             min-height: 100vh;
         }
 
-        body.dark-mode {
-            background: #121212;
-        }
-
-        /* Layout principal - responsive */
+        /* Contenedor principal */
         .app-container {
-            max-width: 1200px;
+            max-width: 600px;
             margin: 0 auto;
             background: #f0f2f5;
             min-height: 100vh;
             position: relative;
         }
 
-        body.dark-mode .app-container {
-            background: #121212;
-        }
-
         /* Header */
-        .app-header {
+        .header {
             background: white;
-            padding: 12px 24px;
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -51,442 +39,66 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        body.dark-mode .app-header {
-            background: #1e1e1e;
-            border-bottom-color: #333;
         }
 
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #1877f2, #0e5fd9);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-
-        .search-bar {
-            flex: 1;
-            max-width: 400px;
-            position: relative;
-        }
-
-        .search-bar input {
-            width: 100%;
-            padding: 10px 16px;
-            border: 1px solid #e0e0e0;
-            border-radius: 40px;
-            outline: none;
-            font-size: 14px;
-            background: #f0f2f5;
-        }
-
-        body.dark-mode .search-bar input {
-            background: #2d2d2d;
-            border-color: #444;
-            color: white;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 16px;
-            align-items: center;
+            color: #1877f2;
         }
 
         .icon-btn {
             background: none;
             border: none;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             cursor: pointer;
-            color: #65676b;
             padding: 8px;
             border-radius: 50%;
-            transition: 0.2s;
         }
 
-        .icon-btn:hover {
-            background: #f0f2f5;
-        }
-
-        body.dark-mode .icon-btn {
-            color: #e0e0e0;
-        }
-
-        /* Layout de 3 columnas (desktop) */
-        .main-layout {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Sidebar izquierdo */
-        .left-sidebar {
-            width: 280px;
-            position: sticky;
-            top: 80px;
-            height: fit-content;
-        }
-
-        /* Feed central */
-        .feed-container {
-            flex: 1;
-            max-width: 600px;
-        }
-
-        /* Sidebar derecho */
-        .right-sidebar {
-            width: 280px;
-            position: sticky;
-            top: 80px;
-            height: fit-content;
-        }
-
-        /* Tarjetas */
-        .profile-card, .suggestions-card {
+        /* Pantallas de registro */
+        .screen {
+            padding: 24px;
             background: white;
+            margin: 20px;
             border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        body.dark-mode .profile-card,
-        body.dark-mode .suggestions-card,
-        body.dark-mode .post-card {
-            background: #1e1e1e;
+        .screen h2 {
+            margin-bottom: 20px;
+            color: #1b1f23;
         }
 
-        .profile-avatar-large {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 12px;
-            cursor: pointer;
-        }
-
-        .edit-profile-btn {
+        .google-btn {
             background: #1877f2;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 12px;
             border-radius: 8px;
-            cursor: pointer;
-            margin-top: 12px;
             width: 100%;
-        }
-
-        /* Post card */
-        .post-card {
-            background: white;
-            border-radius: 16px;
-            margin-bottom: 16px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .post-header {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .post-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-        }
-
-        .post-user-name {
+            font-size: 16px;
             font-weight: 600;
-            cursor: pointer;
-        }
-
-        .post-user-name:hover {
-            text-decoration: underline;
-        }
-
-        .post-time {
-            font-size: 11px;
-            color: #65676b;
-        }
-
-        .post-location {
-            font-size: 11px;
-            color: #65676b;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .post-title {
-            font-weight: 600;
-            margin: 0 16px 8px;
-        }
-
-        .post-description {
-            color: #1b1f23;
-            margin: 0 16px 12px;
-            line-height: 1.4;
-        }
-
-        /* Grid de imágenes */
-        .grid-media {
-            display: grid;
-            gap: 2px;
-            margin: 8px 0;
-        }
-
-        .grid-media-1 { grid-template-columns: 1fr; }
-        .grid-media-2 { grid-template-columns: 1fr 1fr; }
-        .grid-media-3, .grid-media-4 { grid-template-columns: 1fr 1fr; }
-
-        .media-item {
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            background: #f0f2f5;
-            min-height: 200px;
-        }
-
-        .media-item img, .media-item video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .media-count {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0,0,0,0.6);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 12px;
-        }
-
-        .post-actions {
-            padding: 8px 16px;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            flex: 1;
-            padding: 8px;
-            border-radius: 8px;
-            border: none;
-            background: transparent;
-            font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            color: #65676b;
-            transition: 0.2s;
+            gap: 10px;
         }
 
-        .action-btn:hover {
-            background: #f0f2f5;
-        }
-
-        /* Formulario de publicación */
-        .publish-form {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .publish-form input,
-        .publish-form textarea,
-        .publish-form select {
+        input {
             width: 100%;
             padding: 12px;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
-            margin-bottom: 12px;
-            font-family: inherit;
+            font-size: 16px;
+            margin-bottom: 16px;
         }
 
-        .upload-area {
-            border: 2px dashed #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 12px;
-        }
-
-        .fotos-preview {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-        }
-
-        .foto-preview-item {
-            position: relative;
-        }
-
-        .foto-preview-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .remove-photo {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: red;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
+        button {
             cursor: pointer;
         }
 
-        /* Chat */
-        .chat-container {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 500px;
-        }
-
-        .chat-header {
-            padding: 16px;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background: #f5f5f5;
-        }
-
-        .message-bubble {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 20px;
-            word-wrap: break-word;
-        }
-
-        .message-received {
-            background: white;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-sent {
-            background: #1877f2;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-
-        .chat-input-container {
-            padding: 12px 16px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 12px;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 24px;
-            background: #f0f2f5;
-            outline: none;
-        }
-
-        /* Menú desplegable */
-        .profile-menu {
-            position: absolute;
-            top: 60px;
-            right: 24px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            width: 220px;
-            z-index: 200;
-            display: none;
-            overflow: hidden;
-        }
-
-        .profile-menu.show {
-            display: block;
-        }
-
-        .profile-menu-item {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .profile-menu-item:hover {
-            background: #f0f2f5;
-        }
-
-        /* Modales */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            max-width: 90%;
-            width: 450px;
-            padding: 24px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #65676b;
-        }
-
-        /* Botones */
         .btn-primary {
             background: #1877f2;
             color: white;
@@ -495,175 +107,212 @@
             border-radius: 8px;
             width: 100%;
             font-weight: 600;
+        }
+
+        .terminos-texto {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        /* Feed */
+        .post-card {
+            background: white;
+            border-radius: 12px;
+            margin: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .post-header {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1877f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .post-user-name {
+            font-weight: 600;
+        }
+
+        .post-time {
+            font-size: 11px;
+            color: #65676b;
+        }
+
+        .post-title {
+            font-weight: 600;
+            padding: 0 12px 8px;
+        }
+
+        .post-description {
+            padding: 0 12px 12px;
+            color: #1b1f23;
+        }
+
+        .post-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+
+        .post-actions {
+            padding: 8px 12px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        /* Responsive */
-        @media (max-width: 900px) {
-            .left-sidebar, .right-sidebar {
-                display: none;
-            }
-            .feed-container {
-                max-width: 100%;
-            }
-            .main-layout {
-                padding: 16px;
-            }
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 16px;
+            border-top: 1px solid #e0e0e0;
+            z-index: 100;
         }
 
-        @media (max-width: 600px) {
-            .search-bar {
-                order: 3;
-                width: 100%;
-                max-width: none;
-                margin-top: 8px;
-            }
-            .app-header {
-                flex-wrap: wrap;
-            }
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #65676b;
+            font-size: 12px;
+        }
+
+        .nav-item.active {
+            color: #1877f2;
+        }
+
+        .nav-item i {
+            font-size: 1.4rem;
+        }
+
+        /* Formulario publicación */
+        .publish-form {
+            background: white;
+            margin: 16px;
+            padding: 20px;
+            border-radius: 16px;
+        }
+
+        .upload-area {
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #65676b;
         }
     </style>
 </head>
 <body>
 <div class="app-container" id="app">
     <!-- Header -->
-    <div class="app-header">
+    <div class="header">
         <div class="logo">🔄 Intercambia</div>
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Buscar por título o usuario...">
+        <button class="icon-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+    </div>
+
+    <!-- Pantallas de registro (se muestran según estado) -->
+    <div id="loginScreen" class="screen">
+        <h2>Bienvenido a Intercambia</h2>
+        <p style="margin-bottom: 20px; color: #65676b;">Inicia sesión para comenzar a intercambiar objetos</p>
+        <button class="google-btn" onclick="loginWithGoogle()">
+            <i class="fab fa-google"></i> Iniciar sesión con Google
+        </button>
+    </div>
+
+    <div id="terminosScreen" class="screen" style="display:none;">
+        <h2>Términos y Condiciones</h2>
+        <div class="terminos-texto" id="terminosTexto">
+            <p>Cargando términos...</p>
         </div>
-        <div class="header-actions">
-            <button class="icon-btn" id="darkModeBtn"><i class="fas fa-moon"></i></button>
-            <button class="icon-btn" id="profileBtn"><i class="fas fa-user-circle"></i></button>
-        </div>
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+            <input type="checkbox" id="aceptoTerminos"> Acepto los términos y condiciones
+        </label>
+        <button class="btn-primary" id="aceptarTerminosBtn">Aceptar y continuar</button>
     </div>
 
-    <!-- Menú desplegable de perfil -->
-    <div class="profile-menu" id="profileMenu">
-        <div class="profile-menu-item" data-tab="perfil"><i class="fas fa-user"></i> Mi Perfil</div>
-        <div class="profile-menu-item" data-tab="misobjetos"><i class="fas fa-box"></i> Mis Publicaciones</div>
-        <div class="profile-menu-item" data-tab="favoritos"><i class="fas fa-bookmark"></i> Favoritos</div>
-        <div class="profile-menu-item" data-tab="publicar"><i class="fas fa-plus-circle"></i> Publicar</div>
-        <div class="profile-menu-item" data-tab="chats"><i class="fas fa-comment-dots"></i> Mensajes</div>
-        <div class="profile-menu-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</div>
-    </div>
-
-    <!-- Main Layout -->
-    <div class="main-layout">
-        <!-- Sidebar izquierdo -->
-        <div class="left-sidebar" id="leftSidebar"></div>
-
-        <!-- Feed central -->
-        <div class="feed-container" id="feedContainer">
-            <div class="loading">Cargando...</div>
-        </div>
-
-        <!-- Sidebar derecho -->
-        <div class="right-sidebar" id="rightSidebar"></div>
-    </div>
-</div>
-
-<!-- Modal de términos -->
-<div id="terminosModal" class="modal-overlay">
-    <div class="modal-content">
-        <h2 style="margin-bottom: 16px;">Términos y Condiciones</h2>
-        <div id="terminosTexto" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;"></div>
-        <label><input type="checkbox" id="aceptoTerminos"> Acepto los términos y condiciones</label>
-        <button id="aceptarTerminosBtn" class="btn-primary" style="margin-top: 16px;">Aceptar y continuar</button>
-    </div>
-</div>
-
-<!-- Modal de nombre de usuario -->
-<div id="nombreModal" class="modal-overlay">
-    <div class="modal-content">
+    <div id="nombreScreen" class="screen" style="display:none;">
         <h2>Elige un nombre de usuario</h2>
-        <p style="margin: 16px 0; color: #65676b;">Este nombre será visible para todos</p>
-        <input type="text" id="nombreUsuarioInput" placeholder="Ej: JuanPerez" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px;">
-        <div id="nombreError" style="color: red; font-size: 12px; margin-top: 8px;"></div>
-        <button id="guardarNombreBtn" class="btn-primary" style="margin-top: 16px;">Guardar</button>
+        <p style="margin-bottom: 16px; color: #65676b;">Este nombre será visible para todos</p>
+        <input type="text" id="nombreUsuario" placeholder="Ej: JuanPerez">
+        <div id="nombreError" style="color: red; font-size: 12px; margin-bottom: 16px;"></div>
+        <button class="btn-primary" id="guardarNombreBtn">Guardar</button>
+    </div>
+
+    <!-- App principal (se muestra después del registro) -->
+    <div id="appScreen" style="display:none;">
+        <div id="feedContainer" class="loading">Cargando...</div>
+    </div>
+
+    <!-- Bottom navigation -->
+    <div class="bottom-nav" id="bottomNav" style="display:none;">
+        <button class="nav-item active" data-tab="feed"><i class="fas fa-home"></i><span>Inicio</span></button>
+        <button class="nav-item" data-tab="publicar"><i class="fas fa-plus-circle"></i><span>Publicar</span></button>
+        <button class="nav-item" data-tab="perfil"><i class="fas fa-user"></i><span>Perfil</span></button>
     </div>
 </div>
 
-<!-- Modal editar perfil -->
-<div id="editProfileModal" class="modal-overlay">
-    <div class="modal-content">
-        <h3>Editar perfil</h3>
-        <div style="text-align: center; margin: 16px 0;">
-            <img id="editAvatar" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; cursor: pointer;">
-        </div>
-        <input type="text" id="editNombre" placeholder="Nombre de usuario" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px;">
-        <input type="url" id="editFoto" placeholder="URL de la foto de perfil" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 12px;">
-        <button id="guardarPerfilBtn" class="btn-primary">Guardar cambios</button>
-        <button onclick="closeEditProfileModal()" style="background: none; border: none; margin-top: 12px; width: 100%; cursor: pointer;">Cancelar</button>
-    </div>
-</div>
-
-<!-- Modal de detalles -->
-<div id="detailModal" class="modal-overlay">
-    <div class="modal-content">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
-            <h3 id="modalTitulo"></h3>
-            <button onclick="closeModal()" style="background: none; border: none; font-size: 24px;">&times;</button>
-        </div>
-        <div id="modalDescripcion"></div>
-        <div id="modalUbicacion"></div>
-        <div id="modalGallery" style="display: grid; gap: 8px; margin-top: 16px;"></div>
-        <div id="modalActions" style="display: flex; gap: 8px; margin-top: 16px;"></div>
-    </div>
-</div>
-
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
     // ========== CONFIGURACIÓN ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
-    const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
     
     let currentUser = null;
     let authToken = null;
     let currentTab = 'feed';
-    let favoritos = new Set();
-    let fotosSeleccionadas = [];
     let todosLosObjetos = [];
-    let chatActual = { objetoId: null, otroUsuario: null, otroNombre: null };
-    let pollingInterval = null;
+    let favoritosIds = new Set();
 
-    // ========== MODO OSCURO ==========
-    function initDarkMode() {
-        const darkMode = localStorage.getItem('darkMode') === 'true';
-        if (darkMode) document.body.classList.add('dark-mode');
-        document.getElementById('darkModeBtn').innerHTML = darkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-    }
-    document.getElementById('darkModeBtn').onclick = () => {
-        document.body.classList.toggle('dark-mode');
-        const isDark = document.body.classList.contains('dark-mode');
-        localStorage.setItem('darkMode', isDark);
-        document.getElementById('darkModeBtn').innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-    };
-
-    // ========== ONESIGNAL ==========
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-            appId: "68491021-9c85-423d-9e50-ddcffa0c2d63",
-            notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' },
-        });
-    });
-
-    async function guardarOneSignalId(email) {
-        try {
-            const OneSignal = window.OneSignal;
-            const userId = await OneSignal.User.getPushSubscriptionId();
-            if (userId) {
-                await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                    body: JSON.stringify({ onesignal_id: userId })
-                });
-            }
-        } catch(e) { console.error(e); }
-    }
-
-    // ========== AUTENTICACIÓN ==========
+    // ========== FUNCIONES DE AUTH ==========
     function getTokenFromURL() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
@@ -677,23 +326,31 @@
 
     async function verifyToken(token) {
         try {
-            const res = await fetch(`${WORKER_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(`${WORKER_URL}/auth/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             if (!res.ok) return null;
             return (await res.json()).user;
         } catch(e) { return null; }
     }
 
-    function loginWithGoogle() { window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`; }
-    function logout() { localStorage.removeItem('auth_token'); authToken = null; currentUser = null; location.reload(); }
+    function loginWithGoogle() {
+        window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`;
+    }
 
     // ========== ESTADO DEL USUARIO ==========
     async function verificarEstadoUsuario() {
-        const res = await fetch(`${WORKER_URL}/estado-usuario`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+        const res = await fetch(`${WORKER_URL}/estado-usuario`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
         return res.json();
     }
 
     async function aceptarTerminos() {
-        await fetch(`${WORKER_URL}/aceptar-terminos`, { method: 'POST', headers: { 'Authorization': `Bearer ${authToken}` } });
+        await fetch(`${WORKER_URL}/aceptar-terminos`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
     }
 
     async function guardarNombreUsuario(nombre) {
@@ -705,162 +362,158 @@
         return res.json();
     }
 
-    async function actualizarPerfil(nombre, fotoUrl) {
-        const res = await fetch(`${WORKER_URL}/actualizar-perfil`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-            body: JSON.stringify({ nombre_usuario: nombre, foto_perfil: fotoUrl })
-        });
-        return res.json();
-    }
-
     async function obtenerTerminos() {
         const res = await fetch(`${WORKER_URL}/terminos`);
         return res.json();
     }
 
-    // ========== API ==========
+    // ========== API PRINCIPAL ==========
     async function apiFetch(path, options = {}) {
         const headers = options.headers || {};
         if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
         const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
-        if (!res.ok) {
-            if (res.status === 401) { logout(); throw new Error('Sesión expirada'); }
-            throw new Error(await res.text());
-        }
+        if (!res.ok) throw new Error(await res.text());
         return res.json();
     }
 
-    async function publicarObjeto(titulo, descripcion, categoria, fotos) {
-        const form = new FormData();
-        form.append('titulo', titulo);
-        form.append('descripcion', `${categoria} | ${descripcion}`);
-        form.append('latitud', '');
-        form.append('longitud', '');
-        form.append('direccion', '');
-        for (let i = 0; i < Math.min(fotos.length, 5); i++) form.append(`foto_${i}`, fotos[i]);
-        return await apiFetch('/objeto', { method: 'POST', body: form });
-    }
-
-    async function obtenerObjetos(propios = false) { 
-        const objetos = propios ? await apiFetch('/mis-objetos') : await apiFetch('/objetos');
+    async function obtenerObjetos() {
+        const objetos = await apiFetch('/objetos');
         todosLosObjetos = objetos;
         return objetos;
     }
-    async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
-    async function marcarIntercambiado(id) { return await apiFetch(`/objeto/${id}`, { method: 'PATCH' }); }
-    async function reportarObjeto(id, motivo) { return await apiFetch('/reporte', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id, motivo }) }); }
-    async function agregarFavorito(id) { return await apiFetch('/favoritos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id }) }); }
-    async function quitarFavorito(id) { return await apiFetch('/favoritos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: id }) }); }
-    async function obtenerFavoritos() { return await apiFetch('/favoritos'); }
-    async function obtenerPerfil() { return await apiFetch('/perfil'); }
-    async function obtenerPerfilUsuario(email) { return await apiFetch(`/usuario?email=${encodeURIComponent(email)}`); }
-    async function obtenerMisConversaciones() { return await apiFetch('/mis-conversaciones'); }
-    async function obtenerMensajes(objetoId, otro) { return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otro)}`); }
-    async function enviarMensaje(objetoId, receptor, mensaje) {
-        return await apiFetch('/mensaje', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
+
+    async function obtenerMisObjetos() {
+        return await apiFetch('/mis-objetos');
+    }
+
+    async function obtenerPerfil() {
+        return await apiFetch('/perfil');
+    }
+
+    async function obtenerFavoritos() {
+        const favs = await apiFetch('/favoritos');
+        favoritosIds = new Set(favs.map(f => f.id));
+        return favs;
+    }
+
+    async function agregarFavorito(id) {
+        await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) });
+        favoritosIds.add(id);
+    }
+
+    async function quitarFavorito(id) {
+        await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) });
+        favoritosIds.delete(id);
+    }
+
+    async function eliminarObjeto(id) {
+        await apiFetch(`/objeto/${id}`, { method: 'DELETE' });
+    }
+
+    async function marcarIntercambiado(id) {
+        await apiFetch(`/objeto/${id}`, { method: 'PATCH' });
+    }
+
+    async function reportarObjeto(id, motivo) {
+        await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
     }
 
     // ========== RENDERIZADO ==========
     function renderPostCard(obj) {
-        const todasLasFotos = [obj.url];
-        if (obj.fotos_extra) for (const f of obj.fotos_extra) todasLasFotos.push(f.url);
-        
-        const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
-        
-        let gridClass = 'grid-media-1';
-        if (todasLasFotos.length === 2) gridClass = 'grid-media-2';
-        if (todasLasFotos.length >= 3) gridClass = 'grid-media-3';
-        
-        let mediaHtml = `<div class="grid-media ${gridClass}">`;
-        for (let i = 0; i < Math.min(todasLasFotos.length, 4); i++) {
-            const url = todasLasFotos[i];
-            mediaHtml += `
-                <div class="media-item" onclick="verDetalle(${obj.id})">
-                    <img src="${url}" loading="lazy">
-                    ${i === 3 && todasLasFotos.length > 4 ? `<div class="media-count">+${todasLasFotos.length - 4}</div>` : ''}
-                </div>
-            `;
-        }
-        mediaHtml += `</div>`;
+        const esFavorito = favoritosIds.has(obj.id);
+        const fecha = new Date(obj.fecha).toLocaleString();
+        const descripcion = obj.descripcion || '';
         
         return `
-            <div class="post-card" data-id="${obj.id}" data-titulo="${escapeHtml(obj.titulo).toLowerCase()}" data-usuario="${escapeHtml(obj.nombre_usuario || obj.usuario).toLowerCase()}">
+            <div class="post-card">
                 <div class="post-header">
-                    <img src="${obj.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(obj.usuario)}" class="post-avatar" onclick="verPerfilUsuario('${escapeHtml(obj.usuario)}')">
-                    <div style="flex:1">
-                        <div class="post-user-name" onclick="verPerfilUsuario('${escapeHtml(obj.usuario)}')">${escapeHtml(obj.nombre_usuario || obj.usuario)}</div>
-                        <div class="post-time">${new Date(obj.fecha).toLocaleString()}</div>
-                        ${obj.direccion ? `<div class="post-location"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(obj.direccion)}</div>` : ''}
+                    <div class="post-avatar">${(obj.nombre_usuario || obj.usuario).charAt(0).toUpperCase()}</div>
+                    <div>
+                        <div class="post-user-name">${escapeHtml(obj.nombre_usuario || obj.usuario)}</div>
+                        <div class="post-time">${fecha}</div>
                     </div>
                 </div>
                 <div class="post-title">${escapeHtml(obj.titulo)}</div>
                 <div class="post-description">${escapeHtml(descripcion.substring(0, 150))}</div>
-                ${todasLasFotos.length ? mediaHtml : ''}
+                ${obj.url ? `<img src="${obj.url}" class="post-image" onclick="window.open('${obj.url}', '_blank')">` : ''}
                 <div class="post-actions">
+                    <button class="action-btn" onclick="toggleFavorito(${obj.id}, this)">
+                        <i class="fa-${esFavorito ? 'solid' : 'regular'} fa-star"></i> ${esFavorito ? 'Guardado' : 'Guardar'}
+                    </button>
                     ${obj.usuario !== currentUser?.email ? `
-                        <button class="action-btn" onclick="toggleFavorito(${obj.id}, this)"><i class="fa-${favoritos.has(obj.id) ? 'solid' : 'regular'} fa-star"></i> ${favoritos.has(obj.id) ? 'Guardado' : 'Guardar'}</button>
-                        <button class="action-btn" onclick="abrirChat(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')"><i class="fa-regular fa-message"></i> Intercambiar</button>
-                        <button class="action-btn" onclick="reportarObjetoPrompt(${obj.id})"><i class="fa-regular fa-flag"></i> Reportar</button>
+                        <button class="action-btn" onclick="alert('Chat con ${obj.usuario}')">
+                            <i class="fa-regular fa-message"></i> Intercambiar
+                        </button>
+                        <button class="action-btn" onclick="reportarObjetoPrompt(${obj.id})">
+                            <i class="fa-regular fa-flag"></i> Reportar
+                        </button>
                     ` : `
-                        <button class="action-btn" onclick="marcarIntercambiadoPrompt(${obj.id})"><i class="fa-regular fa-check-circle"></i> Marcar intercambiado</button>
-                        <button class="action-btn" onclick="eliminarObjetoPrompt(${obj.id})"><i class="fa-regular fa-trash-can"></i> Eliminar</button>
+                        <button class="action-btn" onclick="marcarIntercambiadoPrompt(${obj.id})">
+                            <i class="fa-regular fa-check-circle"></i> Intercambiado
+                        </button>
+                        <button class="action-btn" onclick="eliminarObjetoPrompt(${obj.id})">
+                            <i class="fa-regular fa-trash-can"></i> Eliminar
+                        </button>
                     `}
                 </div>
             </div>
         `;
     }
 
-    async function renderLeftSidebar() {
-        const perfil = await obtenerPerfil();
-        document.getElementById('leftSidebar').innerHTML = `
-            <div class="profile-card">
-                <div style="text-align: center;">
-                    <img src="${perfil.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(perfil.nombre_usuario)}" class="profile-avatar-large" onclick="openEditProfileModal()">
-                    <h3>${escapeHtml(perfil.nombre_usuario)}</h3>
-                    <p style="color: #65676b; font-size: 12px;">${perfil.email}</p>
-                    <p style="margin-top: 8px;">⭐ ${perfil.promedio_valoracion?.toFixed(1) || 0} (${perfil.total_valoraciones || 0})</p>
-                    <button class="edit-profile-btn" onclick="openEditProfileModal()">Editar perfil</button>
-                </div>
-            </div>
-            <div class="suggestions-card">
-                <h4>Menú rápido</h4>
-                <div class="profile-menu-item" data-tab="misobjetos"><i class="fas fa-box"></i> Mis objetos</div>
-                <div class="profile-menu-item" data-tab="favoritos"><i class="fas fa-bookmark"></i> Favoritos</div>
-                <div class="profile-menu-item" data-tab="publicar"><i class="fas fa-plus-circle"></i> Publicar</div>
-                <div class="profile-menu-item" data-tab="chats"><i class="fas fa-comment-dots"></i> Mensajes</div>
-                <div class="profile-menu-item" data-tab="perfil"><i class="fas fa-user"></i> Mi perfil</div>
-            </div>
-        `;
-        document.querySelectorAll('#leftSidebar .profile-menu-item').forEach(el => {
-            el.addEventListener('click', () => cambiarTab(el.dataset.tab));
-        });
-    }
-
-    async function renderMiPerfil() {
-        const perfil = await obtenerPerfil();
-        document.getElementById('feedContainer').innerHTML = `
-            <div class="profile-card" style="text-align: center;">
-                <img src="${perfil.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(perfil.nombre_usuario)}" class="profile-avatar-large" onclick="openEditProfileModal()" style="width: 120px; height: 120px;">
-                <h2>${escapeHtml(perfil.nombre_usuario)}</h2>
-                <p>${perfil.email}</p>
-                <p>⭐ ${perfil.promedio_valoracion?.toFixed(1) || 0} (${perfil.total_valoraciones || 0} valoraciones)</p>
-                <p>📦 ${perfil.objetos?.length || 0} publicaciones</p>
-                <button class="edit-profile-btn" onclick="openEditProfileModal()">Editar perfil</button>
-            </div>
-            <h3 style="margin: 16px 0 8px;">Mis publicaciones</h3>
-            ${perfil.objetos?.length ? perfil.objetos.map(renderPostCard).join('') : '<div class="loading">No has publicado nada aún</div>'}
-        `;
+    async function renderFeed() {
+        const container = document.getElementById('feedContainer');
+        container.innerHTML = '<div class="loading">Cargando...</div>';
+        
+        try {
+            const objetos = await obtenerObjetos();
+            if (!objetos.length) {
+                container.innerHTML = '<div class="loading">📭 No hay objetos publicados aún. ¡Sé el primero!</div>';
+                return;
+            }
+            container.innerHTML = objetos.map(renderPostCard).join('');
+        } catch(e) {
+            container.innerHTML = '<div class="loading">❌ Error al cargar objetos</div>';
+            console.error(e);
+        }
     }
 
     async function renderMisObjetos() {
-        const objetos = await obtenerObjetos(true);
-        document.getElementById('feedContainer').innerHTML = objetos.length ? objetos.map(renderPostCard).join('') : '<div class="loading">📭 No has publicado nada aún</div>';
+        const container = document.getElementById('feedContainer');
+        container.innerHTML = '<div class="loading">Cargando...</div>';
+        
+        try {
+            const objetos = await obtenerMisObjetos();
+            if (!objetos.length) {
+                container.innerHTML = '<div class="loading">📭 No has publicado nada aún</div>';
+                return;
+            }
+            container.innerHTML = objetos.map(renderPostCard).join('');
+        } catch(e) {
+            container.innerHTML = '<div class="loading">❌ Error</div>';
+        }
     }
 
-    async function renderFavoritos() {
-        const favs = await obtenerFavoritos();
-        document.getElementById('feedContainer').innerHTML = favs.length ? favs.map(renderPostCard).join('') : '<div class="loading">⭐ No tienes objetos guardados</div>';
+    async function renderPerfil() {
+        const container = document.getElementById('feedContainer');
+        container.innerHTML = '<div class="loading">Cargando...</div>';
+        
+        try {
+            const perfil = await obtenerPerfil();
+            container.innerHTML = `
+                <div class="screen" style="margin: 16px; text-align: center;">
+                    <div class="post-avatar" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 16px;">${(perfil.nombre_usuario || currentUser.email).charAt(0).toUpperCase()}</div>
+                    <h3>${escapeHtml(perfil.nombre_usuario || currentUser.email)}</h3>
+                    <p style="color: #65676b; margin-bottom: 8px;">${currentUser.email}</p>
+                    <p>⭐ ${perfil.promedio_valoracion?.toFixed(1) || 0} (${perfil.total_valoraciones || 0} valoraciones)</p>
+                    <p>📦 ${perfil.objetos?.length || 0} publicaciones</p>
+                    <button class="btn-primary" style="margin-top: 16px;" onclick="alert('Editar perfil - Próximamente')">Editar perfil</button>
+                </div>
+                <h3 style="padding: 0 16px; margin-top: 16px;">Mis publicaciones</h3>
+                ${perfil.objetos?.length ? perfil.objetos.map(renderPostCard).join('') : '<div class="loading">No has publicado nada aún</div>'}
+            `;
+        } catch(e) {
+            container.innerHTML = '<div class="loading">❌ Error</div>';
+        }
     }
 
     function renderPublicarForm() {
@@ -868,7 +521,7 @@
             <div class="publish-form">
                 <h3 style="margin-bottom: 16px;">Crear nueva publicación</h3>
                 <input type="text" id="titulo" placeholder="Título del objeto">
-                <select id="categoria">
+                <select id="categoria" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 16px;">
                     <option value="Electrónica">📱 Electrónica</option>
                     <option value="Ropa">👕 Ropa</option>
                     <option value="Libros">📚 Libros</option>
@@ -876,275 +529,193 @@
                     <option value="Hogar">🏠 Hogar</option>
                     <option value="Deportes">⚽ Deportes</option>
                 </select>
-                <textarea id="descripcion" rows="4" placeholder="Descripción del objeto..."></textarea>
+                <textarea id="descripcion" rows="4" placeholder="Descripción del objeto..." style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 16px;"></textarea>
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-camera" style="font-size: 24px;"></i>
-                    <div>Haz clic para seleccionar fotos (máx 5)</div>
-                    <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+                    <div>Haz clic para seleccionar una foto</div>
+                    <input type="file" id="fileInput" accept="image/*" style="display:none;">
                 </div>
-                <div class="fotos-preview" id="fotosPreview"></div>
-                <button id="publicarBtn" class="btn-primary">Publicar</button>
+                <button class="btn-primary" id="publicarBtn" style="margin-top: 16px;">Publicar</button>
             </div>
         `;
-        setupUploadEventos();
-    }
-
-    function setupUploadEventos() {
+        
+        let fotoSeleccionada = null;
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
+        
         uploadArea.onclick = () => fileInput.click();
         fileInput.onchange = (e) => {
-            fotosSeleccionadas = Array.from(e.target.files);
-            const preview = document.getElementById('fotosPreview');
-            preview.innerHTML = fotosSeleccionadas.map((f, i) => `
-                <div class="foto-preview-item">
-                    <img src="${URL.createObjectURL(f)}">
-                    <button class="remove-photo" onclick="eliminarFoto(${i})">✕</button>
-                </div>
-            `).join('');
+            if (e.target.files.length) {
+                fotoSeleccionada = e.target.files[0];
+                uploadArea.innerHTML = `<i class="fas fa-check-circle" style="font-size: 24px; color: green;"></i><div>Foto seleccionada: ${fotoSeleccionada.name}</div>`;
+            }
         };
-        window.eliminarFoto = (idx) => { fotosSeleccionadas.splice(idx, 1); setupUploadEventos(); };
+        
         document.getElementById('publicarBtn').onclick = async () => {
             const titulo = document.getElementById('titulo').value;
             const categoria = document.getElementById('categoria').value;
             const descripcion = document.getElementById('descripcion').value;
-            if (!titulo || !descripcion || !fotosSeleccionadas.length) { alert('Completa todos los campos'); return; }
-            await publicarObjeto(titulo, descripcion, categoria, fotosSeleccionadas);
-            alert('Publicado!');
-            cambiarTab('misobjetos');
+            if (!titulo || !descripcion || !fotoSeleccionada) {
+                alert('Completa todos los campos y selecciona una foto');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('titulo', titulo);
+            formData.append('descripcion', `${categoria} | ${descripcion}`);
+            formData.append('foto_0', fotoSeleccionada);
+            formData.append('latitud', '');
+            formData.append('longitud', '');
+            formData.append('direccion', '');
+            
+            try {
+                await apiFetch('/objeto', { method: 'POST', body: formData });
+                alert('Publicado!');
+                cambiarTab('misobjetos');
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
         };
     }
 
     // ========== FUNCIONES GLOBALES ==========
-    window.verDetalle = async (id) => {
-        const obj = todosLosObjetos.find(o => o.id === id);
-        if (!obj) return;
-        const todasLasFotos = [obj.url];
-        if (obj.fotos_extra) for (const f of obj.fotos_extra) todasLasFotos.push(f.url);
-        
-        document.getElementById('modalTitulo').innerText = obj.titulo;
-        document.getElementById('modalDescripcion').innerHTML = `<p>${escapeHtml(obj.descripcion)}</p>`;
-        document.getElementById('modalUbicacion').innerHTML = obj.direccion ? `<p><i class="fas fa-map-marker-alt"></i> ${escapeHtml(obj.direccion)}</p>` : '';
-        
-        let galleryHtml = '';
-        for (const url of todasLasFotos) {
-            galleryHtml += `<img src="${url}" style="width: 100%; border-radius: 8px; margin-bottom: 8px;" onclick="window.open('${url}', '_blank')">`;
-        }
-        document.getElementById('modalGallery').innerHTML = galleryHtml;
-        document.getElementById('modalActions').innerHTML = `
-            ${obj.usuario !== currentUser?.email ? `<button class="action-btn" onclick="abrirChat(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')"><i class="fa-regular fa-message"></i> Intercambiar</button>` : ''}
-            <button class="action-btn" onclick="reportarObjetoPrompt(${obj.id})"><i class="fa-regular fa-flag"></i> Reportar</button>
-        `;
-        document.getElementById('detailModal').style.display = 'flex';
-    };
-    
-    window.closeModal = () => { document.getElementById('detailModal').style.display = 'none'; };
-    window.verPerfilUsuario = async (email) => {
-        const perfil = await obtenerPerfilUsuario(email);
-        alert(`Perfil de ${perfil.nombre_usuario || email}\n⭐ ${perfil.promedio_valoracion?.toFixed(1) || 0} (${perfil.total_valoraciones || 0} valoraciones)\n📦 ${perfil.objetos?.length || 0} publicaciones`);
-    };
-    
     window.toggleFavorito = async (id, btn) => {
-        if (favoritos.has(id)) { await quitarFavorito(id); favoritos.delete(id); btn.innerHTML = '<i class="fa-regular fa-star"></i> Guardar'; }
-        else { await agregarFavorito(id); favoritos.add(id); btn.innerHTML = '<i class="fa-solid fa-star"></i> Guardado'; }
+        if (favoritosIds.has(id)) {
+            await quitarFavorito(id);
+            btn.innerHTML = '<i class="fa-regular fa-star"></i> Guardar';
+        } else {
+            await agregarFavorito(id);
+            btn.innerHTML = '<i class="fa-solid fa-star"></i> Guardado';
+        }
     };
     
-    window.marcarIntercambiadoPrompt = async (id) => { if (confirm('¿Marcar como intercambiado?')) { await marcarIntercambiado(id); cambiarTab(currentTab); } };
-    window.eliminarObjetoPrompt = async (id) => { if (confirm('¿Eliminar?')) { await eliminarObjeto(id); cambiarTab(currentTab); } };
-    window.reportarObjetoPrompt = async (id) => { const motivo = prompt('Motivo del reporte:'); if (motivo) await reportarObjeto(id, motivo); alert('Reporte enviado'); };
-    
-    window.abrirChat = async (id, usuario, titulo) => {
-        chatActual = { objetoId: id, otroUsuario: usuario, otroNombre: titulo };
-        await cargarChat();
+    window.marcarIntercambiadoPrompt = async (id) => {
+        if (confirm('¿Marcar este objeto como intercambiado?')) {
+            await marcarIntercambiado(id);
+            cambiarTab(currentTab);
+            alert('Marcado como intercambiado');
+        }
     };
     
-    async function cargarChat() {
-        const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
-        document.getElementById('feedContainer').innerHTML = `
-            <div class="chat-container">
-                <div class="chat-header">
-                    <button class="action-btn" onclick="cambiarTab('chats')" style="width: auto; padding: 8px 16px;"><i class="fas fa-arrow-left"></i> Volver</button>
-                    <div><strong>${escapeHtml(chatActual.otroNombre)}</strong><br><small>con ${escapeHtml(chatActual.otroUsuario)}</small></div>
-                </div>
-                <div class="chat-messages" id="chatMessages"></div>
-                <div class="chat-input-container">
-                    <input type="text" class="chat-input" id="chatInput" placeholder="Escribe un mensaje...">
-                    <button class="action-btn" id="sendMessageBtn" style="background: #1877f2; color: white; width: auto;"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            </div>
-        `;
-        const container = document.getElementById('chatMessages');
-        if (msgs.length) {
-            container.innerHTML = msgs.map(m => `
-                <div class="message-bubble ${m.emisor === currentUser?.email ? 'message-sent' : 'message-received'}">
-                    ${escapeHtml(m.mensaje)}
-                    <div class="post-time">${new Date(m.fecha).toLocaleTimeString()}</div>
-                </div>
-            `).join('');
-            container.scrollTop = container.scrollHeight;
+    window.eliminarObjetoPrompt = async (id) => {
+        if (confirm('¿Eliminar esta publicación?')) {
+            await eliminarObjeto(id);
+            cambiarTab(currentTab);
+            alert('Eliminado');
         }
-        document.getElementById('sendMessageBtn').onclick = async () => {
-            const input = document.getElementById('chatInput');
-            const texto = input.value.trim();
-            if (!texto) return;
-            input.value = '';
-            await enviarMensaje(chatActual.objetoId, chatActual.otroUsuario, texto);
-            await cargarChat();
-        };
-    }
+    };
     
-    async function renderListaConversaciones() {
-        const convs = await obtenerMisConversaciones();
-        if (!convs.length) {
-            document.getElementById('feedContainer').innerHTML = '<div class="loading">💬 No hay conversaciones aún</div>';
-            return;
+    window.reportarObjetoPrompt = async (id) => {
+        const motivo = prompt('¿Por qué reportas este objeto?');
+        if (motivo) {
+            await reportarObjeto(id, motivo);
+            alert('Reporte enviado');
         }
-        document.getElementById('feedContainer').innerHTML = `
-            <div style="background: white; border-radius: 16px; overflow: hidden;">
-                ${convs.map(c => `
-                    <div class="post-header" style="cursor: pointer;" onclick="abrirChat(${c.id_objeto}, '${escapeHtml(c.otroUsuario)}', '${escapeHtml(c.titulo)}')">
-                        <img src="https://ui-avatars.com/api/?name=${escapeHtml(c.otroUsuario)}" class="post-avatar">
-                        <div style="flex:1">
-                            <div class="post-user-name">${escapeHtml(c.titulo)}</div>
-                            <div class="post-time">con ${escapeHtml(c.otroUsuario)}</div>
-                        </div>
-                        <div class="post-time">${new Date(c.ultimaFecha).toLocaleDateString()}</div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
+    };
     
-    async function renderFeed() {
-        const objetos = await obtenerObjetos(false);
-        if (!objetos.length) {
-            document.getElementById('feedContainer').innerHTML = '<div class="loading">📭 No hay objetos publicados aún. ¡Sé el primero!</div>';
-            return;
-        }
-        document.getElementById('feedContainer').innerHTML = objetos.map(renderPostCard).join('');
-    }
-
-    // ========== BÚSQUEDA ==========
-    function buscarEnFeed() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const cards = document.querySelectorAll('.post-card');
-        let visibleCount = 0;
-        cards.forEach(card => {
-            const titulo = card.dataset.titulo || '';
-            const usuario = card.dataset.usuario || '';
-            if (titulo.includes(term) || usuario.includes(term)) {
-                card.style.display = 'block';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-    
-    // ========== PERFIL - EDITAR ==========
-    function openEditProfileModal() {
-        document.getElementById('editAvatar').src = currentUser?.picture || '';
-        document.getElementById('editNombre').value = currentUser?.nombre_usuario || '';
-        document.getElementById('editFoto').value = currentUser?.picture || '';
-        document.getElementById('editProfileModal').style.display = 'flex';
-    }
-    
-    function closeEditProfileModal() {
-        document.getElementById('editProfileModal').style.display = 'none';
-    }
-    
-    async function guardarPerfil() {
-        const nuevoNombre = document.getElementById('editNombre').value;
-        const nuevaFoto = document.getElementById('editFoto').value;
-        if (nuevoNombre.length < 3) { alert('El nombre debe tener al menos 3 caracteres'); return; }
-        const res = await actualizarPerfil(nuevoNombre, nuevaFoto);
-        if (res.error) { alert(res.error); return; }
-        currentUser.nombre_usuario = nuevoNombre;
-        currentUser.picture = nuevaFoto;
-        closeEditProfileModal();
-        cambiarTab(currentTab);
-        alert('Perfil actualizado');
-    }
-    
-    // ========== NAVEGACIÓN ==========
     async function cambiarTab(tab) {
         currentTab = tab;
-        document.getElementById('searchInput').value = '';
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add('active');
+        
         if (tab === 'feed') await renderFeed();
-        if (tab === 'perfil') await renderMiPerfil();
         if (tab === 'misobjetos') await renderMisObjetos();
-        if (tab === 'favoritos') await renderFavoritos();
+        if (tab === 'perfil') await renderPerfil();
         if (tab === 'publicar') renderPublicarForm();
-        if (tab === 'chats') await renderListaConversaciones();
-        document.getElementById('profileMenu').classList.remove('show');
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
     }
     
     // ========== INICIALIZACIÓN ==========
     async function init() {
-        initDarkMode();
         const token = getTokenFromURL();
+        
         if (token) {
             authToken = token;
             const user = await verifyToken(token);
+            
             if (user) {
                 currentUser = user;
                 const estado = await verificarEstadoUsuario();
+                
+                // Mostrar pantalla de términos si no los ha aceptado
                 if (!estado.terminos_aceptados) {
                     const terminos = await obtenerTerminos();
-                    document.getElementById('terminosTexto').innerHTML = terminos.terminos?.secciones?.map(s => `<h4>${s.titulo}</h4><p>${s.contenido}</p>`).join('') || '<p>Términos y condiciones</p>';
-                    document.getElementById('terminosModal').style.display = 'flex';
+                    const terminosHtml = terminos.terminos?.secciones?.map(s => `<h4>${s.titulo}</h4><p>${s.contenido}</p>`).join('') || '<p>Términos y condiciones de Intercambia</p>';
+                    document.getElementById('terminosTexto').innerHTML = terminosHtml;
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('terminosScreen').style.display = 'block';
+                    document.getElementById('nombreScreen').style.display = 'none';
+                    document.getElementById('appScreen').style.display = 'none';
+                    document.getElementById('bottomNav').style.display = 'none';
+                    
                     document.getElementById('aceptarTerminosBtn').onclick = async () => {
-                        if (!document.getElementById('aceptoTerminos').checked) { alert('Debes aceptar los términos'); return; }
+                        if (!document.getElementById('aceptoTerminos').checked) {
+                            alert('Debes aceptar los términos para continuar');
+                            return;
+                        }
                         await aceptarTerminos();
-                        document.getElementById('terminosModal').style.display = 'none';
-                        if (!estado.nombre_usuario) document.getElementById('nombreModal').style.display = 'flex';
-                        else location.reload();
-                    };
-                } else if (!estado.nombre_usuario) {
-                    document.getElementById('nombreModal').style.display = 'flex';
-                    document.getElementById('guardarNombreBtn').onclick = async () => {
-                        const nombre = document.getElementById('nombreUsuarioInput').value;
-                        if (nombre.length < 3) { document.getElementById('nombreError').innerText = 'Mínimo 3 caracteres'; return; }
-                        const res = await guardarNombreUsuario(nombre);
-                        if (res.error) { document.getElementById('nombreError').innerText = res.error; return; }
-                        document.getElementById('nombreModal').style.display = 'none';
                         location.reload();
                     };
-                } else {
-                    currentUser.nombre_usuario = estado.nombre_usuario;
-                    currentUser.picture = estado.foto_perfil;
-                    await renderLeftSidebar();
-                    await renderFeed();
-                    const favs = await obtenerFavoritos();
-                    favoritos = new Set(favs.map(f => f.id));
-                    guardarOneSignalId(currentUser.email);
+                    return;
                 }
-            } else {
-                localStorage.removeItem('auth_token');
-                location.reload();
+                
+                // Mostrar pantalla de nombre de usuario si no tiene
+                if (!estado.nombre_usuario) {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('terminosScreen').style.display = 'none';
+                    document.getElementById('nombreScreen').style.display = 'block';
+                    document.getElementById('appScreen').style.display = 'none';
+                    document.getElementById('bottomNav').style.display = 'none';
+                    
+                    document.getElementById('guardarNombreBtn').onclick = async () => {
+                        const nombre = document.getElementById('nombreUsuario').value;
+                        if (nombre.length < 3) {
+                            document.getElementById('nombreError').innerText = 'El nombre debe tener al menos 3 caracteres';
+                            return;
+                        }
+                        const res = await guardarNombreUsuario(nombre);
+                        if (res.error) {
+                            document.getElementById('nombreError').innerText = res.error;
+                            return;
+                        }
+                        location.reload();
+                    };
+                    return;
+                }
+                
+                // Usuario registrado completamente - mostrar app
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('terminosScreen').style.display = 'none';
+                document.getElementById('nombreScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'block';
+                document.getElementById('bottomNav').style.display = 'flex';
+                
+                await obtenerFavoritos();
+                await renderFeed();
+                
+                // Eventos de navegación
+                document.querySelectorAll('.nav-item').forEach(el => {
+                    el.addEventListener('click', () => cambiarTab(el.dataset.tab));
+                });
+                
+                return;
             }
         }
         
-        // Eventos
-        document.getElementById('profileBtn').onclick = (e) => {
-            e.stopPropagation();
-            document.getElementById('profileMenu').classList.toggle('show');
-        };
-        document.addEventListener('click', () => document.getElementById('profileMenu').classList.remove('show'));
-        document.getElementById('searchInput').addEventListener('input', buscarEnFeed);
-        document.getElementById('guardarPerfilBtn').onclick = guardarPerfil;
-        
-        // Menú de perfil (sidebar y desplegable)
-        document.querySelectorAll('.profile-menu-item[data-tab]').forEach(el => {
-            el.addEventListener('click', () => cambiarTab(el.dataset.tab));
-        });
+        // No hay sesión - mostrar login
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('terminosScreen').style.display = 'none';
+        document.getElementById('nombreScreen').style.display = 'none';
+        document.getElementById('appScreen').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
     }
     
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-    
+    // Exponer loginWithGoogle globalmente
     window.loginWithGoogle = loginWithGoogle;
-    window.openEditProfileModal = openEditProfileModal;
-    window.closeEditProfileModal = closeEditProfileModal;
     
     init();
 </script>
