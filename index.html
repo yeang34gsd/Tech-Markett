@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,7 +10,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    /* ---------- RESET Y ESTILOS GLOBALES ---------- */
     * {
       margin: 0;
       padding: 0;
@@ -24,7 +22,6 @@
       color: #111;
     }
 
-    /* ---------- TOAST (sin alerts) ---------- */
     .internal-toast {
       position: fixed;
       bottom: 30px;
@@ -51,7 +48,7 @@
     }
     .internal-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* ---------- PANTALLA LOGIN ---------- */
+    /* Pantalla Login */
     .login-screen {
       position: fixed;
       top: 0;
@@ -109,17 +106,21 @@
       cursor: pointer;
       margin-bottom: 20px;
     }
-    .edit-profile-btn {
-      background: none;
+    .btn-google:active { transform: scale(0.97); }
+    .finalizar-btn {
+      background: #1b74e4;
+      color: white;
       border: none;
-      color: #1b74e4;
-      font-weight: 500;
-      font-size: 0.85rem;
-      margin-top: 8px;
+      border-radius: 60px;
+      padding: 0.9rem;
+      width: 100%;
+      font-weight: 700;
+      font-size: 1rem;
       cursor: pointer;
+      margin-top: 10px;
     }
 
-    /* ---------- APP PRINCIPAL ---------- */
+    /* App Principal */
     .app-container {
       opacity: 0;
       visibility: hidden;
@@ -186,6 +187,7 @@
       font-weight: bold;
       overflow: hidden;
     }
+    .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .sell-btn {
       background: #1b74e4;
       border-radius: 30px;
@@ -251,14 +253,23 @@
       color: #94a3b8;
       z-index: 2;
       backdrop-filter: blur(2px);
+      font-size: 1.1rem;
     }
     .favorite-star.active { color: #eab308; }
-    .card-img { aspect-ratio: 1/1; background: #f1f5f9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .card-img {
+      aspect-ratio: 1/1;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
     .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
     .miniaturas {
       display: flex;
       gap: 4px;
-      padding: 8px;
+      padding: 6px;
       background: white;
       border-top: 1px solid #eef2ff;
       overflow-x: auto;
@@ -266,19 +277,59 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.85);
       backdrop-filter: blur(4px);
     }
     .miniatura { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
     .miniatura.activa { border-color: #1b74e4; }
     .card-info { padding: 0.6rem; }
-    .price { font-weight: 800; font-size: 1rem; }
-    .title { font-size: 0.8rem; font-weight: 500; color: #334155; margin: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .usuario { font-size: 0.7rem; color: #64748b; display: flex; align-items: center; gap: 4px; margin-top: 4px; cursor: pointer; }
+    .title { font-size: 0.85rem; font-weight: 600; color: #1e293b; margin: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .usuario {
+      font-size: 0.7rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+      cursor: pointer;
+    }
+    .usuario i { font-size: 0.65rem; }
+    .ubicacion {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .intercambiar-btn {
+      background: #1b74e4;
+      border: none;
+      border-radius: 40px;
+      padding: 6px 12px;
+      margin-top: 8px;
+      width: 100%;
+      color: white;
+      font-weight: 600;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .intercambiar-btn:active { transform: scale(0.97); }
+    .reportar-btn {
+      background: #f59e0b;
+      border: none;
+      border-radius: 40px;
+      padding: 4px 8px;
+      margin-top: 4px;
+      width: 100%;
+      font-size: 0.6rem;
+      color: white;
+      cursor: pointer;
+    }
     .load-more { text-align: center; margin: 1rem 0 2rem; }
     .load-more-btn { background: #fff; border:1px solid #cbd5e1; padding:0.6rem 1.8rem; border-radius:40px; font-weight:600; cursor: pointer; }
 
-    /* Modal fotos */
     .modal {
       display: none;
       position: fixed;
@@ -286,15 +337,15 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.85);
       justify-content: center;
       align-items: center;
       z-index: 2000;
     }
-    .modal-content { max-width: 90vw; max-height: 90vh; }
-    .modal-content img { max-width: 100%; max-height: 80vh; border-radius: 20px; }
-    
-    /* Panel subida */
+    .modal-content { max-width: 90vw; max-height: 90vh; text-align: center; }
+    .modal-content img { max-width: 100%; max-height: 75vh; border-radius: 20px; }
+    .modal-content button { margin-top: 16px; background: white; padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; font-weight: 600; }
+
     .upload-panel-overlay {
       position: fixed;
       top: 0;
@@ -339,38 +390,86 @@
       text-align: center;
       margin-bottom: 1rem;
       cursor: pointer;
+      transition: 0.2s;
     }
+    .upload-area:hover { border-color: #1b74e4; background: #f8fafc; }
     .fotos-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
     .foto-preview { position: relative; width: 80px; height: 80px; }
     .foto-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
-    .foto-preview button { position: absolute; top: -8px; right: -8px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
-    .btn-publish { background: #1b74e4; color: white; border: none; padding: 0.9rem; border-radius: 40px; font-weight: 700; width: 100%; margin-top: 0.5rem; cursor: pointer; }
-    .btn-cancel { background: #f1f5f9; border: none; padding: 0.9rem; border-radius: 40px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 0.5rem; }
+    .foto-preview button {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-publish {
+      background: #1b74e4;
+      color: white;
+      border: none;
+      padding: 0.9rem;
+      border-radius: 40px;
+      font-weight: 700;
+      width: 100%;
+      margin-top: 0.5rem;
+      cursor: pointer;
+    }
+    .btn-cancel {
+      background: #f1f5f9;
+      border: none;
+      padding: 0.9rem;
+      border-radius: 40px;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
     .panel-actions { display: flex; gap: 1rem; margin-top: 0.5rem; }
+    .badge-intercambio {
+      background: #10b981;
+      color: white;
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body>
 
 <div id="internalToast" class="internal-toast"><i class="fas fa-info-circle"></i> <span id="toastMessage"></span></div>
 
-<!-- PANTALLA LOGIN -->
+<!-- Pantalla Login -->
 <div id="loginScreen" class="login-screen">
   <div class="login-card">
-    <div class="login-icon"><i class="fab fa-google"></i></div>
+    <div class="login-icon"><i class="fas fa-exchange-alt"></i></div>
     <h2>Intercambia</h2>
-    <p>Inicia sesión para publicar, intercambiar y chatear</p>
-    <button id="googleLoginBtn" class="btn-google"><i class="fab fa-google"></i> Continuar con Google</button>
+    <p>Trueque de objetos - Publica, intercambia y conversa</p>
+    <button id="googleLoginBtn" class="btn-google"><i class="fab fa-google"></i> Iniciar sesión con Google</button>
   </div>
 </div>
 
-<!-- APP PRINCIPAL -->
+<!-- App Principal -->
 <div id="appContainer" class="app-container">
   <header class="market-header">
     <div class="header-container">
       <div class="logo-area"><i class="fas fa-exchange-alt market-icon"></i><span class="logo-text">Intercambia</span></div>
       <div class="search-bar"><div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Buscar objetos..."></div></div>
       <div class="header-actions">
-        <div id="userProfileBadge" class="profile-badge"><div id="headerAvatar" class="mini-avatar"><i class="fas fa-user"></i></div><span id="headerUserName" style="font-size:0.8rem;">Perfil</span></div>
+        <div id="userProfileBadge" class="profile-badge">
+          <div id="headerAvatar" class="mini-avatar"><i class="fas fa-user"></i></div>
+          <span id="headerUserName" style="font-size:0.75rem;">Perfil</span>
+        </div>
         <div id="openUploadPanelBtn" class="sell-btn"><i class="fas fa-plus-circle"></i> <span>Publicar</span></div>
       </div>
     </div>
@@ -381,17 +480,21 @@
   <div class="load-more"><button id="loadMoreBtn" class="load-more-btn">Cargar más</button></div>
 </div>
 
-<!-- PANEL SUBIR ARTÍCULO -->
+<!-- Panel Publicar -->
 <div id="uploadPanelOverlay" class="upload-panel-overlay">
   <div class="upload-panel">
     <h3><i class="fas fa-cloud-upload-alt"></i> Publicar objeto</h3>
     <input type="text" id="uploadTitle" placeholder="Título *">
     <select id="uploadCategory">
-      <option value="Electrónica">📱 Electrónica</option><option value="Ropa">👕 Ropa</option>
-      <option value="Libros">📚 Libros</option><option value="Mascotas">🐾 Mascotas</option>
-      <option value="Hogar">🏠 Hogar</option><option value="Deportes">⚽ Deportes</option>
+      <option value="Electrónica">📱 Electrónica</option>
+      <option value="Ropa">👕 Ropa</option>
+      <option value="Libros">📚 Libros</option>
+      <option value="Mascotas">🐾 Mascotas</option>
+      <option value="Hogar">🏠 Hogar</option>
+      <option value="Deportes">⚽ Deportes</option>
+      <option value="Otros">🎁 Otros</option>
     </select>
-    <textarea id="uploadDesc" rows="2" placeholder="Descripción (estado, qué buscas a cambio...)"></textarea>
+    <textarea id="uploadDesc" rows="2" placeholder="Descripción (estado, qué buscas a cambio...) *"></textarea>
     <input type="text" id="uploadLocation" placeholder="Ubicación (ej. Ciudad de México, Condesa)">
     <div id="uploadArea" class="upload-area">📸 Haz clic para seleccionar fotos (máx 5)</div>
     <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
@@ -404,7 +507,12 @@
 </div>
 
 <!-- Modal fotos -->
-<div id="fotoModal" class="modal"><div class="modal-content"><img id="fotoModalImg" src=""><button onclick="document.getElementById('fotoModal').style.display='none'" style="margin-top:16px; background:white; padding:8px 20px; border-radius:40px;">Cerrar</button></div></div>
+<div id="fotoModal" class="modal">
+  <div class="modal-content">
+    <img id="fotoModalImg" src="">
+    <button onclick="document.getElementById('fotoModal').style.display='none'">Cerrar</button>
+  </div>
+</div>
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
@@ -436,6 +544,7 @@
     if (token) { localStorage.setItem('auth_token', token); window.history.replaceState({}, document.title, window.location.pathname); return token; }
     return localStorage.getItem('auth_token');
   }
+  
   async function verifyToken(token) {
     try {
       const res = await fetch(`${WORKER_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -444,7 +553,9 @@
       return data.user;
     } catch(e) { return null; }
   }
+  
   function loginWithGoogle() { window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`; }
+  
   async function logout() { localStorage.removeItem('auth_token'); authToken = null; currentUser = null; location.reload(); }
 
   // ========== API ==========
@@ -455,23 +566,36 @@
     if (!res.ok) { if (res.status === 401) logout(); throw new Error(await res.text()); }
     return res.json();
   }
+  
   async function obtenerObjetos() { return await apiFetch('/objetos'); }
   async function obtenerFavoritos() { try { return await apiFetch('/favoritos'); } catch(e) { return []; } }
   async function agregarFavorito(id) { return await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }); }
   async function quitarFavorito(id) { return await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); }
+  
   async function publicarObjeto(titulo, descripcion, categoria, ubicacion, fotos) {
     const form = new FormData();
     form.append('titulo', titulo);
-    form.append('descripcion', `${categoria} | ${descripcion} | Ubicación: ${ubicacion}`);
-    form.append('direccion', ubicacion);
+    form.append('descripcion', `${categoria} | ${descripcion} | ${ubicacion || 'Sin ubicación'}`);
+    form.append('direccion', ubicacion || '');
     for (let i = 0; i < Math.min(fotos.length, 5); i++) form.append(`foto_${i}`, fotos[i]);
     return await apiFetch('/objeto', { method: 'POST', body: form });
   }
 
   // ========== FAVORITOS ==========
   async function toggleFavorito(id, btn) {
-    if (favoritosIds.has(id)) { await quitarFavorito(id); favoritosIds.delete(id); btn.classList.remove('active'); btn.innerHTML = '☆'; showToast('Eliminado de favoritos'); }
-    else { await agregarFavorito(id); favoritosIds.add(id); btn.classList.add('active'); btn.innerHTML = '★'; showToast('Agregado a favoritos'); }
+    if (favoritosIds.has(id)) { 
+      await quitarFavorito(id); 
+      favoritosIds.delete(id); 
+      btn.classList.remove('active'); 
+      btn.innerHTML = '☆'; 
+      showToast('Eliminado de favoritos');
+    } else { 
+      await agregarFavorito(id); 
+      favoritosIds.add(id); 
+      btn.classList.add('active'); 
+      btn.innerHTML = '★'; 
+      showToast('Agregado a favoritos');
+    }
   }
 
   // ========== RENDER PRODUCTOS ==========
@@ -485,58 +609,80 @@
     filtered.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
     return filtered;
   }
+  
   function renderProductos() {
     const filtered = filtrarProductos();
     const toShow = filtered.slice(0, visibleItems);
     const grid = document.getElementById("listingsGrid");
-    if (toShow.length === 0) { grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-store-slash" style="font-size:2rem;"></i><p>No hay objetos publicados aún</p></div>`; return; }
+    if (toShow.length === 0) { 
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-store-slash" style="font-size:2rem; color:#94a3b8;"></i><p style="margin-top:8px;">No hay objetos publicados aún</p></div>`; 
+      return; 
+    }
+    
     grid.innerHTML = toShow.map(p => {
       const categoria = p.descripcion?.split('|')[0]?.trim() || 'General';
       const descripcion = p.descripcion?.split('|')[1]?.trim() || '';
-      const ubicacion = p.direccion || (p.descripcion?.split('|')[2]?.replace('Ubicación:', '')?.trim()) || 'Sin ubicación';
+      const ubicacion = p.direccion || (p.descripcion?.split('|')[2]?.trim()) || 'Sin ubicación';
       const esFavorito = favoritosIds.has(p.id);
       const fotosExtra = p.fotos_extra || [];
       const todasLasFotos = [p.url, ...fotosExtra.map(f => f.url)];
+      
       return `
         <div class="product-card" data-id="${p.id}" data-cat="${categoria}">
           <div class="favorite-star ${esFavorito ? 'active' : ''}" data-id="${p.id}" onclick="event.stopPropagation(); toggleFavorito(${p.id}, this)">${esFavorito ? '★' : '☆'}</div>
           <div class="card-img">
-            <img class="imagen-principal" src="${p.url}" onclick="event.stopPropagation(); mostrarFotoAmpliada('${p.url}')">
-            <div class="miniaturas" style="display: ${todasLasFotos.length > 1 ? 'flex' : 'none'}">
-              ${todasLasFotos.map((url, idx) => `<img class="miniatura ${idx === 0 ? 'activa' : ''}" src="${url}" onclick="event.stopPropagation(); cambiarFotoPrincipal(this.closest('.product-card'), '${url}', this)">`).join('')}
-            </div>
+            <img class="imagen-principal" src="${p.url}" onerror="this.src='https://placehold.co/300x300?text=Sin+imagen'" onclick="event.stopPropagation(); mostrarFotoAmpliada('${p.url}')">
+            ${todasLasFotos.length > 1 ? `
+              <div class="miniaturas">
+                ${todasLasFotos.map((url, idx) => `<img class="miniatura ${idx === 0 ? 'activa' : ''}" src="${url}" onerror="this.src='https://placehold.co/60x60?text=Error'" onclick="event.stopPropagation(); cambiarFotoPrincipal(this.closest('.product-card'), '${url}', this)">`).join('')}
+              </div>
+            ` : ''}
           </div>
           <div class="card-info">
-            <div class="price">💰 Valor: Intercambio</div>
+            <span class="badge-intercambio">🔄 Trueque</span>
             <div class="title">${escapeHtml(p.titulo)}</div>
             <div class="usuario" onclick="event.stopPropagation(); verPerfilUsuario('${escapeHtml(p.usuario)}')"><i class="fas fa-user-circle"></i> ${escapeHtml(p.usuario)}</div>
-            <div class="usuario" style="font-size:0.65rem;"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(ubicacion)}</div>
+            <div class="ubicacion"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(ubicacion)}</div>
             ${p.usuario !== currentUser?.email ? `
-              <button class="intercambiar-btn" style="background:#1b74e4; border:none; border-radius:40px; padding:6px 12px; margin-top:8px; width:100%; color:white; font-weight:600; cursor:pointer;" onclick="event.stopPropagation(); abrirChatConObjeto(${p.id}, '${escapeHtml(p.usuario)}', '${escapeHtml(p.titulo)}')">💬 Intercambiar</button>
-              <button class="reportar-btn" style="background:#f59e0b; border:none; border-radius:40px; padding:4px 8px; margin-top:4px; width:100%; font-size:11px; color:white; cursor:pointer;" onclick="event.stopPropagation(); reportarObjetoPrompt(${p.id})">⚠️ Reportar</button>
-            ` : '<span style="font-size:11px; color:#94a3b8;">(tu objeto)</span>'}
+              <button class="intercambiar-btn" onclick="event.stopPropagation(); abrirChatConObjeto(${p.id}, '${escapeHtml(p.usuario)}', '${escapeHtml(p.titulo)}')">💬 Intercambiar</button>
+              <button class="reportar-btn" onclick="event.stopPropagation(); reportarObjetoPrompt(${p.id})">⚠️ Reportar</button>
+            ` : '<span style="font-size:11px; color:#94a3b8; text-align:center; display:block; margin-top:8px;">(tu objeto)</span>'}
           </div>
         </div>
       `;
     }).join('');
+    
     const loadBtn = document.getElementById("loadMoreBtn");
     if (filtered.length <= visibleItems) loadBtn.style.display = "none";
     else loadBtn.style.display = "inline-block";
   }
+  
   function loadMore() { visibleItems += 8; renderProductos(); }
+  
   window.cambiarFotoPrincipal = (card, url, miniatura) => {
     const imgPrincipal = card.querySelector('.imagen-principal');
     imgPrincipal.src = url;
     card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
     miniatura.classList.add('activa');
   };
-  window.mostrarFotoAmpliada = (url) => { document.getElementById('fotoModalImg').src = url; document.getElementById('fotoModal').style.display = 'flex'; };
-  window.verPerfilUsuario = (email) => { showToast(`👤 Perfil de ${email}`); };
-  window.abrirChatConObjeto = (id, usuario, titulo) => { showToast(`💬 Chat con ${usuario} sobre "${titulo}"`); };
+  
+  window.mostrarFotoAmpliada = (url) => { 
+    document.getElementById('fotoModalImg').src = url; 
+    document.getElementById('fotoModal').style.display = 'flex'; 
+  };
+  
+  window.verPerfilUsuario = (email) => { showToast(`👤 Perfil de ${email} (próximamente)`); };
+  
+  window.abrirChatConObjeto = (id, usuario, titulo) => { showToast(`💬 Chat con ${usuario} sobre "${titulo}" (próximamente)`); };
+  
   window.reportarObjetoPrompt = async (id) => {
     const motivo = prompt('Motivo del reporte:');
-    if (motivo) { await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }); showToast('✅ Reporte enviado'); }
+    if (motivo && motivo.trim()) { 
+      await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }); 
+      showToast('✅ Reporte enviado, gracias por ayudar'); 
+    }
   };
+  
   window.toggleFavorito = toggleFavorito;
 
   // ========== SUBIDA DE FOTOS ==========
@@ -553,26 +699,34 @@
       reader.readAsDataURL(file);
     });
   }
+  
   window.eliminarFoto = (idx) => { selectedFiles.splice(idx, 1); actualizarPreviews(); };
+  
   document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
   document.getElementById('fileInput').onchange = (e) => {
     const archivos = Array.from(e.target.files);
     selectedFiles = [...selectedFiles, ...archivos].slice(0, 5);
     actualizarPreviews();
   };
+  
   document.getElementById('openUploadPanelBtn').onclick = () => {
     if (!currentUser) { showToast('Inicia sesión primero', true); return; }
     document.getElementById('uploadPanelOverlay').classList.add('active');
   };
+  
   document.getElementById('cancelUploadBtn').onclick = () => document.getElementById('uploadPanelOverlay').classList.remove('active');
+  
   document.getElementById('publishArticleBtn').onclick = async () => {
     const titulo = document.getElementById('uploadTitle').value.trim();
     const categoria = document.getElementById('uploadCategory').value;
     const desc = document.getElementById('uploadDesc').value.trim();
     const ubicacion = document.getElementById('uploadLocation').value.trim();
-    if (!titulo || !desc || selectedFiles.length === 0) { showToast('❌ Completa título, descripción y al menos una foto', true); return; }
+    if (!titulo || !desc || selectedFiles.length === 0) { 
+      showToast('❌ Completa título, descripción y al menos una foto', true); 
+      return; 
+    }
     try {
-      await publicarObjeto(titulo, desc, categoria, ubicacion || 'Sin ubicación', selectedFiles);
+      await publicarObjeto(titulo, desc, categoria, ubicacion, selectedFiles);
       showToast('✅ Objeto publicado correctamente');
       document.getElementById('uploadPanelOverlay').classList.remove('active');
       document.getElementById('uploadTitle').value = '';
@@ -580,7 +734,7 @@
       document.getElementById('uploadLocation').value = '';
       selectedFiles = [];
       actualizarPreviews();
-      cargarProductos();
+      await cargarProductos();
     } catch(e) { showToast('❌ Error: ' + e.message, true); }
   };
 
@@ -595,10 +749,11 @@
 
   // ========== FILTROS ==========
   function setupCategorias() {
-    const cats = ["all", "Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
-    const icons = { all:"fa-store", Electrónica:"fa-laptop", Ropa:"fa-tshirt", Libros:"fa-book", Mascotas:"fa-paw", Hogar:"fa-home", Deportes:"fa-futbol" };
+    const cats = ["all", "Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes", "Otros"];
+    const icons = { all:"fa-store", Electrónica:"fa-laptop", Ropa:"fa-tshirt", Libros:"fa-book", Mascotas:"fa-paw", Hogar:"fa-home", Deportes:"fa-futbol", Otros:"fa-tag" };
+    const names = { all:"Todos", Electrónica:"Electrónica", Ropa:"Ropa", Libros:"Libros", Mascotas:"Mascotas", Hogar:"Hogar", Deportes:"Deportes", Otros:"Otros" };
     const container = document.getElementById("categoriesNav");
-    container.innerHTML = cats.map(cat => `<div class="cat-item ${cat === 'all' ? 'active' : ''}" data-cat="${cat}"><i class="fas ${icons[cat]}"></i> ${cat === 'all' ? 'Todos' : cat}</div>`).join('');
+    container.innerHTML = cats.map(cat => `<div class="cat-item ${cat === 'all' ? 'active' : ''}" data-cat="${cat}"><i class="fas ${icons[cat]}"></i> ${names[cat]}</div>`).join('');
     document.querySelectorAll('.cat-item').forEach(c => {
       c.addEventListener('click', () => {
         document.querySelectorAll('.cat-item').forEach(cat => cat.classList.remove('active'));
@@ -609,18 +764,36 @@
       });
     });
   }
+  
   document.getElementById("searchInput").addEventListener('input', (e) => { searchQuery = e.target.value; visibleItems = 8; renderProductos(); });
   document.getElementById("loadMoreBtn").addEventListener('click', loadMore);
   document.getElementById("userProfileBadge").addEventListener("click", () => { showToast(`👤 ${currentUser?.name || currentUser?.email}`); });
+  
+  function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
   // ========== INICIALIZACIÓN ==========
   async function init() {
     const token = getTokenFromURL();
-    if (token) { authToken = token; const user = await verifyToken(token); if (user) currentUser = user; else { localStorage.removeItem('auth_token'); authToken = null; } }
+    if (token) { 
+      authToken = token; 
+      const user = await verifyToken(token); 
+      if (user) {
+        currentUser = user;
+      } else { 
+        localStorage.removeItem('auth_token'); 
+        authToken = null; 
+      }
+    }
+    
     if (currentUser) {
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('appContainer').classList.add('active');
-      document.getElementById('headerAvatar').innerHTML = currentUser.picture ? `<img src="${currentUser.picture}">` : `<i class="fas fa-user"></i>`;
+      const avatarDiv = document.getElementById('headerAvatar');
+      if (currentUser.picture) {
+        avatarDiv.innerHTML = `<img src="${currentUser.picture}">`;
+      } else {
+        avatarDiv.innerHTML = `<i class="fas fa-user"></i>`;
+      }
       document.getElementById('headerUserName').innerText = currentUser.name?.split(' ')[0] || 'Perfil';
       const favs = await obtenerFavoritos();
       favoritosIds = new Set(favs.map(f => f.id));
@@ -631,11 +804,18 @@
     }
     setupCategorias();
   }
+  
   document.getElementById("googleLoginBtn").onclick = loginWithGoogle;
   init();
+  
   // OneSignal
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) { await OneSignal.init({ appId: "68491021-9c85-423d-9e50-ddcffa0c2d63", notifyButton: { enable: true } }); });
+  OneSignalDeferred.push(async function(OneSignal) { 
+    await OneSignal.init({ 
+      appId: "68491021-9c85-423d-9e50-ddcffa0c2d63", 
+      notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' } 
+    }); 
+  });
 </script>
 </body>
 </html>
