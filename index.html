@@ -107,18 +107,6 @@
       margin-bottom: 20px;
     }
     .btn-google:active { transform: scale(0.97); }
-    .finalizar-btn {
-      background: #1b74e4;
-      color: white;
-      border: none;
-      border-radius: 60px;
-      padding: 0.9rem;
-      width: 100%;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 10px;
-    }
 
     /* App Principal */
     .app-container {
@@ -141,7 +129,7 @@
       justify-content: space-between;
       gap: 0.8rem;
     }
-    .logo-area { display: flex; align-items: center; gap: 0.3rem; }
+    .logo-area { display: flex; align-items: center; gap: 0.3rem; cursor: pointer; }
     .market-icon { font-size: 1.8rem; color: #1b74e4; }
     .logo-text { font-size: 1.35rem; font-weight: 800; color: #0a2540; }
     .search-bar { flex: 1; }
@@ -195,11 +183,14 @@
       height: 38px;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       color: white;
       font-weight: 600;
       cursor: pointer;
     }
+    .sell-btn i { font-size: 1.1rem; }
+    .sell-btn span { font-size: 0; width: 0; overflow: hidden; } /* Oculta el texto "Publicar" */
     .categories-nav {
       background: white;
       overflow-x: auto;
@@ -302,7 +293,7 @@
       gap: 4px;
       margin-top: 4px;
     }
-    .intercambiar-btn {
+    .btn-chat {
       background: #1b74e4;
       border: none;
       border-radius: 40px;
@@ -314,8 +305,12 @@
       font-size: 0.7rem;
       cursor: pointer;
       transition: 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    .intercambiar-btn:active { transform: scale(0.97); }
+    .btn-chat:active { transform: scale(0.97); }
     .reportar-btn {
       background: #f59e0b;
       border: none;
@@ -329,6 +324,15 @@
     }
     .load-more { text-align: center; margin: 1rem 0 2rem; }
     .load-more-btn { background: #fff; border:1px solid #cbd5e1; padding:0.6rem 1.8rem; border-radius:40px; font-weight:600; cursor: pointer; }
+    .badge-intercambio {
+      background: #10b981;
+      color: white;
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
 
     .modal {
       display: none;
@@ -393,6 +397,7 @@
       transition: 0.2s;
     }
     .upload-area:hover { border-color: #1b74e4; background: #f8fafc; }
+    .uploading-indicator { text-align: center; padding: 10px; color: #1b74e4; display: none; }
     .fotos-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
     .foto-preview { position: relative; width: 80px; height: 80px; }
     .foto-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
@@ -422,7 +427,9 @@
       width: 100%;
       margin-top: 0.5rem;
       cursor: pointer;
+      transition: 0.1s;
     }
+    .btn-publish:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
     .btn-cancel {
       background: #f1f5f9;
       border: none;
@@ -434,15 +441,33 @@
       margin-top: 0.5rem;
     }
     .panel-actions { display: flex; gap: 1rem; margin-top: 0.5rem; }
-    .badge-intercambio {
-      background: #10b981;
-      color: white;
-      font-size: 0.65rem;
-      padding: 2px 8px;
+    .ubicacion-activa {
+      background: #e8f0fe;
       border-radius: 20px;
-      display: inline-block;
-      margin-bottom: 4px;
+      padding: 8px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #1b74e4;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
     }
+    .geolocalizando {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -463,7 +488,10 @@
 <div id="appContainer" class="app-container">
   <header class="market-header">
     <div class="header-container">
-      <div class="logo-area"><i class="fas fa-exchange-alt market-icon"></i><span class="logo-text">Intercambia</span></div>
+      <div class="logo-area" id="homeBtn">
+        <i class="fas fa-home market-icon"></i>
+        <span class="logo-text">Inicio</span>
+      </div>
       <div class="search-bar"><div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Buscar objetos..."></div></div>
       <div class="header-actions">
         <div id="userProfileBadge" class="profile-badge">
@@ -483,7 +511,7 @@
 <!-- Panel Publicar -->
 <div id="uploadPanelOverlay" class="upload-panel-overlay">
   <div class="upload-panel">
-    <h3><i class="fas fa-cloud-upload-alt"></i> Publicar objeto</h3>
+    <h3><i class="fas fa-cloud-upload-alt"></i> Nuevo objeto</h3>
     <input type="text" id="uploadTitle" placeholder="Título *">
     <select id="uploadCategory">
       <option value="Electrónica">📱 Electrónica</option>
@@ -495,13 +523,19 @@
       <option value="Otros">🎁 Otros</option>
     </select>
     <textarea id="uploadDesc" rows="2" placeholder="Descripción (estado, qué buscas a cambio...) *"></textarea>
-    <input type="text" id="uploadLocation" placeholder="Ubicación (ej. Ciudad de México, Condesa)">
+    <div id="uploadLocationPanel">
+      <div id="ubicacionStatus" class="ubicacion-activa geolocalizando">
+        <i class="fas fa-location-dot"></i> <span id="ubicacionTexto">Obteniendo ubicación...</span>
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
     <div id="uploadArea" class="upload-area">📸 Haz clic para seleccionar fotos (máx 5)</div>
     <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
     <div id="fotosPreview" class="fotos-preview"></div>
+    <div id="uploadingIndicator" class="uploading-indicator"><i class="fas fa-spinner fa-pulse"></i> Publicando...</div>
     <div class="panel-actions">
       <button id="cancelUploadBtn" class="btn-cancel">Cancelar</button>
-      <button id="publishArticleBtn" class="btn-publish">Publicar</button>
+      <button id="publishArticleBtn" class="btn-publish"><i class="fas fa-cloud-upload-alt"></i> Publicar</button>
     </div>
   </div>
 </div>
@@ -524,10 +558,16 @@
   let authToken = null;
   let favoritosIds = new Set();
   let productosGlobal = [];
+  let productosFiltrados = [];
   let currentCategory = "all";
   let searchQuery = "";
   let visibleItems = 8;
   let selectedFiles = [];
+  let modoHome = false; // Modo "Hogar": muestra mis publicaciones + favoritas
+  let ubicacionActual = { lat: null, lng: null, direccion: "" };
+  
+  // Control para evitar publicaciones duplicadas
+  let isPublishing = false;
 
   // ========== TOAST ==========
   function showToast(msg, isError = false) {
@@ -572,13 +612,69 @@
   async function agregarFavorito(id) { return await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }); }
   async function quitarFavorito(id) { return await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); }
   
-  async function publicarObjeto(titulo, descripcion, categoria, ubicacion, fotos) {
+  async function publicarObjeto(titulo, descripcion, categoria, ubicacion, lat, lng, fotos) {
     const form = new FormData();
     form.append('titulo', titulo);
     form.append('descripcion', `${categoria} | ${descripcion} | ${ubicacion || 'Sin ubicación'}`);
     form.append('direccion', ubicacion || '');
+    form.append('latitud', lat || '');
+    form.append('longitud', lng || '');
     for (let i = 0; i < Math.min(fotos.length, 5); i++) form.append(`foto_${i}`, fotos[i]);
     return await apiFetch('/objeto', { method: 'POST', body: form });
+  }
+
+  // ========== GEOLOCALIZACIÓN ==========
+  function obtenerUbicacionActual() {
+    const statusDiv = document.getElementById("ubicacionStatus");
+    const textSpan = document.getElementById("ubicacionTexto");
+    
+    if (!navigator.geolocation) {
+      textSpan.innerText = "Geolocalización no soportada";
+      statusDiv.classList.remove("geolocalizando");
+      ubicacionActual.direccion = "Ubicación no disponible";
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        ubicacionActual.lat = lat;
+        ubicacionActual.lng = lng;
+        
+        // Obtener dirección desde coordenadas
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=es`);
+          const data = await res.json();
+          if (data.address) {
+            const partes = [];
+            if (data.address.road) partes.push(data.address.road);
+            if (data.address.house_number) partes.push(data.address.house_number);
+            if (data.address.suburb) partes.push(data.address.suburb);
+            if (data.address.city || data.address.town) partes.push(data.address.city || data.address.town);
+            ubicacionActual.direccion = partes.join(', ') || data.display_name?.split(',')[0] || "Ubicación capturada";
+          } else {
+            ubicacionActual.direccion = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+          }
+        } catch(e) {
+          ubicacionActual.direccion = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        }
+        
+        textSpan.innerText = ubicacionActual.direccion.substring(0, 50);
+        statusDiv.classList.remove("geolocalizando");
+        statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> <span>${ubicacionActual.direccion.substring(0, 50)}</span>`;
+        showToast("📍 Ubicación capturada correctamente");
+      },
+      (error) => {
+        console.error("Error de geolocalización:", error);
+        textSpan.innerText = "No se pudo obtener ubicación";
+        statusDiv.classList.remove("geolocalizando");
+        statusDiv.style.background = "#fee2e2";
+        statusDiv.style.color = "#dc2626";
+        ubicacionActual.direccion = "";
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
 
   // ========== FAVORITOS ==========
@@ -589,24 +685,45 @@
       btn.classList.remove('active'); 
       btn.innerHTML = '☆'; 
       showToast('Eliminado de favoritos');
+      if (modoHome) await cargarProductos(true);
     } else { 
       await agregarFavorito(id); 
       favoritosIds.add(id); 
       btn.classList.add('active'); 
       btn.innerHTML = '★'; 
       showToast('Agregado a favoritos');
+      if (modoHome) await cargarProductos(true);
     }
   }
 
   // ========== RENDER PRODUCTOS ==========
+  function mezclarArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  
   function filtrarProductos() {
     let filtered = [...productosGlobal];
+    
+    // Modo Home: muestra mis publicaciones + favoritas
+    if (modoHome && currentUser) {
+      const misPublicaciones = filtered.filter(p => p.usuario === currentUser.email);
+      const misFavoritos = filtered.filter(p => favoritosIds.has(p.id) && p.usuario !== currentUser.email);
+      filtered = [...misPublicaciones, ...misFavoritos];
+    }
+    
     if (currentCategory !== "all") filtered = filtered.filter(p => (p.descripcion?.split('|')[0]?.trim() || 'General') === currentCategory);
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(p => p.titulo.toLowerCase().includes(q) || p.usuario.toLowerCase().includes(q));
     }
-    filtered.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+    
+    // Mezclar aleatoriamente
+    filtered = mezclarArray([...filtered]);
+    productosFiltrados = filtered;
     return filtered;
   }
   
@@ -615,7 +732,7 @@
     const toShow = filtered.slice(0, visibleItems);
     const grid = document.getElementById("listingsGrid");
     if (toShow.length === 0) { 
-      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-store-slash" style="font-size:2rem; color:#94a3b8;"></i><p style="margin-top:8px;">No hay objetos publicados aún</p></div>`; 
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-store-slash" style="font-size:2rem; color:#94a3b8;"></i><p style="margin-top:8px;">${modoHome ? 'No tienes publicaciones ni favoritos aún' : 'No hay objetos publicados aún'}</p></div>`; 
       return; 
     }
     
@@ -626,6 +743,7 @@
       const esFavorito = favoritosIds.has(p.id);
       const fotosExtra = p.fotos_extra || [];
       const todasLasFotos = [p.url, ...fotosExtra.map(f => f.url)];
+      const esMiPublicacion = currentUser && p.usuario === currentUser.email;
       
       return `
         <div class="product-card" data-id="${p.id}" data-cat="${categoria}">
@@ -643,8 +761,8 @@
             <div class="title">${escapeHtml(p.titulo)}</div>
             <div class="usuario" onclick="event.stopPropagation(); verPerfilUsuario('${escapeHtml(p.usuario)}')"><i class="fas fa-user-circle"></i> ${escapeHtml(p.usuario)}</div>
             <div class="ubicacion"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(ubicacion)}</div>
-            ${p.usuario !== currentUser?.email ? `
-              <button class="intercambiar-btn" onclick="event.stopPropagation(); abrirChatConObjeto(${p.id}, '${escapeHtml(p.usuario)}', '${escapeHtml(p.titulo)}')">💬 Intercambiar</button>
+            ${!esMiPublicacion ? `
+              <button class="btn-chat" onclick="event.stopPropagation(); abrirChatConObjeto(${p.id}, '${escapeHtml(p.usuario)}', '${escapeHtml(p.titulo)}')"><i class="fas fa-comment-dots"></i> Chatear</button>
               <button class="reportar-btn" onclick="event.stopPropagation(); reportarObjetoPrompt(${p.id})">⚠️ Reportar</button>
             ` : '<span style="font-size:11px; color:#94a3b8; text-align:center; display:block; margin-top:8px;">(tu objeto)</span>'}
           </div>
@@ -671,9 +789,9 @@
     document.getElementById('fotoModal').style.display = 'flex'; 
   };
   
-  window.verPerfilUsuario = (email) => { showToast(`👤 Perfil de ${email} (próximamente)`); };
+  window.verPerfilUsuario = (email) => { showToast(`👤 Perfil de ${email}`); };
   
-  window.abrirChatConObjeto = (id, usuario, titulo) => { showToast(`💬 Chat con ${usuario} sobre "${titulo}" (próximamente)`); };
+  window.abrirChatConObjeto = (id, usuario, titulo) => { showToast(`💬 Chat con ${usuario} sobre "${titulo}"`); };
   
   window.reportarObjetoPrompt = async (id) => {
     const motivo = prompt('Motivo del reporte:');
@@ -705,44 +823,73 @@
   document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
   document.getElementById('fileInput').onchange = (e) => {
     const archivos = Array.from(e.target.files);
-    selectedFiles = [...selectedFiles, ...archivos].slice(0, 5);
+    const nuevos = [...selectedFiles, ...archivos].slice(0, 5);
+    if (nuevos.length < selectedFiles.length + archivos.length) showToast("Máximo 5 fotos", true);
+    selectedFiles = nuevos;
     actualizarPreviews();
   };
   
   document.getElementById('openUploadPanelBtn').onclick = () => {
     if (!currentUser) { showToast('Inicia sesión primero', true); return; }
     document.getElementById('uploadPanelOverlay').classList.add('active');
+    obtenerUbicacionActual(); // Obtener ubicación al abrir el panel
   };
   
-  document.getElementById('cancelUploadBtn').onclick = () => document.getElementById('uploadPanelOverlay').classList.remove('active');
+  document.getElementById('cancelUploadBtn').onclick = () => {
+    document.getElementById('uploadPanelOverlay').classList.remove('active');
+    isPublishing = false;
+    document.getElementById('publishArticleBtn').disabled = false;
+  };
   
   document.getElementById('publishArticleBtn').onclick = async () => {
+    if (isPublishing) { showToast('Ya se está publicando, espera...', true); return; }
+    
     const titulo = document.getElementById('uploadTitle').value.trim();
     const categoria = document.getElementById('uploadCategory').value;
     const desc = document.getElementById('uploadDesc').value.trim();
-    const ubicacion = document.getElementById('uploadLocation').value.trim();
+    const ubicacion = ubicacionActual.direccion || document.getElementById('uploadLocation')?.value || '';
+    
     if (!titulo || !desc || selectedFiles.length === 0) { 
       showToast('❌ Completa título, descripción y al menos una foto', true); 
       return; 
     }
+    
+    isPublishing = true;
+    const publishBtn = document.getElementById('publishArticleBtn');
+    const uploadIndicator = document.getElementById('uploadingIndicator');
+    const originalText = publishBtn.innerHTML;
+    publishBtn.disabled = true;
+    publishBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Publicando...';
+    uploadIndicator.style.display = 'block';
+    
     try {
-      await publicarObjeto(titulo, desc, categoria, ubicacion, selectedFiles);
+      await publicarObjeto(titulo, desc, categoria, ubicacion, ubicacionActual.lat, ubicacionActual.lng, selectedFiles);
       showToast('✅ Objeto publicado correctamente');
       document.getElementById('uploadPanelOverlay').classList.remove('active');
       document.getElementById('uploadTitle').value = '';
       document.getElementById('uploadDesc').value = '';
-      document.getElementById('uploadLocation').value = '';
       selectedFiles = [];
       actualizarPreviews();
       await cargarProductos();
-    } catch(e) { showToast('❌ Error: ' + e.message, true); }
+    } catch(e) { 
+      showToast('❌ Error: ' + e.message, true); 
+    } finally {
+      isPublishing = false;
+      publishBtn.disabled = false;
+      publishBtn.innerHTML = originalText;
+      uploadIndicator.style.display = 'none';
+    }
   };
 
   // ========== CARGAR PRODUCTOS ==========
-  async function cargarProductos() {
+  async function cargarProductos(mantenerModo = false) {
     try {
       const objetos = await obtenerObjetos();
       productosGlobal = objetos;
+      if (!mantenerModo) modoHome = false;
+      const favs = await obtenerFavoritos();
+      favoritosIds = new Set(favs.map(f => f.id));
+      visibleItems = 8;
       renderProductos();
     } catch(e) { showToast('Error al cargar productos', true); }
   }
@@ -765,7 +912,25 @@
     });
   }
   
-  document.getElementById("searchInput").addEventListener('input', (e) => { searchQuery = e.target.value; visibleItems = 8; renderProductos(); });
+  // Botón Home (Hogar)
+  document.getElementById("homeBtn").addEventListener('click', async () => {
+    modoHome = true;
+    currentCategory = "all";
+    searchQuery = "";
+    document.getElementById('searchInput').value = "";
+    document.querySelectorAll('.cat-item').forEach(c => c.classList.remove('active'));
+    document.querySelector('.cat-item[data-cat="all"]')?.classList.add('active');
+    visibleItems = 8;
+    await cargarProductos(true);
+    showToast("🏠 Mostrando tus publicaciones y favoritos");
+  });
+  
+  document.getElementById("searchInput").addEventListener('input', (e) => { 
+    searchQuery = e.target.value; 
+    modoHome = false; 
+    visibleItems = 8; 
+    renderProductos(); 
+  });
   document.getElementById("loadMoreBtn").addEventListener('click', loadMore);
   document.getElementById("userProfileBadge").addEventListener("click", () => { showToast(`👤 ${currentUser?.name || currentUser?.email}`); });
   
@@ -795,8 +960,6 @@
         avatarDiv.innerHTML = `<i class="fas fa-user"></i>`;
       }
       document.getElementById('headerUserName').innerText = currentUser.name?.split(' ')[0] || 'Perfil';
-      const favs = await obtenerFavoritos();
-      favoritosIds = new Set(favs.map(f => f.id));
       await cargarProductos();
     } else {
       document.getElementById('loginScreen').classList.remove('hidden');
