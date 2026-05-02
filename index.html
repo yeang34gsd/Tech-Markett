@@ -130,10 +130,53 @@
     }
     .header-actions { display: flex; align-items: center; gap: 8px; }
     
-    /* Botón de perfil con menú */
-    .profile-menu-container {
+    /* Botón de categorías */
+    .categories-btn-container {
       position: relative;
     }
+    .categories-btn {
+      background: #f1f5f9;
+      border: none;
+      border-radius: 40px;
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #1e293b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .categories-dropdown {
+      position: absolute;
+      top: 45px;
+      left: 0;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      width: 200px;
+      overflow: hidden;
+      z-index: 100;
+      display: none;
+    }
+    .categories-dropdown.show { display: block; }
+    .cat-dropdown-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 0.85rem;
+      color: #1e293b;
+    }
+    .cat-dropdown-item:hover { background: #f1f5f9; }
+    .cat-dropdown-item i { width: 20px; color: #64748b; }
+    .cat-dropdown-item.active { background: #1b74e4; color: white; }
+    .cat-dropdown-item.active i { color: white; }
+    
+    /* Menú de perfil */
+    .profile-menu-container { position: relative; }
     .profile-badge {
       background: #eef2ff;
       border-radius: 40px;
@@ -182,11 +225,7 @@
     }
     .dropdown-item:hover { background: #f1f5f9; }
     .dropdown-item i { width: 20px; color: #64748b; }
-    .dropdown-divider {
-      height: 1px;
-      background: #e2e8f0;
-      margin: 4px 0;
-    }
+    .dropdown-divider { height: 1px; background: #e2e8f0; margin: 4px 0; }
     
     .sell-btn {
       background: #1b74e4;
@@ -201,53 +240,12 @@
       cursor: pointer;
     }
     
-    /* Navegación principal - solo "Todos" */
-    .nav-main {
-      background: white;
-      padding: 0.5rem 0.9rem;
-      border-bottom: 1px solid #eef2f6;
-    }
-    .nav-btn {
-      background: #1b74e4;
-      color: white;
-      border: none;
-      padding: 0.5rem 1.2rem;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .categories-nav {
-      background: white;
-      overflow-x: auto;
-      padding: 0.6rem 0;
-      margin-bottom: 12px;
-      white-space: nowrap;
-      display: flex;
-      gap: 8px;
-      padding-left: 1rem;
-    }
-    .cat-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0.4rem 1rem;
-      font-weight: 500;
-      color: #5b6c8f;
-      border-radius: 40px;
-      background: #f1f5f9;
-      cursor: pointer;
-    }
-    .cat-item.active { background: #1b74e4; color: white; }
     .listings-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
       gap: 0.9rem;
       padding: 0 0.9rem 1rem;
+      margin-top: 1rem;
     }
     .product-card {
       background: white;
@@ -275,6 +273,22 @@
       font-size: 1.1rem;
     }
     .favorite-star.active { color: #eab308; }
+    .delete-btn {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(220,38,38,0.9);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      z-index: 2;
+      font-size: 0.8rem;
+    }
     .card-img {
       aspect-ratio: 1/1;
       background: #f1f5f9;
@@ -542,7 +556,22 @@
       <div class="logo-area"><i class="fas fa-exchange-alt market-icon"></i><span class="logo-text">Intercambia</span></div>
       <div class="search-bar"><div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Buscar objetos..."></div></div>
       <div class="header-actions">
-        <!-- Menú de perfil con dropdown -->
+        <!-- Botón de categorías desplegable -->
+        <div class="categories-btn-container">
+          <button id="categoriesBtn" class="categories-btn"><i class="fas fa-filter"></i> Categorías <i class="fas fa-chevron-down"></i></button>
+          <div id="categoriesDropdown" class="categories-dropdown">
+            <div class="cat-dropdown-item active" data-cat="all"><i class="fas fa-store"></i> Todos</div>
+            <div class="cat-dropdown-item" data-cat="Electrónica"><i class="fas fa-laptop"></i> Electrónica</div>
+            <div class="cat-dropdown-item" data-cat="Ropa"><i class="fas fa-tshirt"></i> Ropa</div>
+            <div class="cat-dropdown-item" data-cat="Libros"><i class="fas fa-book"></i> Libros</div>
+            <div class="cat-dropdown-item" data-cat="Mascotas"><i class="fas fa-paw"></i> Mascotas</div>
+            <div class="cat-dropdown-item" data-cat="Hogar"><i class="fas fa-home"></i> Hogar</div>
+            <div class="cat-dropdown-item" data-cat="Deportes"><i class="fas fa-futbol"></i> Deportes</div>
+            <div class="cat-dropdown-item" data-cat="Otros"><i class="fas fa-tag"></i> Otros</div>
+          </div>
+        </div>
+        
+        <!-- Menú de perfil -->
         <div class="profile-menu-container">
           <div id="userProfileBadge" class="profile-badge">
             <div id="headerAvatar" class="mini-avatar"><i class="fas fa-user"></i></div>
@@ -568,18 +597,11 @@
             </div>
           </div>
         </div>
+        
         <div id="openUploadPanelBtn" class="sell-btn"><i class="fas fa-plus-circle"></i> <span>Publicar</span></div>
       </div>
     </div>
   </header>
-
-  <!-- Navegación principal - solo botón "Todos" -->
-  <div class="nav-main">
-    <button id="allItemsBtn" class="nav-btn"><i class="fas fa-store"></i> Todos</button>
-  </div>
-
-  <!-- Filtro de categorías (visible solo en "Todos") -->
-  <div class="categories-nav" id="categoriesNav"></div>
 
   <!-- Grid de resultados -->
   <div id="feedGrid" class="listings-grid"></div>
@@ -698,6 +720,7 @@
   async function obtenerFavoritos() { try { return await apiFetch('/favoritos'); } catch(e) { return []; } }
   async function agregarFavorito(id) { return await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }); }
   async function quitarFavorito(id) { return await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); }
+  async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
   async function enviarMensaje(objetoId, receptor, mensaje) { return await apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) }); }
   async function obtenerMensajes(objetoId, otroUsuario) { return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`); }
   async function obtenerConversaciones() { return await apiFetch('/mis-conversaciones'); }
@@ -731,7 +754,7 @@
   // ========== RENDER ==========
   function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
   
-  function renderProductosGrid(productos) {
+  function renderProductosGrid(productos, showDelete = false) {
     const grid = document.getElementById("feedGrid");
     if (!productos || productos.length === 0) { 
       grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-store-slash" style="font-size:2rem; color:#94a3b8;"></i><p style="margin-top:8px;">No hay objetos para mostrar</p></div>`; 
@@ -744,10 +767,12 @@
       const esFavorito = favoritosIds.has(p.id);
       const fotosExtra = p.fotos_extra || [];
       const todasLasFotos = [p.url, ...fotosExtra.map(f => f.url)];
+      const esMiObjeto = currentUser && p.usuario === currentUser.email;
       
       return `
         <div class="product-card" data-id="${p.id}">
           <div class="favorite-star ${esFavorito ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorito(${p.id}, this)">${esFavorito ? '★' : '☆'}</div>
+          ${showDelete && esMiObjeto ? `<div class="delete-btn" onclick="event.stopPropagation(); eliminarObjetoPrompt(${p.id})"><i class="fas fa-trash-alt"></i></div>` : ''}
           <div class="card-img">
             <img class="imagen-principal" src="${p.url}" onerror="this.src='https://placehold.co/300x300?text=Sin+imagen'" onclick="mostrarFotoAmpliada('${p.url}')">
             ${todasLasFotos.length > 1 ? `
@@ -786,6 +811,17 @@
   
   window.verPerfilUsuario = (email) => { showToast(`👤 Perfil de ${email}`); };
   
+  window.eliminarObjetoPrompt = async (id) => {
+    if (confirm('¿Eliminar esta publicación? No se puede deshacer.')) {
+      try {
+        await eliminarObjeto(id);
+        showToast('✅ Publicación eliminada');
+        if (currentView === 'misobjetos') await renderMisObjetos();
+        if (currentView === 'todos') renderTodos();
+      } catch(e) { showToast('❌ Error al eliminar', true); }
+    }
+  };
+  
   window.reportarObjeto = async (id) => {
     const motivo = prompt('Motivo del reporte:');
     if (motivo && motivo.trim()) { 
@@ -803,7 +839,7 @@
     }
     filtered.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
     const toShow = filtered.slice(0, visibleItems);
-    renderProductosGrid(toShow);
+    renderProductosGrid(toShow, false);
     const loadBtn = document.getElementById("loadMoreBtn");
     if (filtered.length <= visibleItems) loadBtn.style.display = "none";
     else loadBtn.style.display = "inline-block";
@@ -812,7 +848,7 @@
   async function renderMisObjetos() {
     try {
       misProductos = await obtenerMisObjetos();
-      renderProductosGrid(misProductos);
+      renderProductosGrid(misProductos, true);
       document.getElementById("loadMoreBtn").style.display = "none";
     } catch(e) { showToast('Error cargando tus objetos', true); }
   }
@@ -820,7 +856,7 @@
   async function renderFavoritos() {
     try {
       const favoritos = await obtenerFavoritos();
-      renderProductosGrid(favoritos);
+      renderProductosGrid(favoritos, false);
       document.getElementById("loadMoreBtn").style.display = "none";
     } catch(e) { showToast('Error cargando favoritos', true); }
   }
@@ -849,11 +885,6 @@
   function switchToView(view) {
     currentView = view;
     visibleItems = 8;
-    
-    // Mostrar/ocultar categorías solo en vista "todos"
-    const categoriesNav = document.getElementById('categoriesNav');
-    if (view === 'todos') categoriesNav.style.display = 'flex';
-    else categoriesNav.style.display = 'none';
     
     if (view === 'todos') renderTodos();
     else if (view === 'misobjetos') renderMisObjetos();
@@ -983,39 +1014,49 @@
     favoritosIds = new Set(favs.map(f => f.id));
   }
 
-  // ========== FILTROS ==========
+  // ========== CATEGORÍAS ==========
   function setupCategorias() {
-    const cats = ["all", "Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes", "Otros"];
-    const icons = { all:"fa-store", Electrónica:"fa-laptop", Ropa:"fa-tshirt", Libros:"fa-book", Mascotas:"fa-paw", Hogar:"fa-home", Deportes:"fa-futbol", Otros:"fa-tag" };
-    const names = { all:"Todos", Electrónica:"Electrónica", Ropa:"Ropa", Libros:"Libros", Mascotas:"Mascotas", Hogar:"Hogar", Deportes:"Deportes", Otros:"Otros" };
-    const container = document.getElementById("categoriesNav");
-    container.innerHTML = cats.map(cat => `<div class="cat-item ${cat === 'all' ? 'active' : ''}" data-cat="${cat}"><i class="fas ${icons[cat]}"></i> ${names[cat]}</div>`).join('');
-    document.querySelectorAll('.cat-item').forEach(c => {
-      c.addEventListener('click', () => {
-        document.querySelectorAll('.cat-item').forEach(cat => cat.classList.remove('active'));
-        c.classList.add('active');
-        currentCategory = c.getAttribute('data-cat');
+    const categories = ["all", "Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes", "Otros"];
+    const catNames = { all:"Todos", Electronica:"Electrónica", Ropa:"Ropa", Libros:"Libros", Mascotas:"Mascotas", Hogar:"Hogar", Deportes:"Deportes", Otros:"Otros" };
+    
+    document.querySelectorAll('.cat-dropdown-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const cat = item.getAttribute('data-cat');
+        currentCategory = cat;
         visibleItems = 8;
+        
+        document.querySelectorAll('.cat-dropdown-item').forEach(c => c.classList.remove('active'));
+        item.classList.add('active');
+        
+        categoriesDropdown.classList.remove('show');
         renderTodos();
       });
     });
   }
   
+  // Cerrar dropdowns al hacer clic fuera
+  document.addEventListener('click', () => {
+    categoriesDropdown.classList.remove('show');
+    profileDropdown.classList.remove('show');
+  });
+  
+  const categoriesBtn = document.getElementById('categoriesBtn');
+  const categoriesDropdown = document.getElementById('categoriesDropdown');
+  categoriesBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    categoriesDropdown.classList.toggle('show');
+  });
+  
   document.getElementById("searchInput").addEventListener('input', (e) => { searchQuery = e.target.value; visibleItems = 8; renderTodos(); });
   document.getElementById("loadMoreBtn").addEventListener('click', loadMore);
-  document.getElementById("allItemsBtn").addEventListener('click', () => switchToView('todos'));
   
-  // Menú desplegable de perfil
+  // Menú de perfil
   const profileBadge = document.getElementById('userProfileBadge');
   const profileDropdown = document.getElementById('profileDropdown');
   
   profileBadge.addEventListener('click', (e) => {
     e.stopPropagation();
     profileDropdown.classList.toggle('show');
-  });
-  
-  document.addEventListener('click', () => {
-    profileDropdown.classList.remove('show');
   });
   
   document.querySelectorAll('.dropdown-item').forEach(item => {
