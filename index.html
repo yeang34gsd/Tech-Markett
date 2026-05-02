@@ -129,6 +129,11 @@
       outline: none;
     }
     .header-actions { display: flex; align-items: center; gap: 8px; }
+    
+    /* Botón de perfil con menú */
+    .profile-menu-container {
+      position: relative;
+    }
     .profile-badge {
       background: #eef2ff;
       border-radius: 40px;
@@ -150,6 +155,39 @@
       overflow: hidden;
     }
     .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .profile-dropdown {
+      position: absolute;
+      top: 45px;
+      right: 0;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      width: 200px;
+      overflow: hidden;
+      z-index: 100;
+      display: none;
+    }
+    .profile-dropdown.show { display: block; }
+    .dropdown-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+    .dropdown-item:hover { background: #f1f5f9; }
+    .dropdown-item i { width: 20px; color: #64748b; }
+    .dropdown-divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 4px 0;
+    }
+    
     .sell-btn {
       background: #1b74e4;
       border-radius: 30px;
@@ -162,25 +200,27 @@
       font-weight: 600;
       cursor: pointer;
     }
-    .nav-tabs {
+    
+    /* Navegación principal - solo "Todos" */
+    .nav-main {
       background: white;
-      display: flex;
       padding: 0.5rem 0.9rem;
-      gap: 1rem;
       border-bottom: 1px solid #eef2f6;
     }
-    .nav-tab {
-      padding: 0.5rem 1rem;
-      font-weight: 600;
-      color: #64748b;
-      cursor: pointer;
-      border-radius: 40px;
-      transition: 0.2s;
-    }
-    .nav-tab.active {
+    .nav-btn {
       background: #1b74e4;
       color: white;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
+    
     .categories-nav {
       background: white;
       overflow-x: auto;
@@ -502,27 +542,46 @@
       <div class="logo-area"><i class="fas fa-exchange-alt market-icon"></i><span class="logo-text">Intercambia</span></div>
       <div class="search-bar"><div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Buscar objetos..."></div></div>
       <div class="header-actions">
-        <div id="userProfileBadge" class="profile-badge">
-          <div id="headerAvatar" class="mini-avatar"><i class="fas fa-user"></i></div>
-          <span id="headerUserName" style="font-size:0.75rem;">Perfil</span>
+        <!-- Menú de perfil con dropdown -->
+        <div class="profile-menu-container">
+          <div id="userProfileBadge" class="profile-badge">
+            <div id="headerAvatar" class="mini-avatar"><i class="fas fa-user"></i></div>
+            <span id="headerUserName" style="font-size:0.75rem;">Perfil</span>
+            <i class="fas fa-chevron-down" style="font-size:0.7rem; color:#64748b;"></i>
+          </div>
+          <div id="profileDropdown" class="profile-dropdown">
+            <div class="dropdown-item" data-action="misobjetos">
+              <i class="fas fa-box"></i> Mis objetos
+            </div>
+            <div class="dropdown-item" data-action="favoritos">
+              <i class="fas fa-star"></i> Favoritos
+            </div>
+            <div class="dropdown-item" data-action="chats">
+              <i class="fas fa-comment-dots"></i> Chats
+            </div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" data-action="perfil">
+              <i class="fas fa-user-circle"></i> Mi perfil
+            </div>
+            <div class="dropdown-item" data-action="logout">
+              <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </div>
+          </div>
         </div>
         <div id="openUploadPanelBtn" class="sell-btn"><i class="fas fa-plus-circle"></i> <span>Publicar</span></div>
       </div>
     </div>
   </header>
 
-  <!-- Navegación principal -->
-  <div class="nav-tabs">
-    <div class="nav-tab active" data-tab="feed">🏠 Inicio</div>
-    <div class="nav-tab" data-tab="misobjetos">📦 Mis objetos</div>
-    <div class="nav-tab" data-tab="favoritos">⭐ Favoritos</div>
-    <div class="nav-tab" data-tab="chats">💬 Chats</div>
+  <!-- Navegación principal - solo botón "Todos" -->
+  <div class="nav-main">
+    <button id="allItemsBtn" class="nav-btn"><i class="fas fa-store"></i> Todos</button>
   </div>
 
-  <!-- Filtro de categorías (solo visible en inicio) -->
+  <!-- Filtro de categorías (visible solo en "Todos") -->
   <div class="categories-nav" id="categoriesNav"></div>
 
-  <!-- Feed -->
+  <!-- Grid de resultados -->
   <div id="feedGrid" class="listings-grid"></div>
   <div class="load-more"><button id="loadMoreBtn" class="load-more-btn">Cargar más</button></div>
 </div>
@@ -546,9 +605,12 @@
     <h3><i class="fas fa-cloud-upload-alt"></i> Publicar objeto</h3>
     <input type="text" id="uploadTitle" placeholder="Título *">
     <select id="uploadCategory">
-      <option value="Electrónica">📱 Electrónica</option><option value="Ropa">👕 Ropa</option>
-      <option value="Libros">📚 Libros</option><option value="Mascotas">🐾 Mascotas</option>
-      <option value="Hogar">🏠 Hogar</option><option value="Deportes">⚽ Deportes</option>
+      <option value="Electrónica">📱 Electrónica</option>
+      <option value="Ropa">👕 Ropa</option>
+      <option value="Libros">📚 Libros</option>
+      <option value="Mascotas">🐾 Mascotas</option>
+      <option value="Hogar">🏠 Hogar</option>
+      <option value="Deportes">⚽ Deportes</option>
       <option value="Otros">🎁 Otros</option>
     </select>
     <textarea id="uploadDesc" rows="2" placeholder="Descripción (estado, qué buscas a cambio...) *"></textarea>
@@ -582,14 +644,13 @@
   let favoritosIds = new Set();
   let todosProductos = [];
   let misProductos = [];
-  let currentTab = "feed";
+  let currentView = "todos"; // todos, misobjetos, favoritos, chats
   let currentCategory = "all";
   let searchQuery = "";
   let visibleItems = 8;
   let selectedFiles = [];
   
   // Chat
-  let chatOpen = false;
   let chatObjetoId = null;
   let chatConUsuario = null;
   let mensajesPolling = null;
@@ -663,14 +724,14 @@
       if (btn) btn.classList.add('active');
       showToast('Agregado a favoritos');
     }
-    if (currentTab === 'favoritos') renderFavoritos();
-    if (currentTab === 'feed') renderFeed();
+    if (currentView === 'favoritos') await renderFavoritos();
+    if (currentView === 'todos') renderTodos();
   }
 
   // ========== RENDER ==========
   function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
   
-  function renderProductosGrid(productos, esFeed = true) {
+  function renderProductosGrid(productos) {
     const grid = document.getElementById("feedGrid");
     if (!productos || productos.length === 0) { 
       grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-store-slash" style="font-size:2rem; color:#94a3b8;"></i><p style="margin-top:8px;">No hay objetos para mostrar</p></div>`; 
@@ -679,7 +740,6 @@
     
     grid.innerHTML = productos.map(p => {
       const categoria = p.descripcion?.split('|')[0]?.trim() || 'General';
-      const descripcion = p.descripcion?.split('|')[1]?.trim() || '';
       const ubicacion = p.direccion || (p.descripcion?.split('|')[2]?.trim()) || 'Sin ubicación';
       const esFavorito = favoritosIds.has(p.id);
       const fotosExtra = p.fotos_extra || [];
@@ -734,7 +794,7 @@
     }
   };
   
-  function renderFeed() {
+  function renderTodos() {
     let filtered = [...todosProductos];
     if (currentCategory !== "all") filtered = filtered.filter(p => (p.descripcion?.split('|')[0]?.trim() || 'General') === currentCategory);
     if (searchQuery.trim()) {
@@ -743,7 +803,7 @@
     }
     filtered.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
     const toShow = filtered.slice(0, visibleItems);
-    renderProductosGrid(toShow, true);
+    renderProductosGrid(toShow);
     const loadBtn = document.getElementById("loadMoreBtn");
     if (filtered.length <= visibleItems) loadBtn.style.display = "none";
     else loadBtn.style.display = "inline-block";
@@ -752,7 +812,7 @@
   async function renderMisObjetos() {
     try {
       misProductos = await obtenerMisObjetos();
-      renderProductosGrid(misProductos, false);
+      renderProductosGrid(misProductos);
       document.getElementById("loadMoreBtn").style.display = "none";
     } catch(e) { showToast('Error cargando tus objetos', true); }
   }
@@ -760,7 +820,7 @@
   async function renderFavoritos() {
     try {
       const favoritos = await obtenerFavoritos();
-      renderProductosGrid(favoritos, false);
+      renderProductosGrid(favoritos);
       document.getElementById("loadMoreBtn").style.display = "none";
     } catch(e) { showToast('Error cargando favoritos', true); }
   }
@@ -786,23 +846,22 @@
     } catch(e) { console.error(e); }
   }
   
-  function switchTab(tab) {
-    currentTab = tab;
+  function switchToView(view) {
+    currentView = view;
     visibleItems = 8;
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`.nav-tab[data-tab="${tab}"]`).classList.add('active');
     
+    // Mostrar/ocultar categorías solo en vista "todos"
     const categoriesNav = document.getElementById('categoriesNav');
-    if (tab === 'feed') categoriesNav.style.display = 'flex';
+    if (view === 'todos') categoriesNav.style.display = 'flex';
     else categoriesNav.style.display = 'none';
     
-    if (tab === 'feed') renderFeed();
-    else if (tab === 'misobjetos') renderMisObjetos();
-    else if (tab === 'favoritos') renderFavoritos();
-    else if (tab === 'chats') renderConversaciones();
+    if (view === 'todos') renderTodos();
+    else if (view === 'misobjetos') renderMisObjetos();
+    else if (view === 'favoritos') renderFavoritos();
+    else if (view === 'chats') renderConversaciones();
   }
   
-  function loadMore() { visibleItems += 8; renderFeed(); }
+  function loadMore() { visibleItems += 8; if (currentView === 'todos') renderTodos(); }
 
   // ========== CHAT ==========
   async function cargarMensajes() {
@@ -906,7 +965,7 @@
       selectedFiles = [];
       actualizarPreviews();
       await cargarProductos();
-      if (currentTab === 'misobjetos') renderMisObjetos();
+      if (currentView === 'misobjetos') await renderMisObjetos();
     } catch(e) { showToast('❌ Error: ' + e.message, true); }
   };
 
@@ -915,7 +974,7 @@
     try {
       const objetos = await obtenerObjetos();
       todosProductos = objetos;
-      renderFeed();
+      renderTodos();
     } catch(e) { showToast('Error al cargar productos', true); }
   }
   
@@ -937,17 +996,39 @@
         c.classList.add('active');
         currentCategory = c.getAttribute('data-cat');
         visibleItems = 8;
-        renderFeed();
+        renderTodos();
       });
     });
   }
   
-  document.getElementById("searchInput").addEventListener('input', (e) => { searchQuery = e.target.value; visibleItems = 8; renderFeed(); });
+  document.getElementById("searchInput").addEventListener('input', (e) => { searchQuery = e.target.value; visibleItems = 8; renderTodos(); });
   document.getElementById("loadMoreBtn").addEventListener('click', loadMore);
-  document.getElementById("userProfileBadge").addEventListener("click", () => { showToast(`👤 ${currentUser?.name || currentUser?.email}`); });
+  document.getElementById("allItemsBtn").addEventListener('click', () => switchToView('todos'));
   
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.addEventListener('click', () => switchTab(tab.getAttribute('data-tab')));
+  // Menú desplegable de perfil
+  const profileBadge = document.getElementById('userProfileBadge');
+  const profileDropdown = document.getElementById('profileDropdown');
+  
+  profileBadge.addEventListener('click', (e) => {
+    e.stopPropagation();
+    profileDropdown.classList.toggle('show');
+  });
+  
+  document.addEventListener('click', () => {
+    profileDropdown.classList.remove('show');
+  });
+  
+  document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const action = item.getAttribute('data-action');
+      if (action === 'misobjetos') switchToView('misobjetos');
+      else if (action === 'favoritos') switchToView('favoritos');
+      else if (action === 'chats') switchToView('chats');
+      else if (action === 'perfil') showToast(`👤 ${currentUser?.name || currentUser?.email}`);
+      else if (action === 'logout') logout();
+      profileDropdown.classList.remove('show');
+    });
   });
 
   // ========== INICIALIZACIÓN ==========
