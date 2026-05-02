@@ -6,8 +6,6 @@
   <title>Intercambia – Trueque de objetos</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     :root {
       --bg: #0f0f0f;
@@ -18,15 +16,15 @@
       --border-hover: rgba(255,255,255,0.15);
       --accent: #c8f135;
       --accent-dark: #a8d120;
-      --accent-muted: rgba(200,241,53,0.12);
+      --accent-muted: rgba(200,241,53,0.1);
       --text: #f0f0f0;
       --text-muted: #888;
-      --text-dim: #555;
+      --text-dim: #444;
       --red: #ff4444;
-      --blue: #4488ff;
+      --gold: #fbbf24;
       --radius-sm: 10px;
       --radius-md: 16px;
-      --radius-lg: 24px;
+      --radius-lg: 22px;
       --radius-xl: 32px;
     }
 
@@ -39,11 +37,15 @@
       min-height: 100vh;
     }
 
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 4px; }
+
     /* ===== TOAST ===== */
     .toast {
       position: fixed;
-      bottom: 28px;
-      left: 50%;
+      bottom: 28px; left: 50%;
       transform: translateX(-50%) translateY(20px);
       background: var(--surface3);
       color: var(--text);
@@ -56,82 +58,147 @@
       opacity: 0;
       pointer-events: none;
       transition: all 0.25s cubic-bezier(.4,0,.2,1);
+      display: flex; align-items: center; gap: 8px;
       white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      backdrop-filter: blur(12px);
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 
-    /* ===== LOGIN ===== */
-    .login-screen {
+    /* ===== SCREENS ===== */
+    .screen {
       position: fixed; inset: 0;
-      background: var(--bg);
       z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.4s, visibility 0.4s;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.35s, visibility 0.35s;
     }
-    .login-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
+    /* ===== LOGIN ===== */
+    #loginScreen { background: var(--bg); }
     .login-card {
-      width: 90%;
-      max-width: 400px;
+      width: 90%; max-width: 400px;
       text-align: center;
       padding: 3rem 2rem;
     }
-
-    .login-logo-wrap {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .login-logo {
+      display: inline-flex; align-items: center; justify-content: center;
       width: 72px; height: 72px;
       background: var(--accent);
       border-radius: 22px;
       margin-bottom: 1.8rem;
       transform: rotate(-6deg);
     }
-    .login-logo-wrap i { font-size: 2rem; color: #0f0f0f; }
-
+    .login-logo i { font-size: 2rem; color: #0f0f0f; }
     .login-card h1 {
       font-family: 'Syne', sans-serif;
-      font-size: 2.8rem;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: -1.5px;
-      line-height: 1;
+      font-size: 2.8rem; font-weight: 800;
+      letter-spacing: -1.5px; line-height: 1;
       margin-bottom: 0.6rem;
     }
     .login-card h1 span { color: var(--accent); }
-    .login-card p {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-bottom: 2.5rem;
-      line-height: 1.6;
-    }
-
+    .login-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2.5rem; line-height: 1.6; }
     .btn-google {
       background: var(--surface2);
       border: 1px solid var(--border-hover);
       border-radius: 100px;
-      padding: 1rem 1.5rem;
-      width: 100%;
+      padding: 1rem 1.5rem; width: 100%;
       font-family: 'DM Sans', sans-serif;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
+      font-weight: 600; font-size: 0.9rem; color: var(--text);
+      display: flex; align-items: center; justify-content: center; gap: 12px;
       cursor: pointer;
       transition: background 0.2s, border-color 0.2s, transform 0.15s;
     }
     .btn-google:hover { background: var(--surface3); border-color: var(--accent); transform: translateY(-1px); }
-    .btn-google img { width: 20px; height: 20px; }
+
+    /* ===== COMPLETAR PERFIL ===== */
+    #perfilScreen { background: rgba(0,0,0,0.92); backdrop-filter: blur(20px); z-index: 1001; }
+    .perfil-card {
+      background: var(--surface);
+      border: 1px solid var(--border-hover);
+      border-radius: var(--radius-xl);
+      width: 92%; max-width: 460px;
+      padding: 2rem 1.8rem;
+      max-height: 92vh; overflow-y: auto;
+    }
+    .perfil-card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem; font-weight: 800;
+      letter-spacing: -0.5px; margin-bottom: 0.3rem;
+    }
+    .perfil-card h2 span { color: var(--accent); }
+    .perfil-card > p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+    .avatar-upload-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.8rem; margin-bottom: 1.5rem;
+    }
+    .avatar-circle {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 2px dashed var(--border-hover);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; cursor: pointer;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+    .avatar-circle:hover { border-color: var(--accent); }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-circle i { font-size: 2rem; color: var(--text-dim); }
+    .avatar-circle .avatar-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+      font-size: 1.2rem; color: var(--accent);
+    }
+    .avatar-circle:hover .avatar-overlay { opacity: 1; }
+    .avatar-hint { font-size: 0.75rem; color: var(--text-muted); }
+
+    .field-group { margin-bottom: 0.9rem; }
+    .field-group label {
+      display: block; font-size: 0.75rem; font-weight: 600;
+      color: var(--text-muted); letter-spacing: 0.5px;
+      text-transform: uppercase; margin-bottom: 5px;
+    }
+    .field-input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; color: var(--text);
+      outline: none; transition: border-color 0.2s;
+    }
+    .field-input:focus { border-color: var(--accent); }
+    .field-input::placeholder { color: var(--text-dim); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+    .chars-left { font-size: 0.68rem; color: var(--text-dim); text-align: right; margin-top: 3px; }
+
+    .btn-primary {
+      background: var(--accent); color: #0f0f0f;
+      border: none; border-radius: 100px;
+      padding: 0.9rem; width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; transition: background 0.2s, transform 0.15s;
+      margin-top: 0.5rem;
+    }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: var(--surface2); color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 100px; padding: 0.9rem; width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; transition: background 0.2s;
+      margin-top: 0.5rem;
+    }
+    .btn-secondary:hover { background: var(--surface3); color: var(--text); }
 
     /* ===== APP ===== */
     .app-container { opacity: 0; visibility: hidden; transition: opacity 0.3s; }
@@ -139,105 +206,68 @@
 
     /* ===== HEADER ===== */
     .market-header {
-      background: rgba(15,15,15,0.92);
+      background: rgba(15,15,15,0.94);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 90;
-      padding: 0.85rem 1.2rem;
+      position: sticky; top: 0; z-index: 90;
+      padding: 0.8rem 1.1rem;
     }
-
     .header-row1 {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 0.8rem;
+      display: flex; align-items: center; gap: 0.8rem;
+      margin-bottom: 0.75rem;
     }
-
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
+    .logo-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .logo-icon {
-      width: 34px; height: 34px;
-      background: var(--accent);
-      border-radius: 10px;
+      width: 32px; height: 32px;
+      background: var(--accent); border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
       transform: rotate(-6deg);
     }
-    .logo-icon i { font-size: 0.9rem; color: #0f0f0f; }
+    .logo-icon i { font-size: 0.85rem; color: #0f0f0f; }
     .logo-text {
       font-family: 'Syne', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: -0.5px;
+      font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px;
     }
-
     .search-bar { flex: 1; }
     .search-wrapper {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 100px;
-      padding: 0.5rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
+      padding: 0.48rem 1rem;
+      display: flex; align-items: center; gap: 0.6rem;
       transition: border-color 0.2s;
     }
     .search-wrapper:focus-within { border-color: var(--accent); }
-    .search-wrapper i { color: var(--text-muted); font-size: 0.85rem; }
+    .search-wrapper i { color: var(--text-muted); font-size: 0.8rem; }
     .search-wrapper input {
-      background: transparent;
-      border: none;
-      width: 100%;
-      font-size: 0.85rem;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text);
-      outline: none;
+      background: transparent; border: none; width: 100%;
+      font-size: 0.84rem; font-family: 'DM Sans', sans-serif;
+      color: var(--text); outline: none;
     }
     .search-wrapper input::placeholder { color: var(--text-dim); }
 
-    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; align-items: center; gap: 7px; }
 
-    /* Perfil dropdown */
-    .profile-menu-container { position: relative; }
-    .profile-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 100px;
-      transition: background 0.2s;
-    }
-    .profile-badge:hover { background: var(--surface2); }
-    .mini-avatar {
-      width: 34px; height: 34px;
-      border-radius: 50%;
-      background: var(--surface3);
+    /* Avatar header */
+    .hdr-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--surface2);
       border: 2px solid var(--border-hover);
+      overflow: hidden; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      color: var(--text-muted);
-      overflow: hidden;
-      font-size: 0.9rem;
+      color: var(--text-muted); font-size: 0.85rem;
+      transition: border-color 0.2s;
     }
-    .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .hdr-avatar:hover { border-color: var(--accent); }
+    .hdr-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
+    .profile-menu-container { position: relative; }
     .profile-dropdown {
-      position: absolute;
-      top: calc(100% + 10px);
-      right: 0;
+      position: absolute; top: calc(100% + 10px); right: 0;
       background: var(--surface);
       border: 1px solid var(--border-hover);
       border-radius: var(--radius-lg);
-      width: 210px;
-      overflow: hidden;
-      z-index: 200;
+      width: 210px; overflow: hidden; z-index: 200;
       display: none;
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     }
@@ -246,91 +276,77 @@
       from { opacity: 0; transform: translateY(-6px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    .profile-dropdown-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .profile-dropdown-header .pname { font-weight: 600; font-size: 0.85rem; }
+    .profile-dropdown-header .pusername { font-size: 0.72rem; color: var(--accent); }
     .dropdown-item {
-      padding: 11px 16px;
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      cursor: pointer;
-      transition: background 0.15s;
-      font-size: 0.84rem;
-      font-weight: 500;
-      color: var(--text);
+      padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; transition: background 0.15s;
+      font-size: 0.83rem; font-weight: 500; color: var(--text);
     }
     .dropdown-item:hover { background: var(--surface2); }
-    .dropdown-item i { width: 16px; color: var(--text-muted); font-size: 0.8rem; }
-    .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+    .dropdown-item i { width: 16px; color: var(--text-muted); font-size: 0.78rem; }
+    .dropdown-divider { height: 1px; background: var(--border); margin: 3px 0; }
 
     .publish-btn {
-      background: var(--accent);
-      color: #0f0f0f;
-      border: none;
-      border-radius: 100px;
-      padding: 0.5rem 1.1rem;
+      background: var(--accent); color: #0f0f0f;
+      border: none; border-radius: 100px;
+      padding: 0.48rem 1rem;
       font-family: 'DM Sans', sans-serif;
-      font-weight: 700;
-      font-size: 0.84rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
+      font-weight: 700; font-size: 0.82rem;
+      display: flex; align-items: center; gap: 5px;
+      cursor: pointer; flex-shrink: 0;
       transition: background 0.2s, transform 0.15s;
-      flex-shrink: 0;
-      white-space: nowrap;
     }
     .publish-btn:hover { background: var(--accent-dark); transform: translateY(-1px); }
 
-    /* ===== PILLS DE CATEGORÍAS ===== */
+    /* Pills */
     .categories-row {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 2px;
+      display: flex; gap: 6px;
+      overflow-x: auto; padding-bottom: 2px;
       scrollbar-width: none;
     }
     .categories-row::-webkit-scrollbar { display: none; }
     .cat-pill {
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      display: flex; align-items: center; gap: 5px;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 100px;
-      padding: 5px 14px;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      cursor: pointer;
-      white-space: nowrap;
+      padding: 5px 13px;
+      font-size: 0.76rem; font-weight: 500; color: var(--text-muted);
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
       transition: all 0.2s;
-      flex-shrink: 0;
     }
     .cat-pill:hover { border-color: var(--border-hover); color: var(--text); }
-    .cat-pill.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #0f0f0f;
-      font-weight: 700;
-    }
+    .cat-pill.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; font-weight: 700; }
 
-    /* ===== GRID ===== */
-    .feed-section { padding: 1rem 1.2rem 0; }
-
+    /* ===== FEED ===== */
+    .feed-section { padding: 1rem 1.1rem 0; }
     .section-label {
       font-family: 'Syne', sans-serif;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin-bottom: 0.8rem;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 0.8rem;
+      display: flex; align-items: center; gap: 8px;
     }
+    .section-label .back-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); border-radius: 100px;
+      padding: 3px 10px; font-size: 0.72rem; cursor: pointer;
+      display: none; align-items: center; gap: 5px;
+      transition: background 0.2s;
+    }
+    .section-label .back-btn.show { display: flex; }
+    .section-label .back-btn:hover { background: var(--surface3); color: var(--text); }
 
     .listings-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
-      gap: 12px;
-      padding-bottom: 1.5rem;
+      gap: 12px; padding-bottom: 1.5rem;
     }
 
     /* ===== TARJETA ===== */
@@ -338,565 +354,525 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      overflow: hidden;
-      position: relative;
+      overflow: hidden; position: relative;
       transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-      cursor: pointer;
     }
     .product-card:hover {
       border-color: var(--border-hover);
       transform: translateY(-3px);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.4);
     }
-
-    .card-img {
-      aspect-ratio: 1/1;
-      position: relative;
-      overflow: hidden;
-      background: var(--surface2);
-    }
+    .card-img { aspect-ratio: 1/1; position: relative; overflow: hidden; background: var(--surface2); }
     .card-img img {
-      width: 100%; height: 100%;
-      object-fit: cover;
+      width: 100%; height: 100%; object-fit: cover; display: block;
       transition: transform 0.4s ease;
-      display: block;
     }
     .product-card:hover .card-img img { transform: scale(1.04); }
-
-    /* Badge arriba izquierda */
     .card-badge {
-      position: absolute;
-      top: 8px; left: 8px;
-      background: rgba(15,15,15,0.75);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 100px;
-      padding: 3px 10px;
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: var(--accent);
-      letter-spacing: 0.5px;
+      position: absolute; top: 8px; left: 8px;
+      background: rgba(15,15,15,0.75); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 100px; padding: 3px 9px;
+      font-size: 0.62rem; font-weight: 600; color: var(--accent);
       z-index: 2;
     }
-
-    /* Favorito */
     .fav-btn {
-      position: absolute;
-      top: 8px; right: 8px;
-      width: 32px; height: 32px;
-      background: rgba(15,15,15,0.7);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.1);
+      position: absolute; top: 8px; right: 8px;
+      width: 30px; height: 30px;
+      background: rgba(15,15,15,0.7); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      z-index: 2;
-      transition: all 0.2s;
-      font-size: 1rem;
-      color: var(--text-muted);
+      cursor: pointer; z-index: 2; font-size: 0.95rem;
+      color: var(--text-muted); transition: all 0.2s;
     }
-    .fav-btn:hover { background: rgba(15,15,15,0.9); color: var(--text); }
-    .fav-btn.active { color: #fbbf24; border-color: #fbbf24; }
-
-    /* Botón eliminar */
+    .fav-btn:hover { background: rgba(15,15,15,0.9); }
+    .fav-btn.active { color: var(--gold); border-color: var(--gold); }
     .delete-btn {
-      position: absolute;
-      top: 8px; left: 8px;
+      position: absolute; top: 8px; left: 8px;
       width: 28px; height: 28px;
-      background: rgba(255,68,68,0.85);
-      border-radius: 50%;
+      background: rgba(255,68,68,0.85); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      z-index: 3;
-      font-size: 0.7rem;
-      color: white;
-      transition: background 0.2s;
+      cursor: pointer; z-index: 3; font-size: 0.68rem; color: white;
     }
-    .delete-btn:hover { background: var(--red); }
-
-    /* Miniaturas */
     .miniaturas {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      display: flex;
-      gap: 4px;
-      padding: 6px;
-      background: linear-gradient(transparent, rgba(0,0,0,0.6));
-      overflow-x: auto;
-      scrollbar-width: none;
+      position: absolute; bottom: 0; left: 0; right: 0;
+      display: flex; gap: 4px; padding: 6px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.65));
+      overflow-x: auto; scrollbar-width: none;
     }
     .miniaturas::-webkit-scrollbar { display: none; }
     .miniatura {
-      width: 36px; height: 36px;
-      object-fit: cover;
-      border-radius: 7px;
-      cursor: pointer;
-      border: 2px solid transparent;
-      flex-shrink: 0;
-      transition: border-color 0.15s;
+      width: 34px; height: 34px; object-fit: cover;
+      border-radius: 6px; cursor: pointer; flex-shrink: 0;
+      border: 2px solid transparent; transition: border-color 0.15s;
     }
     .miniatura.activa { border-color: var(--accent); }
+    .card-info { padding: 0.65rem; }
 
-    /* Info de tarjeta */
-    .card-info { padding: 0.7rem; }
+    /* Mini perfil en tarjeta */
+    .card-user {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 5px; cursor: pointer;
+    }
+    .card-user-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--surface3); overflow: hidden;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; color: var(--text-muted);
+    }
+    .card-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .card-user-name { font-size: 0.72rem; color: var(--text-muted); font-weight: 500; }
+    .card-user-name:hover { color: var(--accent); }
 
     .card-title {
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-    }
-
-    .card-meta {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.7rem;
-      color: var(--text-muted);
+      font-weight: 600; font-size: 0.84rem; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       margin-bottom: 3px;
     }
-    .card-meta i { font-size: 0.65rem; color: var(--text-dim); }
-
-    .card-actions {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
+    .card-location {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 0.68rem; color: var(--text-dim); margin-bottom: 7px;
     }
+    .card-location i { font-size: 0.6rem; }
+
+    /* Estrellas mini */
+    .card-stars { display: flex; align-items: center; gap: 3px; margin-bottom: 7px; }
+    .star { font-size: 0.65rem; color: var(--text-dim); }
+    .star.on { color: var(--gold); }
+    .star-count { font-size: 0.65rem; color: var(--text-muted); margin-left: 2px; }
+
+    .card-actions { display: flex; gap: 5px; }
     .btn-chat {
-      flex: 1;
-      background: var(--accent-muted);
-      border: 1px solid rgba(200,241,53,0.2);
-      border-radius: 100px;
-      padding: 6px 0;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--accent);
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
+      flex: 1; background: var(--accent-muted);
+      border: 1px solid rgba(200,241,53,0.18);
+      border-radius: 100px; padding: 6px 0;
+      font-size: 0.7rem; font-weight: 600; color: var(--accent);
+      cursor: pointer; transition: background 0.2s;
       font-family: 'DM Sans', sans-serif;
     }
-    .btn-chat:hover { background: rgba(200,241,53,0.2); border-color: rgba(200,241,53,0.4); }
-
+    .btn-chat:hover { background: rgba(200,241,53,0.18); }
     .btn-more {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      width: 32px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 100px; width: 30px;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      transition: background 0.2s, border-color 0.2s;
-      position: relative;
+      cursor: pointer; color: var(--text-muted); font-size: 0.72rem;
+      transition: background 0.2s; position: relative;
     }
-    .btn-more:hover { background: var(--surface3); border-color: var(--border-hover); color: var(--text); }
-
+    .btn-more:hover { background: var(--surface3); color: var(--text); }
     .more-menu {
-      position: absolute;
-      bottom: calc(100% + 6px);
-      right: 0;
-      background: var(--surface);
-      border: 1px solid var(--border-hover);
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      z-index: 50;
-      display: none;
-      min-width: 140px;
+      position: absolute; bottom: calc(100% + 6px); right: 0;
+      background: var(--surface); border: 1px solid var(--border-hover);
+      border-radius: var(--radius-md); overflow: hidden; z-index: 50;
+      display: none; min-width: 150px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
     .more-menu.show { display: block; animation: dropIn 0.15s ease; }
     .more-menu-item {
-      padding: 9px 14px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      padding: 9px 14px; font-size: 0.79rem; color: var(--text-muted);
+      cursor: pointer; transition: background 0.15s, color 0.15s;
+      display: flex; align-items: center; gap: 8px;
     }
     .more-menu-item:hover { background: var(--surface2); color: var(--text); }
     .more-menu-item.danger { color: var(--red); }
-    .more-menu-item.danger:hover { background: rgba(255,68,68,0.1); }
+    .more-menu-item.danger:hover { background: rgba(255,68,68,0.08); }
 
     .owner-label {
-      text-align: center;
-      font-size: 0.65rem;
-      color: var(--text-dim);
-      margin-top: 6px;
-      font-style: italic;
+      text-align: center; font-size: 0.63rem;
+      color: var(--text-dim); margin-top: 5px; font-style: italic;
     }
 
-    /* Estado vacío */
-    .empty-state {
-      grid-column: 1/-1;
-      text-align: center;
-      padding: 4rem 1rem;
+    /* Botones de dueño */
+    .owner-actions { display: flex; gap: 5px; margin-top: 6px; }
+    .btn-intercambiado {
+      flex: 1; background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px; padding: 5px 0;
+      font-size: 0.68rem; font-weight: 600; color: var(--text-muted);
+      cursor: pointer; transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
     }
-    .empty-state .empty-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      opacity: 0.3;
-    }
-    .empty-state p { color: var(--text-muted); font-size: 0.9rem; }
+    .btn-intercambiado:hover { border-color: var(--accent); color: var(--accent); }
 
     /* Skeleton */
-    .skeleton {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-    }
-    .skeleton-img {
-      aspect-ratio: 1/1;
-      background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
-    .skeleton-line {
-      height: 10px;
-      background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 100px;
-      margin: 8px;
-    }
-    .skeleton-line.short { width: 60%; }
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
+    .skeleton { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .skeleton-img { aspect-ratio: 1/1; background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    .skeleton-line { height: 9px; background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 100px; margin: 8px; }
+    .skeleton-line.short { width: 55%; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Empty */
+    .empty-state { grid-column: 1/-1; text-align: center; padding: 4rem 1rem; }
+    .empty-icon { font-size: 2.8rem; margin-bottom: 1rem; opacity: 0.25; }
+    .empty-state p { color: var(--text-muted); font-size: 0.88rem; }
 
     /* Load more */
     .load-more { text-align: center; padding: 1rem 0 2.5rem; }
     .load-more-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border-hover);
-      border-radius: 100px;
-      padding: 0.65rem 2rem;
+      background: var(--surface2); border: 1px solid var(--border-hover);
+      border-radius: 100px; padding: 0.6rem 2rem;
       font-family: 'DM Sans', sans-serif;
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: var(--text);
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      font-weight: 600; font-size: 0.83rem; color: var(--text);
+      cursor: pointer; transition: background 0.2s, border-color 0.2s, transform 0.15s;
     }
     .load-more-btn:hover { background: var(--surface3); border-color: var(--accent); transform: translateY(-1px); }
 
-    /* ===== MODAL FOTO ===== */
-    .modal {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.9);
-      backdrop-filter: blur(10px);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
+    /* ===== PERFIL PÚBLICO (vista lateral) ===== */
+    .side-panel {
+      position: fixed; top: 0; right: -100%;
+      width: 100%; max-width: 420px; height: 100%;
+      background: var(--surface); z-index: 500;
+      transition: right 0.3s cubic-bezier(.4,0,.2,1);
+      box-shadow: -4px 0 30px rgba(0,0,0,0.5);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow-y: auto;
     }
-    .modal-content { max-width: 90vw; max-height: 90vh; text-align: center; }
-    .modal-content img { max-width: 100%; max-height: 80vh; border-radius: var(--radius-lg); }
-    .modal-close {
-      margin-top: 14px;
+    .side-panel.open { right: 0; }
+    .side-panel-header {
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.8rem;
+      position: sticky; top: 0;
+      background: var(--surface); z-index: 10;
+    }
+    .back-circle-btn {
+      width: 34px; height: 34px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-muted); font-size: 0.85rem;
+      transition: background 0.2s; flex-shrink: 0;
+    }
+    .back-circle-btn:hover { background: var(--surface3); color: var(--text); }
+
+    .perfil-banner {
+      padding: 1.5rem 1.2rem 1rem;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .perfil-avatar-big {
+      width: 80px; height: 80px; border-radius: 50%;
       background: var(--surface2);
-      border: 1px solid var(--border-hover);
-      color: var(--text);
-      padding: 8px 24px;
-      border-radius: 100px;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
+      border: 3px solid var(--border-hover);
+      overflow: hidden; margin-bottom: 0.8rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; color: var(--text-muted);
     }
+    .perfil-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
+    .perfil-display-name { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; }
+    .perfil-username { font-size: 0.78rem; color: var(--accent); margin-top: 2px; }
+    .perfil-bio { font-size: 0.82rem; color: var(--text-muted); margin-top: 8px; line-height: 1.5; max-width: 280px; }
+    .perfil-meta {
+      display: flex; gap: 1rem; margin-top: 10px;
+      font-size: 0.75rem; color: var(--text-muted);
+    }
+    .perfil-meta span { display: flex; align-items: center; gap: 4px; }
+    .perfil-meta i { color: var(--text-dim); font-size: 0.68rem; }
+
+    /* Estrellas perfil */
+    .perfil-stars {
+      display: flex; align-items: center; gap: 4px; margin-top: 10px;
+    }
+    .pstar { font-size: 1rem; color: var(--text-dim); }
+    .pstar.on { color: var(--gold); }
+    .perfil-star-info { font-size: 0.75rem; color: var(--text-muted); margin-left: 4px; }
+
+    .perfil-objetos { padding: 1rem 1.2rem; }
+    .perfil-objetos h4 {
+      font-family: 'Syne', sans-serif; font-size: 0.68rem;
+      font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 0.8rem;
+    }
+    .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .perfil-obj-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-md); overflow: hidden; cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .perfil-obj-card:hover { border-color: var(--border-hover); }
+    .perfil-obj-img { aspect-ratio: 1/1; overflow: hidden; background: var(--surface3); }
+    .perfil-obj-img img { width: 100%; height: 100%; object-fit: cover; }
+    .perfil-obj-info { padding: 6px 8px; }
+    .perfil-obj-title { font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Valorar */
+    .valorar-section {
+      padding: 1rem 1.2rem;
+      border-top: 1px solid var(--border);
+    }
+    .valorar-section h4 {
+      font-family: 'Syne', sans-serif; font-size: 0.68rem;
+      font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 0.8rem;
+    }
+    .star-picker { display: flex; gap: 8px; margin-bottom: 0.8rem; }
+    .star-pick {
+      font-size: 1.5rem; cursor: pointer; color: var(--text-dim);
+      transition: color 0.15s, transform 0.15s;
+    }
+    .star-pick:hover, .star-pick.selected { color: var(--gold); transform: scale(1.2); }
+    .valorar-comentario {
+      width: 100%; padding: 0.7rem 1rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: 'DM Sans', sans-serif; font-size: 0.84rem; color: var(--text);
+      outline: none; resize: none; transition: border-color 0.2s;
+      margin-bottom: 0.8rem;
+    }
+    .valorar-comentario:focus { border-color: var(--accent); }
+    .valorar-comentario::placeholder { color: var(--text-dim); }
 
     /* ===== CHAT ===== */
     .chat-sidebar {
-      position: fixed;
-      top: 0; right: -100%;
-      width: 100%; max-width: 420px;
-      height: 100%;
-      background: var(--surface);
-      z-index: 1000;
+      position: fixed; top: 0; right: -100%;
+      width: 100%; max-width: 420px; height: 100%;
+      background: var(--surface); z-index: 600;
       transition: right 0.3s cubic-bezier(.4,0,.2,1);
       box-shadow: -4px 0 30px rgba(0,0,0,0.5);
-      display: flex;
-      flex-direction: column;
       border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
     }
     .chat-sidebar.open { right: 0; }
-
     .chat-header {
-      padding: 1rem 1.2rem;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
+      padding: 0.9rem 1.1rem;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.8rem;
     }
-    .chat-back-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
-    .chat-back-btn:hover { background: var(--surface3); }
-    .chat-with-name { font-weight: 600; font-size: 0.9rem; }
-    .chat-with-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+    .chat-user-info { flex: 1; min-width: 0; }
+    .chat-user-name { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-objeto-name { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1.2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      flex: 1; overflow-y: auto;
+      padding: 1rem; display: flex; flex-direction: column; gap: 6px;
     }
     .message {
-      max-width: 78%;
-      padding: 9px 14px;
-      border-radius: 18px;
-      font-size: 0.84rem;
-      line-height: 1.5;
+      max-width: 78%; padding: 9px 13px;
+      border-radius: 18px; font-size: 0.83rem; line-height: 1.5;
     }
     .message.sent {
-      background: var(--accent);
-      color: #0f0f0f;
-      align-self: flex-end;
-      border-bottom-right-radius: 5px;
-      font-weight: 500;
+      background: var(--accent); color: #0f0f0f;
+      align-self: flex-end; border-bottom-right-radius: 5px; font-weight: 500;
     }
     .message.received {
-      background: var(--surface2);
-      color: var(--text);
-      align-self: flex-start;
-      border-bottom-left-radius: 5px;
+      background: var(--surface2); color: var(--text);
+      align-self: flex-start; border-bottom-left-radius: 5px;
     }
-    .message-time { font-size: 0.6rem; opacity: 0.6; margin-top: 3px; }
+    .message-sender { font-size: 0.62rem; font-weight: 600; margin-bottom: 3px; opacity: 0.7; }
+    .message-time { font-size: 0.58rem; opacity: 0.6; margin-top: 3px; }
+    .msg-archivo {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.1); border-radius: 10px;
+      padding: 8px 10px; margin-top: 5px; cursor: pointer;
+      text-decoration: none; color: inherit;
+    }
+    .msg-archivo i { font-size: 1rem; }
+    .msg-archivo span { font-size: 0.75rem; }
 
     .chat-input-wrap {
-      padding: 1rem 1.2rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 8px;
+      padding: 0.9rem 1rem; border-top: 1px solid var(--border);
+      display: flex; gap: 7px; align-items: center;
     }
     .chat-input-wrap input {
-      flex: 1;
-      padding: 0.7rem 1rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.84rem;
-      color: var(--text);
-      outline: none;
+      flex: 1; padding: 0.65rem 0.9rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 100px; font-family: 'DM Sans', sans-serif;
+      font-size: 0.83rem; color: var(--text); outline: none;
       transition: border-color 0.2s;
     }
     .chat-input-wrap input:focus { border-color: var(--accent); }
     .chat-input-wrap input::placeholder { color: var(--text-dim); }
     .send-btn {
-      background: var(--accent);
-      border: none;
-      border-radius: 100px;
-      width: 42px; height: 42px;
+      background: var(--accent); border: none; border-radius: 50%;
+      width: 38px; height: 38px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      color: #0f0f0f;
-      font-size: 0.9rem;
-      cursor: pointer;
-      flex-shrink: 0;
+      color: #0f0f0f; font-size: 0.85rem; cursor: pointer;
       transition: background 0.2s, transform 0.15s;
     }
     .send-btn:hover { background: var(--accent-dark); transform: scale(1.05); }
+    .attach-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 50%; width: 38px; height: 38px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); cursor: pointer; font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+    .attach-btn:hover { background: var(--surface3); color: var(--text); }
 
     /* ===== PANEL PUBLICAR ===== */
     .upload-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(12px);
-      z-index: 300;
-      display: flex;
-      align-items: flex-end;
-      visibility: hidden;
-      opacity: 0;
-      transition: 0.25s;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(12px);
+      z-index: 400; display: flex; align-items: flex-end;
+      visibility: hidden; opacity: 0; transition: 0.25s;
     }
     .upload-overlay.active { visibility: visible; opacity: 1; }
-
     .upload-panel {
       background: var(--surface);
       border: 1px solid var(--border-hover);
-      width: 100%;
-      max-width: 560px;
+      width: 100%; max-width: 560px;
       margin: 0 auto;
       border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-      padding: 1.5rem 1.5rem 2rem;
-      max-height: 92vh;
-      overflow-y: auto;
+      padding: 1.3rem 1.4rem 2rem;
+      max-height: 92vh; overflow-y: auto;
       transform: translateY(30px);
       transition: transform 0.3s cubic-bezier(.4,0,.2,1);
     }
     .upload-overlay.active .upload-panel { transform: translateY(0); }
-
-    .panel-drag-handle {
-      width: 40px; height: 4px;
-      background: var(--surface3);
-      border-radius: 100px;
-      margin: 0 auto 1.4rem;
+    .drag-handle {
+      width: 38px; height: 4px; background: var(--surface3);
+      border-radius: 100px; margin: 0 auto 1.2rem;
     }
     .upload-panel h3 {
       font-family: 'Syne', sans-serif;
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 1.2rem;
-      letter-spacing: -0.5px;
+      font-size: 1.4rem; font-weight: 700; margin-bottom: 1.1rem;
     }
-
     .upload-field {
-      width: 100%;
-      padding: 0.85rem 1rem;
-      margin-bottom: 0.8rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
+      width: 100%; padding: 0.78rem 0.9rem; margin-bottom: 0.75rem;
+      background: var(--surface2); border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.88rem;
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.2s;
+      font-family: 'DM Sans', sans-serif; font-size: 0.86rem; color: var(--text);
+      outline: none; transition: border-color 0.2s;
     }
     .upload-field:focus { border-color: var(--accent); }
     .upload-field::placeholder { color: var(--text-dim); }
-
     .upload-field option { background: var(--surface2); }
-
     .upload-area {
-      border: 2px dashed var(--surface3);
-      border-radius: var(--radius-md);
-      padding: 1.5rem;
-      text-align: center;
-      margin-bottom: 0.8rem;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
+      border: 2px dashed var(--surface3); border-radius: var(--radius-md);
+      padding: 1.3rem; text-align: center; margin-bottom: 0.75rem;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s;
     }
     .upload-area:hover { border-color: var(--accent); background: var(--accent-muted); }
-    .upload-area-icon { font-size: 1.8rem; margin-bottom: 6px; opacity: 0.4; }
-    .upload-area p { font-size: 0.82rem; color: var(--text-muted); }
-    .upload-area span { font-size: 0.72rem; color: var(--text-dim); margin-top: 3px; display: block; }
-
-    .fotos-preview {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 0.8rem;
-    }
-    .foto-preview {
-      position: relative;
-      width: 76px; height: 76px;
-    }
-    .foto-preview img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      border-radius: var(--radius-sm);
-    }
+    .upload-area-icon { font-size: 1.6rem; opacity: 0.35; margin-bottom: 5px; }
+    .upload-area p { font-size: 0.8rem; color: var(--text-muted); }
+    .upload-area span { font-size: 0.7rem; color: var(--text-dim); }
+    .fotos-preview { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 0.75rem; }
+    .foto-preview { position: relative; width: 72px; height: 72px; }
+    .foto-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm); }
     .foto-preview .remove-foto {
-      position: absolute;
-      top: -6px; right: -6px;
-      background: var(--red);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 20px; height: 20px;
-      font-size: 0.65rem;
-      cursor: pointer;
+      position: absolute; top: -6px; right: -6px;
+      background: var(--red); color: white; border: none;
+      border-radius: 50%; width: 18px; height: 18px;
+      font-size: 0.6rem; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     }
-
-    .panel-btns { display: flex; gap: 10px; margin-top: 0.5rem; }
-    .btn-publish {
-      flex: 2;
-      background: var(--accent);
-      color: #0f0f0f;
-      border: none;
-      border-radius: 100px;
-      padding: 0.9rem;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
+    .panel-btns { display: flex; gap: 8px; margin-top: 0.4rem; }
+    .btn-pub {
+      flex: 2; background: var(--accent); color: #0f0f0f; border: none;
+      border-radius: 100px; padding: 0.85rem;
+      font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.88rem;
+      cursor: pointer; transition: background 0.2s, transform 0.15s;
     }
-    .btn-publish:hover { background: var(--accent-dark); transform: translateY(-1px); }
-    .btn-cancel {
-      flex: 1;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 0.9rem;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: background 0.2s;
+    .btn-pub:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-pub:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-can {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 100px; padding: 0.85rem;
+      font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.88rem;
+      color: var(--text-muted); cursor: pointer; transition: background 0.2s;
     }
-    .btn-cancel:hover { background: var(--surface3); color: var(--text); }
+    .btn-can:hover { background: var(--surface3); color: var(--text); }
 
     /* ===== CONVERSACIONES ===== */
     .conv-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1rem 1.1rem;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 0.9rem 1rem;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s;
+      display: flex; align-items: center; gap: 0.9rem;
     }
     .conv-card:hover { border-color: var(--border-hover); background: var(--surface2); }
     .conv-avatar {
-      width: 44px; height: 44px;
-      background: var(--surface3);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
-      color: var(--accent);
-      flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--surface3); flex-shrink: 0;
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; color: var(--accent);
     }
+    .conv-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .conv-info { flex: 1; min-width: 0; }
-    .conv-title { font-weight: 600; font-size: 0.87rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .conv-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-    .conv-time { font-size: 0.68rem; color: var(--text-dim); flex-shrink: 0; }
+    .conv-title { font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .conv-last { font-size: 0.68rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .conv-time { font-size: 0.65rem; color: var(--text-dim); flex-shrink: 0; }
+
+    /* ===== MODAL FOTO ===== */
+    .modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92); backdrop-filter: blur(10px);
+      z-index: 2000; align-items: center; justify-content: center;
+    }
+    .modal-content { max-width: 90vw; max-height: 90vh; text-align: center; }
+    .modal-content img { max-width: 100%; max-height: 80vh; border-radius: var(--radius-lg); }
+    .modal-close {
+      margin-top: 12px; background: var(--surface2); border: 1px solid var(--border-hover);
+      color: var(--text); padding: 7px 22px; border-radius: 100px;
+      font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.82rem; cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
 <!-- Toast -->
-<div id="internalToast" class="toast"><div class="dot"></div><span id="toastMessage"></span></div>
+<div id="toast" class="toast"><div class="dot"></div><span id="toastMsg"></span></div>
 
 <!-- ===== LOGIN ===== -->
-<div id="loginScreen" class="login-screen">
+<div id="loginScreen" class="screen">
   <div class="login-card">
-    <div class="login-logo-wrap"><i class="fas fa-exchange-alt"></i></div>
+    <div class="login-logo"><i class="fas fa-exchange-alt"></i></div>
     <h1>Inter<span>cambia</span></h1>
     <p>Dale una segunda vida a tus objetos.<br>Publica, conecta e intercambia.</p>
     <button id="googleLoginBtn" class="btn-google">
-      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Continuar con Google
     </button>
   </div>
 </div>
 
+<!-- ===== COMPLETAR PERFIL ===== -->
+<div id="perfilScreen" class="screen hidden">
+  <div class="perfil-card">
+    <h2>Tu <span>perfil</span></h2>
+    <p>Personaliza cómo te verán los demás. Esto genera confianza en el intercambio.</p>
+
+    <div class="avatar-upload-wrap">
+      <div class="avatar-circle" id="avatarCircle">
+        <i class="fas fa-camera" id="avatarIcon"></i>
+        <img id="avatarPreview" src="" style="display:none">
+        <div class="avatar-overlay"><i class="fas fa-camera"></i></div>
+      </div>
+      <span class="avatar-hint">Foto de perfil (opcional)</span>
+      <input type="file" id="avatarFileInput" accept="image/*" style="display:none">
+    </div>
+
+    <div class="field-group">
+      <label>Nombre público *</label>
+      <input type="text" id="pfNombre" class="field-input" placeholder="Ej: María García" maxlength="40">
+      <div class="chars-left"><span id="pfNombreCount">0</span>/40</div>
+    </div>
+
+    <div class="field-group">
+      <label>Bio</label>
+      <textarea id="pfBio" class="field-input" rows="2" placeholder="Cuéntanos qué intercambias..." maxlength="120" style="border-radius:14px; resize:none;"></textarea>
+      <div class="chars-left"><span id="pfBioCount">0</span>/120</div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label>Ciudad</label>
+        <input type="text" id="pfCiudad" class="field-input" placeholder="Santiago" maxlength="40">
+      </div>
+      <div class="field-group">
+        <label>Edad</label>
+        <input type="number" id="pfEdad" class="field-input" placeholder="25" min="13" max="99">
+      </div>
+    </div>
+
+    <button id="guardarPerfilBtn" class="btn-primary">Guardar perfil</button>
+    <button id="saltarPerfilBtn" class="btn-secondary">Completar después</button>
+  </div>
+</div>
+
 <!-- ===== APP ===== -->
 <div id="appContainer" class="app-container">
-
   <header class="market-header">
     <div class="header-row1">
       <div class="logo-area">
@@ -911,53 +887,91 @@
       </div>
       <div class="header-actions">
         <div class="profile-menu-container">
-          <div id="userProfileBadge" class="profile-badge">
-            <div id="headerAvatar" class="mini-avatar"><i class="fas fa-user"></i></div>
-          </div>
+          <div id="hdrAvatarWrap" class="hdr-avatar"><i class="fas fa-user"></i></div>
           <div id="profileDropdown" class="profile-dropdown">
+            <div class="profile-dropdown-header">
+              <div class="pname" id="ddName">—</div>
+              <div class="pusername" id="ddUsername">—</div>
+            </div>
+            <div class="dropdown-item" data-action="miPerfil"><i class="fas fa-user-circle"></i> Mi perfil</div>
             <div class="dropdown-item" data-action="misobjetos"><i class="fas fa-box-open"></i> Mis objetos</div>
             <div class="dropdown-item" data-action="favoritos"><i class="fas fa-star"></i> Favoritos</div>
             <div class="dropdown-item" data-action="chats"><i class="fas fa-comment-dots"></i> Chats</div>
             <div class="dropdown-divider"></div>
-            <div class="dropdown-item" data-action="perfil"><i class="fas fa-user-circle"></i> Mi perfil</div>
+            <div class="dropdown-item" data-action="editarPerfil"><i class="fas fa-edit"></i> Editar perfil</div>
             <div class="dropdown-item" data-action="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</div>
           </div>
         </div>
         <button id="openUploadPanelBtn" class="publish-btn"><i class="fas fa-plus"></i> Publicar</button>
       </div>
     </div>
-
-    <!-- Pills de categorías -->
     <div class="categories-row" id="categoriesRow">
-      <div class="cat-pill active" data-cat="all"><i class="fas fa-store"></i> Todo</div>
-      <div class="cat-pill" data-cat="Electrónica"><i class="fas fa-laptop"></i> Electrónica</div>
-      <div class="cat-pill" data-cat="Ropa"><i class="fas fa-tshirt"></i> Ropa</div>
-      <div class="cat-pill" data-cat="Libros"><i class="fas fa-book"></i> Libros</div>
-      <div class="cat-pill" data-cat="Mascotas"><i class="fas fa-paw"></i> Mascotas</div>
-      <div class="cat-pill" data-cat="Hogar"><i class="fas fa-home"></i> Hogar</div>
-      <div class="cat-pill" data-cat="Deportes"><i class="fas fa-futbol"></i> Deportes</div>
-      <div class="cat-pill" data-cat="Otros"><i class="fas fa-tag"></i> Otros</div>
+      <div class="cat-pill active" data-cat="all">✦ Todo</div>
+      <div class="cat-pill" data-cat="Electrónica">📱 Electrónica</div>
+      <div class="cat-pill" data-cat="Ropa">👕 Ropa</div>
+      <div class="cat-pill" data-cat="Libros">📚 Libros</div>
+      <div class="cat-pill" data-cat="Mascotas">🐾 Mascotas</div>
+      <div class="cat-pill" data-cat="Hogar">🏠 Hogar</div>
+      <div class="cat-pill" data-cat="Deportes">⚽ Deportes</div>
+      <div class="cat-pill" data-cat="Otros">🎁 Otros</div>
     </div>
   </header>
 
   <div class="feed-section">
-    <div class="section-label" id="sectionLabel">Publicaciones recientes</div>
+    <div class="section-label">
+      <span id="sectionLabel">Publicaciones recientes</span>
+      <button class="back-btn" id="backToFeedBtn"><i class="fas fa-arrow-left"></i> Volver</button>
+    </div>
     <div id="feedGrid" class="listings-grid"></div>
   </div>
   <div class="load-more"><button id="loadMoreBtn" class="load-more-btn">Cargar más</button></div>
 </div>
 
+<!-- ===== PERFIL PÚBLICO ===== -->
+<div id="perfilPublicoPanel" class="side-panel">
+  <div class="side-panel-header">
+    <div class="back-circle-btn" id="closePerfilPublicoBtn"><i class="fas fa-arrow-left"></i></div>
+    <span style="font-weight:600; font-size:0.9rem;">Perfil</span>
+  </div>
+  <div class="perfil-banner">
+    <div class="perfil-avatar-big" id="ppAvatar"><i class="fas fa-user"></i></div>
+    <div class="perfil-display-name" id="ppName">—</div>
+    <div class="perfil-username" id="ppUsername">—</div>
+    <div class="perfil-stars" id="ppStars"></div>
+    <div class="perfil-bio" id="ppBio"></div>
+    <div class="perfil-meta" id="ppMeta"></div>
+  </div>
+  <div class="perfil-objetos">
+    <h4>Objetos publicados</h4>
+    <div class="perfil-grid" id="ppGrid"></div>
+  </div>
+  <div class="valorar-section" id="valorarSection">
+    <h4>Dejar valoración</h4>
+    <div class="star-picker" id="starPicker">
+      <span class="star-pick" data-v="1">★</span>
+      <span class="star-pick" data-v="2">★</span>
+      <span class="star-pick" data-v="3">★</span>
+      <span class="star-pick" data-v="4">★</span>
+      <span class="star-pick" data-v="5">★</span>
+    </div>
+    <textarea id="valorarComentario" class="valorar-comentario" rows="2" placeholder="Comentario opcional..."></textarea>
+    <button id="enviarValoracionBtn" class="btn-primary" style="margin-top:0;">Enviar valoración</button>
+  </div>
+</div>
+
 <!-- ===== CHAT ===== -->
 <div id="chatSidebar" class="chat-sidebar">
   <div class="chat-header">
-    <button id="closeChatBtn" class="chat-back-btn"><i class="fas fa-arrow-left"></i></button>
-    <div>
-      <div id="chatWithName" class="chat-with-name">Chat</div>
-      <div class="chat-with-sub">Conversación activa</div>
+    <div class="back-circle-btn" id="closeChatBtn"><i class="fas fa-arrow-left"></i></div>
+    <div class="chat-user-info">
+      <div id="chatWithName" class="chat-user-name">Chat</div>
+      <div id="chatObjetoName" class="chat-objeto-name"></div>
     </div>
   </div>
   <div id="chatMessages" class="chat-messages"></div>
   <div class="chat-input-wrap">
+    <label class="attach-btn" for="chatFileInput"><i class="fas fa-paperclip"></i></label>
+    <input type="file" id="chatFileInput" style="display:none">
     <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
     <button id="sendChatBtn" class="send-btn"><i class="fas fa-paper-plane"></i></button>
   </div>
@@ -966,7 +980,7 @@
 <!-- ===== PANEL PUBLICAR ===== -->
 <div id="uploadPanelOverlay" class="upload-overlay">
   <div class="upload-panel">
-    <div class="panel-drag-handle"></div>
+    <div class="drag-handle"></div>
     <h3>✦ Publicar objeto</h3>
     <input type="text" id="uploadTitle" class="upload-field" placeholder="Título del objeto *">
     <select id="uploadCategory" class="upload-field">
@@ -978,18 +992,18 @@
       <option value="Deportes">⚽ Deportes</option>
       <option value="Otros">🎁 Otros</option>
     </select>
-    <textarea id="uploadDesc" rows="2" class="upload-field" style="border-radius:16px; resize:none;" placeholder="Descripción: estado, qué buscas a cambio... *"></textarea>
+    <textarea id="uploadDesc" rows="2" class="upload-field" style="border-radius:14px; resize:none;" placeholder="Descripción: estado, qué buscas a cambio... *"></textarea>
     <input type="text" id="uploadLocation" class="upload-field" placeholder="Ubicación (ej. Santiago, Providencia)">
     <div id="uploadArea" class="upload-area">
       <div class="upload-area-icon">📸</div>
-      <p>Haz clic para seleccionar fotos</p>
+      <p>Haz clic para agregar fotos</p>
       <span>Máximo 5 imágenes</span>
     </div>
     <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
     <div id="fotosPreview" class="fotos-preview"></div>
     <div class="panel-btns">
-      <button id="cancelUploadBtn" class="btn-cancel">Cancelar</button>
-      <button id="publishArticleBtn" class="btn-publish">Publicar</button>
+      <button id="cancelUploadBtn" class="btn-can">Cancelar</button>
+      <button id="publishArticleBtn" class="btn-pub">Publicar</button>
     </div>
   </div>
 </div>
@@ -1005,444 +1019,808 @@
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-  const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
+const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
 
-  let currentUser = null;
-  let authToken = null;
-  let favoritosIds = new Set();
-  let todosProductos = [];
-  let currentView = "todos";
-  let currentCategory = "all";
-  let searchQuery = "";
-  let visibleItems = 8;
-  let selectedFiles = [];
-  let chatObjetoId = null;
-  let chatConUsuario = null;
-  let mensajesPolling = null;
-  let activeMoreMenu = null;
+// ===== ESTADO GLOBAL =====
+let currentUser = null;
+let authToken = null;
+let currentUserPerfil = null; // datos del perfil desde la DB
+let favoritosIds = new Set();
+let todosProductos = [];
+let currentView = "todos";
+let currentCategory = "all";
+let searchQuery = "";
+let visibleItems = 8;
+let selectedFiles = [];
+let chatObjetoId = null;
+let chatConUsuario = null; // username
+let chatConEmail = null;   // email interno (solo para mensajes)
+let mensajesPolling = null;
+let activeMoreMenu = null;
+let perfilPublicoActual = null; // username del perfil abierto
+let valoracionSeleccionada = 0;
+let avatarFileSeleccionado = null;
 
-  // ===== TOAST =====
-  function showToast(msg) {
-    const el = document.getElementById("internalToast");
-    document.getElementById("toastMessage").innerText = msg;
-    el.classList.add("show");
-    setTimeout(() => el.classList.remove("show"), 2600);
+// ===== TOAST =====
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  document.getElementById("toastMsg").innerText = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+// ===== ESC HTML =====
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])
+  );
+}
+
+// ===== ESTRELLAS =====
+function renderStars(promedio, total, size = 'mini') {
+  const filled = Math.round(promedio || 0);
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    html += `<span class="star ${i <= filled ? 'on' : ''}" style="${size==='big'?'font-size:1rem':''}">★</span>`;
   }
+  if (total > 0) html += `<span class="star-count">(${total})</span>`;
+  return html;
+}
 
-  // ===== AUTH =====
-  function getTokenFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) { localStorage.setItem('auth_token', token); window.history.replaceState({}, document.title, window.location.pathname); return token; }
-    return localStorage.getItem('auth_token');
+// ===== AUTH =====
+function getTokenFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if (token) {
+    localStorage.setItem('auth_token', token);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return token;
   }
+  return localStorage.getItem('auth_token');
+}
 
-  async function verifyToken(token) {
-    try {
-      const res = await fetch(`${WORKER_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (!res.ok) return null;
-      return (await res.json()).user;
-    } catch(e) { return null; }
+async function verifyToken(token) {
+  try {
+    const res = await fetch(`${WORKER_URL}/auth/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.user;
+  } catch(e) { return null; }
+}
+
+function loginWithGoogle() {
+  window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`;
+}
+
+function logout() {
+  localStorage.removeItem('auth_token');
+  location.reload();
+}
+
+// ===== API =====
+async function apiFetch(path, options = {}) {
+  const headers = options.headers || {};
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
+  if (!res.ok) {
+    if (res.status === 401) logout();
+    throw new Error(await res.text());
   }
+  return res.json();
+}
 
-  function loginWithGoogle() { window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`; }
-  function logout() { localStorage.removeItem('auth_token'); location.reload(); }
+const api = {
+  objetos: () => apiFetch('/objetos'),
+  misObjetos: () => apiFetch('/mis-objetos'),
+  favoritos: () => apiFetch('/favoritos').catch(() => []),
+  agregarFav: (id) => apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }),
+  quitarFav: (id) => apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }),
+  eliminarObjeto: (id) => apiFetch(`/objeto/${id}`, { method: 'DELETE' }),
+  marcarIntercambiado: (id) => apiFetch(`/objeto/${id}`, { method: 'PATCH' }),
+  mensajes: (oId, otro) => apiFetch(`/mensajes?id_objeto=${oId}&otro=${encodeURIComponent(otro)}`),
+  conversaciones: () => apiFetch('/mis-conversaciones'),
+  perfilPublico: (username) => apiFetch(`/usuario/buscar?username=${encodeURIComponent(username)}`),
+  miPerfil: () => apiFetch('/perfil'),
+  completarPerfil: (data) => apiFetch('/perfil/completar', { method: 'POST', body: JSON.stringify(data) }),
+  valorar: (data) => apiFetch('/valorar', { method: 'POST', body: JSON.stringify(data) }),
+  reporte: (id, motivo) => apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }),
+  guardarOneSignal: (id) => apiFetch('/guardar-onesignal-id', { method: 'POST', body: JSON.stringify({ onesignal_id: id }) }),
+};
 
-  // ===== API =====
-  async function apiFetch(path, options = {}) {
-    const headers = options.headers || {};
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-    const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
-    if (!res.ok) { if (res.status === 401) logout(); throw new Error(await res.text()); }
-    return res.json();
+// ===== PERFIL — COMPLETAR =====
+function mostrarPantallaPerfil() {
+  document.getElementById('perfilScreen').classList.remove('hidden');
+  // Pre-llenar con datos de Google si existen
+  if (currentUser?.name) {
+    document.getElementById('pfNombre').value = currentUser.name;
+    actualizarContador('pfNombre', 'pfNombreCount');
   }
-
-  const obtenerObjetos = () => apiFetch('/objetos');
-  const obtenerMisObjetos = () => apiFetch('/mis-objetos');
-  const obtenerFavoritos = () => apiFetch('/favoritos').catch(() => []);
-  const agregarFavorito = (id) => apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) });
-  const quitarFavorito = (id) => apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) });
-  const eliminarObjeto = (id) => apiFetch(`/objeto/${id}`, { method: 'DELETE' });
-  const enviarMensaje = (oId, rec, msg) => apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: oId, receptor: rec, mensaje: msg }) });
-  const obtenerMensajes = (oId, otro) => apiFetch(`/mensajes?id_objeto=${oId}&otro=${encodeURIComponent(otro)}`);
-  const obtenerConversaciones = () => apiFetch('/mis-conversaciones');
-
-  async function publicarObjeto(titulo, descripcion, categoria, ubicacion, fotos) {
-    const form = new FormData();
-    form.append('titulo', titulo);
-    form.append('descripcion', `${categoria} | ${descripcion} | ${ubicacion || 'Sin ubicación'}`);
-    form.append('direccion', ubicacion || '');
-    for (let i = 0; i < Math.min(fotos.length, 5); i++) form.append(`foto_${i}`, fotos[i]);
-    return apiFetch('/objeto', { method: 'POST', body: form });
+  if (currentUser?.picture) {
+    const img = document.getElementById('avatarPreview');
+    img.src = currentUser.picture;
+    img.style.display = 'block';
+    document.getElementById('avatarIcon').style.display = 'none';
   }
+}
 
-  // ===== FAVORITOS =====
-  async function toggleFavorito(id, btn) {
-    if (favoritosIds.has(id)) {
-      await quitarFavorito(id);
-      favoritosIds.delete(id);
-      if (btn) { btn.classList.remove('active'); btn.innerText = '♡'; }
-      showToast('Eliminado de favoritos');
-    } else {
-      await agregarFavorito(id);
-      favoritosIds.add(id);
-      if (btn) { btn.classList.add('active'); btn.innerText = '♥'; }
-      showToast('Añadido a favoritos');
+function actualizarContador(inputId, countId) {
+  const el = document.getElementById(inputId);
+  document.getElementById(countId).innerText = el.value.length;
+}
+
+document.getElementById('pfNombre').addEventListener('input', () => actualizarContador('pfNombre', 'pfNombreCount'));
+document.getElementById('pfBio').addEventListener('input', () => actualizarContador('pfBio', 'pfBioCount'));
+
+// Avatar upload en pantalla de perfil
+document.getElementById('avatarCircle').onclick = () => document.getElementById('avatarFileInput').click();
+document.getElementById('avatarFileInput').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  avatarFileSeleccionado = file;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = document.getElementById('avatarPreview');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    document.getElementById('avatarIcon').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+};
+
+document.getElementById('guardarPerfilBtn').onclick = async () => {
+  const nombre = document.getElementById('pfNombre').value.trim();
+  if (!nombre) { showToast('❌ El nombre público es obligatorio'); return; }
+
+  const btn = document.getElementById('guardarPerfilBtn');
+  btn.disabled = true; btn.innerText = 'Guardando...';
+
+  try {
+    // 1. Guardar datos del perfil
+    await api.completarPerfil({
+      display_name: nombre,
+      bio: document.getElementById('pfBio').value.trim(),
+      ciudad: document.getElementById('pfCiudad').value.trim(),
+      edad: document.getElementById('pfEdad').value || null
+    });
+
+    // 2. Subir avatar si se seleccionó uno
+    if (avatarFileSeleccionado) {
+      const form = new FormData();
+      form.append('avatar', avatarFileSeleccionado);
+      await apiFetch('/perfil/avatar', { method: 'POST', body: form });
     }
-    if (currentView === 'favoritos') await renderFavoritos();
+
+    showToast('✅ Perfil guardado');
+    document.getElementById('perfilScreen').classList.add('hidden');
+    // Recargar datos del usuario
+    currentUserPerfil = await api.miPerfil();
+    actualizarHeaderConPerfil();
+  } catch(e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false; btn.innerText = 'Guardar perfil';
+  }
+};
+
+document.getElementById('saltarPerfilBtn').onclick = () => {
+  document.getElementById('perfilScreen').classList.add('hidden');
+};
+
+function actualizarHeaderConPerfil() {
+  const p = currentUserPerfil;
+  if (!p) return;
+  const av = document.getElementById('hdrAvatarWrap');
+  if (p.avatar_url) av.innerHTML = `<img src="${esc(p.avatar_url)}">`;
+  else av.innerHTML = `<i class="fas fa-user"></i>`;
+  document.getElementById('ddName').innerText = p.display_name || currentUser?.name || '—';
+  document.getElementById('ddUsername').innerText = p.username ? `@${p.username}` : '—';
+}
+
+// ===== FAVORITOS =====
+async function toggleFavorito(id, btn) {
+  if (favoritosIds.has(id)) {
+    await api.quitarFav(id);
+    favoritosIds.delete(id);
+    if (btn) { btn.classList.remove('active'); btn.innerText = '♡'; }
+    showToast('Eliminado de favoritos');
+  } else {
+    await api.agregarFav(id);
+    favoritosIds.add(id);
+    if (btn) { btn.classList.add('active'); btn.innerText = '♥'; }
+    showToast('Añadido a favoritos ★');
+  }
+  if (currentView === 'favoritos') renderFavoritos();
+}
+
+// ===== RENDER GRID =====
+function renderSkeletons(n = 8) {
+  document.getElementById('feedGrid').innerHTML = Array.from({ length: n }, () => `
+    <div class="skeleton">
+      <div class="skeleton-img"></div>
+      <div class="skeleton-line" style="margin-top:10px;"></div>
+      <div class="skeleton-line short"></div>
+      <div style="height:10px;"></div>
+    </div>
+  `).join('');
+  document.getElementById('loadMoreBtn').style.display = 'none';
+}
+
+function renderProductosGrid(productos, showOwnerActions = false) {
+  const grid = document.getElementById('feedGrid');
+  grid.style.gridTemplateColumns = '';
+
+  if (!productos?.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>No hay objetos para mostrar</p></div>`;
+    return;
   }
 
-  // ===== SKELETONS =====
-  function renderSkeletons(n = 8) {
-    document.getElementById('feedGrid').innerHTML = Array.from({ length: n }, () => `
-      <div class="skeleton">
-        <div class="skeleton-img"></div>
-        <div class="skeleton-line" style="margin-top:10px;"></div>
-        <div class="skeleton-line short"></div>
-        <div style="height:8px;"></div>
+  grid.innerHTML = productos.map(p => {
+    const ubicacion = p.direccion || (p.descripcion?.split('|')[2]?.trim()) || '';
+    const esFav = favoritosIds.has(p.id);
+    const todasFotos = [p.url, ...(p.fotos_extra || []).map(f => f.url)];
+    const esMio = showOwnerActions;
+
+    // Nombre a mostrar: display_name del worker, o fallback
+    const displayName = p.display_name || p.username || '—';
+    const username = p.username || null;
+    const avatarUrl = p.avatar_url || null;
+    const promedio = p.promedio_valoracion || 0;
+    const totalVals = p.total_valoraciones || 0;
+
+    return `
+      <div class="product-card" data-id="${p.id}">
+        <div class="card-img">
+          <img class="imagen-principal" src="${esc(p.url)}" loading="lazy"
+            onerror="this.src='https://placehold.co/300x300/181818/444?text=Sin+imagen'"
+            onclick="mostrarFotoAmpliada('${esc(p.url)}')">
+          <div class="card-badge">🔄 TRUEQUE</div>
+          <div class="fav-btn ${esFav ? 'active' : ''}"
+            onclick="event.stopPropagation(); toggleFavorito(${p.id}, this)">${esFav ? '♥' : '♡'}</div>
+          ${esMio ? `<div class="delete-btn" onclick="event.stopPropagation(); eliminarObjetoPrompt(${p.id})"><i class="fas fa-trash"></i></div>` : ''}
+          ${todasFotos.length > 1 ? `
+            <div class="miniaturas">
+              ${todasFotos.map((url, i) => `
+                <img class="miniatura ${i===0?'activa':''}" src="${esc(url)}"
+                  onerror="this.src='https://placehold.co/40x40/222/444?text=!'"
+                  onclick="event.stopPropagation(); cambiarFoto(this, '${esc(url)}')">
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+        <div class="card-info">
+          ${username ? `
+            <div class="card-user" onclick="verPerfilPublico('${esc(username)}')">
+              <div class="card-user-avatar">
+                ${avatarUrl ? `<img src="${esc(avatarUrl)}">` : `<i class="fas fa-user"></i>`}
+              </div>
+              <span class="card-user-name">${esc(displayName)}</span>
+            </div>
+          ` : `<div class="card-user"><div class="card-user-avatar"><i class="fas fa-user"></i></div><span class="card-user-name">${esc(displayName)}</span></div>`}
+          <div class="card-title">${esc(p.titulo)}</div>
+          ${ubicacion ? `<div class="card-location"><i class="fas fa-map-marker-alt"></i>${esc(ubicacion)}</div>` : ''}
+          ${totalVals > 0 ? `<div class="card-stars">${renderStars(promedio, totalVals)}</div>` : ''}
+          ${esMio ? `
+            <div class="owner-actions">
+              <button class="btn-intercambiado" onclick="marcarIntercambiadoPrompt(${p.id})">✓ Marcar intercambiado</button>
+            </div>
+            <div class="owner-label">✦ tu publicación</div>
+          ` : `
+            <div class="card-actions">
+              <button class="btn-chat" onclick="abrirChatDesdeProducto(${p.id}, '${esc(username || '')}', '${esc(p.titulo)}')">💬 Intercambiar</button>
+              <div class="btn-more" onclick="event.stopPropagation(); toggleMoreMenu(this, ${p.id}, '${esc(username || '')}')">
+                <i class="fas fa-ellipsis-h"></i>
+                <div class="more-menu" id="more-${p.id}">
+                  ${username ? `<div class="more-menu-item" onclick="verPerfilPublico('${esc(username)}')"><i class="fas fa-user"></i> Ver perfil</div>` : ''}
+                  <div class="more-menu-item danger" onclick="reportarObjeto(${p.id})"><i class="fas fa-flag"></i> Reportar</div>
+                </div>
+              </div>
+            </div>
+          `}
+        </div>
       </div>
-    `).join('');
+    `;
+  }).join('');
+}
+
+window.cambiarFoto = (el, url) => {
+  const card = el.closest('.product-card');
+  card.querySelector('.imagen-principal').src = url;
+  card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
+  el.classList.add('activa');
+};
+
+window.mostrarFotoAmpliada = (url) => {
+  document.getElementById('fotoModalImg').src = url;
+  document.getElementById('fotoModal').style.display = 'flex';
+};
+
+window.toggleMoreMenu = (btn, id, username) => {
+  const menu = document.getElementById(`more-${id}`);
+  if (activeMoreMenu && activeMoreMenu !== menu) activeMoreMenu.classList.remove('show');
+  menu.classList.toggle('show');
+  activeMoreMenu = menu.classList.contains('show') ? menu : null;
+};
+
+document.addEventListener('click', () => {
+  if (activeMoreMenu) { activeMoreMenu.classList.remove('show'); activeMoreMenu = null; }
+  document.getElementById('profileDropdown').classList.remove('show');
+});
+
+window.eliminarObjetoPrompt = async (id) => {
+  if (!confirm('¿Eliminar esta publicación? No se puede deshacer.')) return;
+  await api.eliminarObjeto(id);
+  showToast('Publicación eliminada');
+  renderMisObjetos();
+};
+
+window.marcarIntercambiadoPrompt = async (id) => {
+  if (!confirm('¿Marcar este objeto como intercambiado? Dejará de aparecer en el feed.')) return;
+  await api.marcarIntercambiado(id);
+  showToast('✅ Marcado como intercambiado');
+  renderMisObjetos();
+};
+
+window.reportarObjeto = async (id) => {
+  const motivo = prompt('¿Motivo del reporte?');
+  if (motivo?.trim()) {
+    await api.reporte(id, motivo.trim());
+    showToast('✅ Reporte enviado');
+  }
+};
+
+// ===== VISTAS =====
+function renderTodos() {
+  document.getElementById('sectionLabel').innerText = 'Publicaciones recientes';
+  document.getElementById('backToFeedBtn').classList.remove('show');
+  let filtered = [...todosProductos];
+  if (currentCategory !== 'all') {
+    filtered = filtered.filter(p => (p.descripcion?.split('|')[0]?.trim()) === currentCategory);
+  }
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(p =>
+      p.titulo?.toLowerCase().includes(q) ||
+      p.display_name?.toLowerCase().includes(q) ||
+      p.username?.toLowerCase().includes(q)
+    );
+  }
+  filtered.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  renderProductosGrid(filtered.slice(0, visibleItems), false);
+  const btn = document.getElementById('loadMoreBtn');
+  btn.style.display = filtered.length > visibleItems ? 'inline-block' : 'none';
+}
+
+async function renderMisObjetos() {
+  renderSkeletons(4);
+  document.getElementById('sectionLabel').innerText = 'Mis publicaciones';
+  document.getElementById('backToFeedBtn').classList.add('show');
+  const datos = await api.misObjetos();
+  renderProductosGrid(datos, true);
+  document.getElementById('loadMoreBtn').style.display = 'none';
+}
+
+async function renderFavoritos() {
+  renderSkeletons(4);
+  document.getElementById('sectionLabel').innerText = 'Mis favoritos';
+  document.getElementById('backToFeedBtn').classList.add('show');
+  const favs = await api.favoritos();
+  renderProductosGrid(favs, false);
+  document.getElementById('loadMoreBtn').style.display = 'none';
+}
+
+async function renderConversaciones() {
+  renderSkeletons(4);
+  document.getElementById('sectionLabel').innerText = 'Conversaciones';
+  document.getElementById('backToFeedBtn').classList.add('show');
+  const grid = document.getElementById('feedGrid');
+  grid.style.gridTemplateColumns = '1fr';
+
+  const convs = await api.conversaciones().catch(() => []);
+  if (!convs.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>No hay conversaciones activas</p></div>`;
     document.getElementById('loadMoreBtn').style.display = 'none';
+    return;
   }
+  grid.innerHTML = convs.map(c => `
+    <div class="conv-card" onclick="abrirChatDesdeConv(${c.id_objeto}, '${esc(c.otroUsername || '')}', '${esc(c.titulo)}', '${esc(c.otroAvatar || '')}')">
+      <div class="conv-avatar">
+        ${c.otroAvatar ? `<img src="${esc(c.otroAvatar)}">` : `<i class="fas fa-user"></i>`}
+      </div>
+      <div class="conv-info">
+        <div class="conv-title">${esc(c.titulo)}</div>
+        <div class="conv-sub">con ${esc(c.otroUsuario)}</div>
+        ${c.ultimoMensaje ? `<div class="conv-last">${esc(c.ultimoMensaje)}</div>` : ''}
+      </div>
+      <div class="conv-time">${new Date(c.ultimaFecha).toLocaleDateString()}</div>
+    </div>
+  `).join('');
+  document.getElementById('loadMoreBtn').style.display = 'none';
+}
 
-  // ===== RENDER =====
-  function esc(str) {
-    if (!str) return '';
-    return str.replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+function switchToView(view) {
+  currentView = view;
+  visibleItems = 8;
+  if (view === 'todos') renderTodos();
+  else if (view === 'misobjetos') renderMisObjetos();
+  else if (view === 'favoritos') renderFavoritos();
+  else if (view === 'chats') renderConversaciones();
+}
+
+// ===== PERFIL PÚBLICO =====
+window.verPerfilPublico = async (username) => {
+  if (!username) return;
+  perfilPublicoActual = username;
+  valoracionSeleccionada = 0;
+  document.querySelectorAll('.star-pick').forEach(s => s.classList.remove('selected'));
+
+  document.getElementById('ppName').innerText = '...';
+  document.getElementById('ppUsername').innerText = '';
+  document.getElementById('ppBio').innerText = '';
+  document.getElementById('ppStars').innerHTML = '';
+  document.getElementById('ppMeta').innerHTML = '';
+  document.getElementById('ppGrid').innerHTML = '';
+  document.getElementById('perfilPublicoPanel').classList.add('open');
+
+  try {
+    const p = await api.perfilPublico(username);
+    document.getElementById('ppName').innerText = p.display_name || username;
+    document.getElementById('ppUsername').innerText = `@${p.username}`;
+
+    const av = document.getElementById('ppAvatar');
+    if (p.avatar_url) av.innerHTML = `<img src="${esc(p.avatar_url)}">`;
+    else av.innerHTML = `<i class="fas fa-user"></i>`;
+
+    if (p.bio) document.getElementById('ppBio').innerText = p.bio;
+
+    // Estrellas
+    document.getElementById('ppStars').innerHTML =
+      p.total_valoraciones > 0
+        ? renderStars(p.promedio_valoracion, p.total_valoraciones, 'big') +
+          `<span class="perfil-star-info">${p.promedio_valoracion?.toFixed(1)} de 5</span>`
+        : `<span style="font-size:0.75rem;color:var(--text-dim)">Sin valoraciones aún</span>`;
+
+    // Meta
+    let meta = '';
+    if (p.ciudad) meta += `<span><i class="fas fa-map-marker-alt"></i>${esc(p.ciudad)}</span>`;
+    if (p.edad) meta += `<span><i class="fas fa-birthday-cake"></i>${p.edad} años</span>`;
+    if (p.total_valoraciones) meta += `<span><i class="fas fa-exchange-alt"></i>${p.total_valoraciones} intercambios</span>`;
+    document.getElementById('ppMeta').innerHTML = meta;
+
+    // Objetos
+    const grid = document.getElementById('ppGrid');
+    if (!p.objetos?.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-dim);font-size:0.8rem;padding:1rem;">Sin publicaciones activas</div>`;
+    } else {
+      grid.innerHTML = p.objetos.slice(0, 6).map(o => `
+        <div class="perfil-obj-card">
+          <div class="perfil-obj-img">
+            <img src="${esc(o.url)}" onerror="this.src='https://placehold.co/150x150/222/444?text=!'">
+          </div>
+          <div class="perfil-obj-info">
+            <div class="perfil-obj-title">${esc(o.titulo)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Mostrar/ocultar sección valorar (no puedes valorarte a ti mismo)
+    const esMiPerfil = currentUserPerfil?.username === username;
+    document.getElementById('valorarSection').style.display = esMiPerfil ? 'none' : 'block';
+
+  } catch(e) {
+    showToast('Error al cargar perfil');
   }
+};
 
-  function renderProductosGrid(productos, showDelete = false) {
-    const grid = document.getElementById("feedGrid");
-    if (!productos || !productos.length) {
-      grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>No hay objetos para mostrar</p></div>`;
+document.getElementById('closePerfilPublicoBtn').onclick = () => {
+  document.getElementById('perfilPublicoPanel').classList.remove('open');
+};
+
+// Star picker
+document.querySelectorAll('.star-pick').forEach(star => {
+  star.addEventListener('click', () => {
+    valoracionSeleccionada = parseInt(star.getAttribute('data-v'));
+    document.querySelectorAll('.star-pick').forEach((s, i) => {
+      s.classList.toggle('selected', i < valoracionSeleccionada);
+    });
+  });
+  star.addEventListener('mouseover', () => {
+    const v = parseInt(star.getAttribute('data-v'));
+    document.querySelectorAll('.star-pick').forEach((s, i) => {
+      s.style.color = i < v ? 'var(--gold)' : 'var(--text-dim)';
+    });
+  });
+  star.addEventListener('mouseout', () => {
+    document.querySelectorAll('.star-pick').forEach((s, i) => {
+      s.style.color = i < valoracionSeleccionada ? 'var(--gold)' : 'var(--text-dim)';
+    });
+  });
+});
+
+document.getElementById('enviarValoracionBtn').onclick = async () => {
+  if (!valoracionSeleccionada) { showToast('Selecciona una puntuación'); return; }
+  if (!perfilPublicoActual) return;
+  try {
+    await api.valorar({
+      id_objeto: 0, // el worker lo maneja
+      calificado_username: perfilPublicoActual,
+      puntuacion: valoracionSeleccionada,
+      comentario: document.getElementById('valorarComentario').value.trim()
+    });
+    showToast('✅ Valoración enviada');
+    document.getElementById('valorarComentario').value = '';
+    valoracionSeleccionada = 0;
+    document.querySelectorAll('.star-pick').forEach(s => s.classList.remove('selected'));
+    verPerfilPublico(perfilPublicoActual); // refrescar
+  } catch(e) {
+    showToast('❌ ' + e.message);
+  }
+};
+
+// ===== CHAT =====
+async function cargarMensajes() {
+  if (!chatObjetoId || !chatConUsuario) return;
+  try {
+    const msgs = await api.mensajes(chatObjetoId, chatConUsuario);
+    const container = document.getElementById('chatMessages');
+    if (!msgs.length) {
+      container.innerHTML = `<div style="text-align:center;color:var(--text-dim);font-size:0.8rem;margin-top:2rem;">Sé el primero en escribir 👋</div>`;
       return;
     }
-    grid.innerHTML = productos.map(p => {
-      const ubicacion = p.direccion || (p.descripcion?.split('|')[2]?.trim()) || 'Sin ubicación';
-      const esFavorito = favoritosIds.has(p.id);
-      const fotosExtra = p.fotos_extra || [];
-      const todasFotos = [p.url, ...fotosExtra.map(f => f.url)];
-      const esMio = currentUser && p.usuario === currentUser.email;
-      const nombreCorto = (p.usuario || '').split('@')[0];
-
+    container.innerHTML = msgs.map(m => {
+      const esMio = m.direccion === 'yo';
       return `
-        <div class="product-card" data-id="${p.id}">
-          <div class="card-img">
-            <img class="imagen-principal" src="${esc(p.url)}" loading="lazy"
-              onerror="this.src='https://placehold.co/300x300/181818/555?text=Sin+imagen'"
-              onclick="mostrarFotoAmpliada('${esc(p.url)}')">
-            <div class="card-badge">🔄 TRUEQUE</div>
-            <div class="fav-btn ${esFavorito ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorito(${p.id}, this)">${esFavorito ? '♥' : '♡'}</div>
-            ${showDelete && esMio ? `<div class="delete-btn" onclick="event.stopPropagation(); eliminarObjetoPrompt(${p.id})"><i class="fas fa-trash"></i></div>` : ''}
-            ${todasFotos.length > 1 ? `
-              <div class="miniaturas">
-                ${todasFotos.map((url, i) => `
-                  <img class="miniatura ${i===0?'activa':''}" src="${esc(url)}"
-                    onerror="this.src='https://placehold.co/40x40/181818/555?text=!'"
-                    onclick="event.stopPropagation(); cambiarFotoPrincipal(this, '${esc(url)}')">
-                `).join('')}
-              </div>
-            ` : ''}
-          </div>
-          <div class="card-info">
-            <div class="card-title">${esc(p.titulo)}</div>
-            <div class="card-meta"><i class="fas fa-user-circle"></i> ${esc(nombreCorto)}</div>
-            <div class="card-meta"><i class="fas fa-map-marker-alt"></i> ${esc(ubicacion)}</div>
-            ${esMio
-              ? `<div class="owner-label">✦ tu publicación</div>`
-              : `<div class="card-actions">
-                  <button class="btn-chat" onclick="abrirChat(${p.id}, '${esc(p.usuario)}', '${esc(p.titulo)}')">💬 Intercambiar</button>
-                  <div class="btn-more" onclick="event.stopPropagation(); toggleMoreMenu(this, ${p.id})">
-                    <i class="fas fa-ellipsis-h"></i>
-                    <div class="more-menu" id="more-${p.id}">
-                      <div class="more-menu-item" onclick="reportarObjeto(${p.id})"><i class="fas fa-flag"></i> Reportar</div>
-                      <div class="more-menu-item" onclick="verPerfilUsuario('${esc(p.usuario)}')"><i class="fas fa-user"></i> Ver perfil</div>
-                    </div>
-                  </div>
-                </div>`
-            }
-          </div>
+        <div class="message ${esMio ? 'sent' : 'received'}">
+          ${!esMio ? `<div class="message-sender">${esc(m.emisor_nombre || chatConUsuario)}</div>` : ''}
+          ${m.mensaje ? esc(m.mensaje) : ''}
+          ${m.archivo_url ? `
+            <a href="${esc(m.archivo_url)}" target="_blank" class="msg-archivo">
+              <i class="fas fa-paperclip"></i>
+              <span>${esc(m.archivo_filename || 'Archivo')}</span>
+            </a>
+          ` : ''}
+          <div class="message-time">${new Date(m.fecha).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
         </div>
       `;
     }).join('');
-  }
-
-  window.toggleMoreMenu = (btn, id) => {
-    const menu = document.getElementById(`more-${id}`);
-    if (activeMoreMenu && activeMoreMenu !== menu) activeMoreMenu.classList.remove('show');
-    menu.classList.toggle('show');
-    activeMoreMenu = menu.classList.contains('show') ? menu : null;
-  };
-
-  document.addEventListener('click', () => {
-    if (activeMoreMenu) { activeMoreMenu.classList.remove('show'); activeMoreMenu = null; }
-  });
-
-  window.cambiarFotoPrincipal = (el, url) => {
-    const card = el.closest('.product-card');
-    card.querySelector('.imagen-principal').src = url;
-    card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
-    el.classList.add('activa');
-  };
-
-  window.mostrarFotoAmpliada = (url) => {
-    document.getElementById('fotoModalImg').src = url;
-    document.getElementById('fotoModal').style.display = 'flex';
-  };
-
-  window.verPerfilUsuario = (email) => showToast(`👤 ${email}`);
-
-  window.eliminarObjetoPrompt = async (id) => {
-    if (!confirm('¿Eliminar esta publicación?')) return;
-    await eliminarObjeto(id);
-    showToast('Publicación eliminada');
-    if (currentView === 'misobjetos') await renderMisObjetos();
-    else renderTodos();
-  };
-
-  window.reportarObjeto = async (id) => {
-    const motivo = prompt('¿Motivo del reporte?');
-    if (motivo?.trim()) {
-      await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
-      showToast('✅ Reporte enviado');
-    }
-  };
-
-  function renderTodos() {
-    let filtered = [...todosProductos];
-    if (currentCategory !== 'all') filtered = filtered.filter(p => (p.descripcion?.split('|')[0]?.trim()) === currentCategory);
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => p.titulo?.toLowerCase().includes(q) || p.usuario?.toLowerCase().includes(q));
-    }
-    filtered.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-    renderProductosGrid(filtered.slice(0, visibleItems), false);
-    document.getElementById('loadMoreBtn').style.display = filtered.length > visibleItems ? 'inline-block' : 'none';
-  }
-
-  async function renderMisObjetos() {
-    renderSkeletons(4);
-    document.getElementById('sectionLabel').innerText = 'Mis publicaciones';
-    const datos = await obtenerMisObjetos();
-    renderProductosGrid(datos, true);
-    document.getElementById('loadMoreBtn').style.display = 'none';
-  }
-
-  async function renderFavoritos() {
-    renderSkeletons(4);
-    document.getElementById('sectionLabel').innerText = 'Mis favoritos';
-    const favs = await obtenerFavoritos();
-    renderProductosGrid(favs, false);
-    document.getElementById('loadMoreBtn').style.display = 'none';
-  }
-
-  async function renderConversaciones() {
-    document.getElementById('sectionLabel').innerText = 'Conversaciones';
-    const grid = document.getElementById('feedGrid');
-    const convs = await obtenerConversaciones().catch(() => []);
-    if (!convs.length) {
-      grid.innerHTML = `<div class="empty-state"><div class="empty-icon">💬</div><p>No hay conversaciones activas</p></div>`;
-      return;
-    }
-    grid.style.gridTemplateColumns = '1fr';
-    grid.innerHTML = convs.map(c => `
-      <div class="conv-card" onclick="abrirChat(${c.id_objeto}, '${esc(c.otroUsuario)}', '${esc(c.titulo)}')">
-        <div class="conv-avatar"><i class="fas fa-comment-dots"></i></div>
-        <div class="conv-info">
-          <div class="conv-title">${esc(c.titulo)}</div>
-          <div class="conv-sub">con ${esc(c.otroUsuario)}</div>
-        </div>
-        <div class="conv-time">${new Date(c.ultimaFecha).toLocaleDateString()}</div>
-      </div>
-    `).join('');
-    document.getElementById('loadMoreBtn').style.display = 'none';
-  }
-
-  function switchToView(view) {
-    currentView = view;
-    visibleItems = 8;
-    // reset grid columns
-    document.getElementById('feedGrid').style.gridTemplateColumns = '';
-    if (view === 'todos') { document.getElementById('sectionLabel').innerText = 'Publicaciones recientes'; renderTodos(); }
-    else if (view === 'misobjetos') renderMisObjetos();
-    else if (view === 'favoritos') renderFavoritos();
-    else if (view === 'chats') renderConversaciones();
-  }
-
-  // ===== CHAT =====
-  async function cargarMensajes() {
-    if (!chatObjetoId || !chatConUsuario) return;
-    const msgs = await obtenerMensajes(chatObjetoId, chatConUsuario).catch(() => []);
-    const container = document.getElementById('chatMessages');
-    container.innerHTML = msgs.map(m => `
-      <div class="message ${m.emisor === currentUser?.email ? 'sent' : 'received'}">
-        ${esc(m.mensaje)}
-        <div class="message-time">${new Date(m.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-      </div>
-    `).join('');
     container.scrollTop = container.scrollHeight;
-  }
+  } catch(e) { console.error(e); }
+}
 
-  async function enviarMensajeChat() {
-    const input = document.getElementById('chatInput');
-    const texto = input.value.trim();
-    if (!texto || !chatObjetoId || !chatConUsuario) return;
-    input.value = '';
-    await enviarMensaje(chatObjetoId, chatConUsuario, texto);
-    await cargarMensajes();
-  }
+async function enviarMensajeChat() {
+  const input = document.getElementById('chatInput');
+  const texto = input.value.trim();
+  const archivo = document.getElementById('chatFileInput').files[0];
+  if (!texto && !archivo) return;
+  if (!chatObjetoId || !chatConUsuario) return;
 
-  window.abrirChat = async (oId, usuario, titulo) => {
-    chatObjetoId = oId;
-    chatConUsuario = usuario;
-    document.getElementById('chatWithName').innerText = titulo;
-    document.getElementById('chatSidebar').classList.add('open');
-    await cargarMensajes();
-    if (mensajesPolling) clearInterval(mensajesPolling);
-    mensajesPolling = setInterval(cargarMensajes, 3000);
-  };
+  input.value = '';
 
-  function cerrarChat() {
-    if (mensajesPolling) clearInterval(mensajesPolling);
-    chatObjetoId = null; chatConUsuario = null;
-    document.getElementById('chatSidebar').classList.remove('open');
-  }
-
-  document.getElementById('closeChatBtn').onclick = cerrarChat;
-  document.getElementById('sendChatBtn').onclick = enviarMensajeChat;
-  document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') enviarMensajeChat(); });
-
-  // ===== UPLOAD =====
-  function actualizarPreviews() {
-    const container = document.getElementById('fotosPreview');
-    container.innerHTML = '';
-    selectedFiles.forEach((file, idx) => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const div = document.createElement('div');
-        div.className = 'foto-preview';
-        div.innerHTML = `<img src="${e.target.result}"><button class="remove-foto" onclick="eliminarFoto(${idx})">✕</button>`;
-        container.appendChild(div);
-      };
-      reader.readAsDataURL(file);
+  if (archivo) {
+    const form = new FormData();
+    form.append('id_objeto', chatObjetoId);
+    form.append('receptor', chatConUsuario);
+    form.append('mensaje', texto);
+    form.append('archivo', archivo);
+    await apiFetch('/mensaje', { method: 'POST', body: form });
+    document.getElementById('chatFileInput').value = '';
+  } else {
+    await apiFetch('/mensaje', {
+      method: 'POST',
+      body: JSON.stringify({ id_objeto: chatObjetoId, receptor: chatConUsuario, mensaje: texto })
     });
   }
+  await cargarMensajes();
+}
 
-  window.eliminarFoto = (idx) => { selectedFiles.splice(idx, 1); actualizarPreviews(); };
+async function abrirChatDesdeProducto(objetoId, username, titulo) {
+  chatObjetoId = objetoId;
+  chatConUsuario = username;
+  document.getElementById('chatWithName').innerText = username;
+  document.getElementById('chatObjetoName').innerText = titulo;
+  document.getElementById('chatSidebar').classList.add('open');
+  await cargarMensajes();
+  iniciarPolling();
+}
 
-  document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
-  document.getElementById('fileInput').onchange = e => {
-    selectedFiles = [...selectedFiles, ...Array.from(e.target.files)].slice(0, 5);
-    actualizarPreviews();
-  };
+window.abrirChatDesdeProducto = abrirChatDesdeProducto;
 
-  document.getElementById('openUploadPanelBtn').onclick = () => {
-    if (!currentUser) { showToast('Inicia sesión primero'); return; }
-    document.getElementById('uploadPanelOverlay').classList.add('active');
-  };
+window.abrirChatDesdeConv = async (oId, username, titulo, avatar) => {
+  chatObjetoId = oId;
+  chatConUsuario = username;
+  document.getElementById('chatWithName').innerText = username;
+  document.getElementById('chatObjetoName').innerText = titulo;
+  document.getElementById('chatSidebar').classList.add('open');
+  await cargarMensajes();
+  iniciarPolling();
+};
 
-  document.getElementById('cancelUploadBtn').onclick = () => document.getElementById('uploadPanelOverlay').classList.remove('active');
-  document.getElementById('uploadPanelOverlay').onclick = (e) => {
-    if (e.target === document.getElementById('uploadPanelOverlay')) document.getElementById('uploadPanelOverlay').classList.remove('active');
-  };
+function iniciarPolling() {
+  if (mensajesPolling) clearInterval(mensajesPolling);
+  mensajesPolling = setInterval(cargarMensajes, 3500);
+}
 
-  document.getElementById('publishArticleBtn').onclick = async () => {
-    const titulo = document.getElementById('uploadTitle').value.trim();
-    const categoria = document.getElementById('uploadCategory').value;
-    const desc = document.getElementById('uploadDesc').value.trim();
-    const ubicacion = document.getElementById('uploadLocation').value.trim();
-    if (!titulo || !desc || !selectedFiles.length) { showToast('❌ Completa todos los campos y añade al menos una foto'); return; }
-    try {
-      document.getElementById('publishArticleBtn').innerText = 'Publicando...';
-      await publicarObjeto(titulo, desc, categoria, ubicacion, selectedFiles);
-      showToast('✅ Objeto publicado');
-      document.getElementById('uploadPanelOverlay').classList.remove('active');
-      document.getElementById('uploadTitle').value = '';
-      document.getElementById('uploadDesc').value = '';
-      document.getElementById('uploadLocation').value = '';
-      selectedFiles = [];
-      actualizarPreviews();
-      todosProductos = await obtenerObjetos();
-      renderTodos();
-    } catch(e) {
-      showToast('❌ ' + e.message);
-    } finally {
-      document.getElementById('publishArticleBtn').innerText = 'Publicar';
-    }
-  };
+function cerrarChat() {
+  if (mensajesPolling) clearInterval(mensajesPolling);
+  chatObjetoId = null; chatConUsuario = null;
+  document.getElementById('chatSidebar').classList.remove('open');
+}
 
-  // ===== CATEGORÍAS =====
-  document.querySelectorAll('.cat-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      currentCategory = pill.getAttribute('data-cat');
-      visibleItems = 8;
-      if (currentView !== 'todos') switchToView('todos');
-      else renderTodos();
-    });
+document.getElementById('closeChatBtn').onclick = cerrarChat;
+document.getElementById('sendChatBtn').onclick = enviarMensajeChat;
+document.getElementById('chatInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') enviarMensajeChat();
+});
+
+// ===== SUBIDA =====
+function actualizarPreviews() {
+  const container = document.getElementById('fotosPreview');
+  container.innerHTML = '';
+  selectedFiles.forEach((file, idx) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const div = document.createElement('div');
+      div.className = 'foto-preview';
+      div.innerHTML = `<img src="${e.target.result}"><button class="remove-foto" onclick="quitarFoto(${idx})">✕</button>`;
+      container.appendChild(div);
+    };
+    reader.readAsDataURL(file);
   });
+}
 
-  document.getElementById('searchInput').addEventListener('input', e => {
-    searchQuery = e.target.value;
+window.quitarFoto = (idx) => { selectedFiles.splice(idx, 1); actualizarPreviews(); };
+
+document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange = e => {
+  selectedFiles = [...selectedFiles, ...Array.from(e.target.files)].slice(0, 5);
+  actualizarPreviews();
+};
+
+document.getElementById('openUploadPanelBtn').onclick = () => {
+  document.getElementById('uploadPanelOverlay').classList.add('active');
+};
+
+document.getElementById('cancelUploadBtn').onclick = () =>
+  document.getElementById('uploadPanelOverlay').classList.remove('active');
+
+document.getElementById('uploadPanelOverlay').onclick = (e) => {
+  if (e.target === document.getElementById('uploadPanelOverlay'))
+    document.getElementById('uploadPanelOverlay').classList.remove('active');
+};
+
+document.getElementById('publishArticleBtn').onclick = async () => {
+  const titulo = document.getElementById('uploadTitle').value.trim();
+  const categoria = document.getElementById('uploadCategory').value;
+  const desc = document.getElementById('uploadDesc').value.trim();
+  const ubicacion = document.getElementById('uploadLocation').value.trim();
+
+  if (!titulo || !desc || !selectedFiles.length) {
+    showToast('❌ Completa título, descripción y al menos una foto');
+    return;
+  }
+
+  const btn = document.getElementById('publishArticleBtn');
+  btn.disabled = true; btn.innerText = 'Publicando...';
+
+  try {
+    const form = new FormData();
+    form.append('titulo', titulo);
+    form.append('descripcion', `${categoria} | ${desc} | ${ubicacion || 'Sin ubicación'}`);
+    form.append('direccion', ubicacion);
+    selectedFiles.slice(0, 5).forEach((f, i) => form.append(`foto_${i}`, f));
+    await apiFetch('/objeto', { method: 'POST', body: form });
+
+    showToast('✅ Objeto publicado');
+    document.getElementById('uploadPanelOverlay').classList.remove('active');
+    document.getElementById('uploadTitle').value = '';
+    document.getElementById('uploadDesc').value = '';
+    document.getElementById('uploadLocation').value = '';
+    selectedFiles = []; actualizarPreviews();
+    todosProductos = await api.objetos();
+    renderTodos();
+  } catch(e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false; btn.innerText = 'Publicar';
+  }
+};
+
+// ===== CATEGORÍAS =====
+document.querySelectorAll('.cat-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    currentCategory = pill.getAttribute('data-cat');
     visibleItems = 8;
-    if (currentView !== 'todos') switchToView('todos');
-    else renderTodos();
+    switchToView('todos');
   });
+});
 
-  document.getElementById('loadMoreBtn').addEventListener('click', () => { visibleItems += 8; renderTodos(); });
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  visibleItems = 8;
+  if (currentView !== 'todos') switchToView('todos');
+  else renderTodos();
+});
 
-  // Perfil dropdown
-  const profileBadge = document.getElementById('userProfileBadge');
-  const profileDropdown = document.getElementById('profileDropdown');
-  profileBadge.addEventListener('click', e => { e.stopPropagation(); profileDropdown.classList.toggle('show'); });
-  document.addEventListener('click', () => {
-    profileDropdown.classList.remove('show');
+document.getElementById('loadMoreBtn').addEventListener('click', () => {
+  visibleItems += 8; renderTodos();
+});
+
+document.getElementById('backToFeedBtn').addEventListener('click', () => {
+  currentView = 'todos'; switchToView('todos');
+});
+
+// Dropdown perfil
+document.getElementById('hdrAvatarWrap').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('profileDropdown').classList.toggle('show');
+});
+
+document.querySelectorAll('.dropdown-item').forEach(item => {
+  item.addEventListener('click', e => {
+    e.stopPropagation();
+    const action = item.getAttribute('data-action');
+    document.getElementById('profileDropdown').classList.remove('show');
+    if (action === 'logout') logout();
+    else if (action === 'miPerfil' && currentUserPerfil?.username) verPerfilPublico(currentUserPerfil.username);
+    else if (action === 'editarPerfil') mostrarPantallaPerfil();
+    else if (action === 'misobjetos') switchToView('misobjetos');
+    else if (action === 'favoritos') switchToView('favoritos');
+    else if (action === 'chats') switchToView('chats');
   });
-  document.querySelectorAll('.dropdown-item').forEach(item => {
-    item.addEventListener('click', e => {
-      e.stopPropagation();
-      const action = item.getAttribute('data-action');
-      if (action === 'logout') logout();
-      else if (action === 'perfil') showToast(`👤 ${currentUser?.name || currentUser?.email}`);
-      else switchToView(action);
-      profileDropdown.classList.remove('show');
-    });
-  });
+});
 
-  // ===== INIT =====
-  async function init() {
-    const token = getTokenFromURL();
-    if (token) {
-      authToken = token;
-      currentUser = await verifyToken(token);
-      if (!currentUser) { localStorage.removeItem('auth_token'); authToken = null; }
-    }
-
-    if (currentUser) {
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('appContainer').classList.add('active');
-      const av = document.getElementById('headerAvatar');
-      av.innerHTML = currentUser.picture ? `<img src="${currentUser.picture}">` : `<i class="fas fa-user"></i>`;
-      renderSkeletons();
-      const [favs, objetos] = await Promise.all([obtenerFavoritos(), obtenerObjetos()]);
-      favoritosIds = new Set(favs.map(f => f.id));
-      todosProductos = objetos;
-      renderTodos();
-    }
+// ===== INIT =====
+async function init() {
+  const token = getTokenFromURL();
+  if (token) {
+    authToken = token;
+    currentUser = await verifyToken(token);
+    if (!currentUser) { localStorage.removeItem('auth_token'); authToken = null; }
   }
 
-  document.getElementById('googleLoginBtn').onclick = loginWithGoogle;
-  init();
+  if (currentUser) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appContainer').classList.add('active');
 
-  // OneSignal
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "68491021-9c85-423d-9e50-ddcffa0c2d63",
-      notifyButton: { enable: true, position: 'bottom-right' }
+    // Cargar perfil completo desde DB
+    currentUserPerfil = await api.miPerfil().catch(() => null);
+    actualizarHeaderConPerfil();
+
+    // Si no tiene perfil_completo, mostrar pantalla de completar
+    if (!currentUserPerfil?.perfil_completo) {
+      mostrarPantallaPerfil();
+    }
+
+    // Cargar datos en paralelo
+    renderSkeletons();
+    const [favs, objetos] = await Promise.all([api.favoritos(), api.objetos()]);
+    favoritosIds = new Set(favs.map(f => f.id));
+    todosProductos = objetos;
+    renderTodos();
+
+    // OneSignal
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "68491021-9c85-423d-9e50-ddcffa0c2d63",
+        notifyButton: { enable: true, position: 'bottom-right' }
+      });
+      const osId = await OneSignal.User.PushSubscription.id;
+      if (osId) await api.guardarOneSignal(osId).catch(() => {});
     });
-  });
+
+  } else {
+    document.getElementById('loginScreen').classList.remove('hidden');
+  }
+}
+
+document.getElementById('googleLoginBtn').onclick = loginWithGoogle;
+init();
 </script>
 </body>
 </html>
