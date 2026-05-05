@@ -525,8 +525,9 @@
     async function eliminarObjetoPrompt(id) { if (confirm('¿Eliminar?')) { await eliminarObjeto(id); cargarMisObjetos(); cargarFeed(); alert('✅ Eliminado'); } }
     async function reportarObjetoPrompt(id) { const motivo = prompt('Motivo:'); if (motivo) { await reportarObjeto(id, motivo); alert('✅ Reporte enviado'); } }
 
-    // ========== CHAT (CORREGIDO) ==========
+    // ========== CHAT (FUNCIONES CORREGIDAS) ==========
     function detenerPolling() { if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } }
+    
     function iniciarPolling() {
         detenerPolling();
         pollingInterval = setInterval(async () => {
@@ -535,6 +536,7 @@
             }
         }, 5000);
     }
+    
     async function cargarMensajes() {
         if (!chatActual.objetoId) return;
         try {
@@ -543,6 +545,7 @@
             if (!msgs.length) { cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún. Envía uno para empezar.</p>'; return; }
             cont.innerHTML = msgs.map(m => `<div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}"><strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}<small>${new Date(m.fecha).toLocaleString()}</small></div>`).join('');
             cont.scrollTop = cont.scrollHeight;
+            
             const objeto = (await obtenerObjetos()).find(o => o.id === chatActual.objetoId);
             if (objeto && objeto.intercambiado === 1 && objeto.usuario !== currentUser?.email) {
                 document.getElementById('valorarSection').style.display = 'block';
@@ -554,6 +557,7 @@
             } else { document.getElementById('valorarSection').style.display = 'none'; }
         } catch(e) { console.error(e); }
     }
+    
     window.abrirChatConObjeto = async function(objetoId, otroUsuario, titulo) {
         detenerPolling();
         chatActual = { objetoId: parseInt(objetoId), otroUsuario, titulo, objetoIntercambiado: false };
@@ -568,6 +572,7 @@
         document.getElementById('tab-chats').style.display = 'block';
         cargarListaConversaciones();
     };
+    
     async function enviarMensajeChat() {
         const input = document.getElementById('nuevoMensaje');
         const texto = input.value.trim();
@@ -576,6 +581,7 @@
         input.value = '';
         await cargarMensajes();
     }
+    
     async function cargarListaConversaciones() {
         try {
             const convs = await obtenerMisConversaciones();
@@ -584,6 +590,7 @@
             div.innerHTML = convs.map(c => `<div class="conv-item" onclick="abrirChatConObjeto(${c.id_objeto}, '${escapeHtml(c.otroUsuario)}', '${escapeHtml(c.titulo)}')"><strong>📦 ${escapeHtml(c.titulo)}</strong><br>💬 con ${escapeHtml(c.otroUsuario)}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small></div>`).join('');
         } catch(e) { console.error(e); }
     }
+    
     document.getElementById('enviarValoracionBtn').onclick = async () => {
         let punt = 0;
         document.querySelectorAll('#ratingStars .star').forEach((s,i) => { if (s.innerHTML === '★') punt = i+1; });
