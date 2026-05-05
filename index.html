@@ -2,12 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Intercambia - Trueque de objetos (2 columnas)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Intercambia - Trueque de objetos | Marketplace</title>
     <!-- Leaflet y Font Awesome -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- OneSignal Notificaciones -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <style>
         * {
             margin: 0;
@@ -17,611 +19,1026 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #f0f2f5;
-            padding: 20px 0 40px 0;
+            background: #ffffff;
+            color: #111111;
+            padding-bottom: 70px;
         }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 16px;
-        }
-
-        /* Header estilo Facebook */
-        .fb-header {
+        /* HEADER */
+        .mobile-header {
+            position: sticky;
+            top: 0;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            padding: 12px 20px;
-            margin-bottom: 20px;
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
+            border-bottom: 1px solid #eef2f0;
+            z-index: 100;
         }
 
-        .logo-area {
+        .logo-area-mobile {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
-        .logo-area i {
-            font-size: 32px;
+        .logo-area-mobile i {
+            font-size: 28px;
             color: #059669;
-            background: #e6f7ef;
-            padding: 8px;
-            border-radius: 50%;
-        }
-
-        .logo-area h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #1e293b;
-        }
-
-        .user-info-fb {
-            background: #f0f2f5;
-            border-radius: 40px;
-            padding: 6px 16px 6px 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 500;
-        }
-
-        /* Card genérica */
-        .card-fb {
-            background: white;
+            background: #e8f5e9;
+            padding: 6px;
             border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
-            overflow: hidden;
         }
-
-        .search-card {
-            padding: 16px;
+        .logo-area-mobile h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #059669, #10b981);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
         }
-
-        .search-bar-fb {
-            background: #f0f2f5;
-            border-radius: 40px;
-            padding: 12px 20px;
+        .profile-top {
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 8px;
+            background: #f0f2f0;
+            padding: 4px 12px 4px 6px;
+            border-radius: 40px;
+        }
+        .profile-top img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .profile-top span {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #2c3e2f;
         }
 
-        .search-bar-fb i {
-            color: #8a8f98;
+        /* Búsqueda */
+        .search-bar {
+            background: #f0f2f0;
+            border-radius: 32px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 16px;
+            transition: 0.2s;
         }
-
-        .search-bar-fb input {
-            background: transparent;
+        .search-bar:focus-within {
+            background: white;
+            border: 1px solid #059669;
+            box-shadow: 0 0 0 2px rgba(5,150,105,0.1);
+        }
+        .search-bar i {
+            color: #5e8a6f;
+        }
+        .search-bar input {
             border: none;
-            flex: 1;
-            font-size: 1rem;
+            background: transparent;
+            width: 100%;
+            font-size: 0.95rem;
             outline: none;
         }
 
-        .categories-fb {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+        /* Categorías */
+        .categories-scroll {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 0 16px 12px 16px;
+            margin-bottom: 8px;
+            scrollbar-width: thin;
         }
-
-        .cat-fb {
-            background: #f0f2f5;
+        .categories-flex {
+            display: flex;
+            gap: 10px;
+        }
+        .cat-mobile {
+            background: #f0f2f0;
             border: none;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #1e293b;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
             cursor: pointer;
             transition: 0.2s;
+            color: #2c4b35;
         }
-
-        .cat-fb.active {
+        .cat-mobile.active {
             background: #059669;
             color: white;
         }
 
-        /* Navegación */
-        .nav-fb {
-            display: flex;
-            gap: 12px;
-            background: white;
-            border-radius: 16px;
-            padding: 8px 16px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-
-        .nav-fb-btn {
-            background: transparent;
-            border: none;
-            padding: 10px 20px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            border-radius: 40px;
-            cursor: pointer;
-            color: #475569;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .nav-fb-btn i {
-            font-size: 1.1rem;
-        }
-
-        .nav-fb-btn.active {
-            background: #e6f7ef;
-            color: #059669;
-        }
-
-        /* ⭐⭐⭐ IMPORTANTE: GRID DE DOS COLUMNAS FIJAS ⭐⭐⭐ */
-        .grid-dos-columnas {
+        /* GALERÍA 2 COLUMNAS */
+        .grid-pinterest {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 0 12px;
         }
-
-        /* Card de objeto estilo Facebook Marketplace */
-        .objeto-fb-card {
+        .pin-card {
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #eef2ef;
             cursor: pointer;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
         }
-
-        .objeto-fb-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        .pin-card:active {
+            transform: scale(0.98);
         }
-
-        .card-img-top {
+        .pin-img {
             width: 100%;
-            height: 200px;
+            aspect-ratio: 1 / 1;
             object-fit: cover;
-            background: #e4e6eb;
+            background: #f9faf9;
         }
-
-        .card-body {
-            padding: 14px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+        .pin-info {
+            padding: 12px;
         }
-
-        .card-title {
-            font-size: 1rem;
+        .pin-category {
+            font-size: 0.65rem;
             font-weight: 700;
+            text-transform: uppercase;
+            color: #059669;
+            letter-spacing: 0.3px;
             margin-bottom: 6px;
         }
-
-        .card-category {
-            font-size: 0.7rem;
-            color: #059669;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 8px;
+        .pin-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            line-height: 1.3;
         }
-
-        .card-desc {
-            font-size: 0.8rem;
-            color: #4b5563;
-            margin-bottom: 12px;
+        .pin-desc {
+            font-size: 0.75rem;
+            color: #5e6e64;
+            line-height: 1.3;
+            margin-bottom: 8px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-
-        .miniaturas-row {
+        .ubicacion-user {
             display: flex;
-            gap: 6px;
-            margin-top: 8px;
-            overflow-x: auto;
-            padding-bottom: 4px;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: #6b8a73;
+            margin: 8px 0;
         }
-
-        .miniatura-fb {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            object-fit: cover;
-            border: 2px solid transparent;
-            cursor: pointer;
+        .acciones-botones {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0 6px;
         }
-
-        .badge-status {
-            background: #e4e6eb;
-            padding: 4px 10px;
-            border-radius: 30px;
+        .btn-guardar, .btn-intercambiar {
+            flex: 1;
+            padding: 8px 0;
+            border-radius: 40px;
             font-size: 0.7rem;
             font-weight: 600;
-            display: inline-block;
-            margin-right: 6px;
-        }
-
-        .btn-fb-primary {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 8px 0;
-            width: 100%;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-top: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-fb-secondary {
-            background: #e4e6eb;
-            color: #1e293b;
-            border: none;
-            padding: 8px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .favorito-fb {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 50%;
-            width: 34px;
-            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 4px;
             cursor: pointer;
-            font-size: 18px;
-            color: #5c5f66;
             transition: 0.2s;
+            border: none;
+        }
+        .btn-guardar {
+            background: #059669;
+            color: white;
+        }
+        .btn-guardar.outline {
+            background: #eef2ef;
+            color: #2c4b35;
+        }
+        .btn-intercambiar {
+            background: #2c553d;
+            color: white;
+        }
+        .btn-reportar, .btn-eliminar {
+            background: transparent;
+            border: none;
+            color: #8aa59a;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 0;
+            width: 100%;
+            cursor: pointer;
         }
 
-        .favorito-fb.activo {
-            color: #fbbf24;
+        /* BOTTOM NAV VERDE */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #e0ece4;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 12px 12px;
+            z-index: 200;
+        }
+        .nav-bottom-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            font-size: 0.7rem;
+            color: #8ba894;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 4px 12px;
+            border-radius: 30px;
+        }
+        .nav-bottom-item i {
+            font-size: 1.5rem;
+        }
+        .nav-bottom-item.active {
+            color: #059669;
+            font-weight: 500;
         }
 
-        /* modales */
-        .modal-fb {
+        /* MODAL DETALLE (Marketplace) */
+        .modal-marketplace {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: white;
+            z-index: 1000;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eef2ef;
+        }
+        .close-modal {
+            background: #eef2ef;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .modal-img-principal {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+        }
+        .miniaturas-modal {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            background: #fafdfa;
+        }
+        .miniatura-modal {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .miniatura-modal.active {
+            border-color: #059669;
+        }
+        .modal-info {
+            padding: 20px;
+        }
+        .modal-titulo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .modal-categoria {
+            color: #059669;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .modal-desc {
+            color: #4a5b52;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+        .modal-ubicacion, .modal-usuario {
+            font-size: 0.85rem;
+            color: #6b8a73;
+            margin: 8px 0;
+        }
+        .modal-acciones {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            margin-bottom: 20px;
+        }
+        .btn-modal {
+            flex: 1;
+            padding: 14px;
+            border-radius: 40px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-modal-primary {
+            background: #059669;
+            color: white;
+        }
+        .btn-modal-secondary {
+            background: #eef2ef;
+            color: #2c4b35;
+        }
+
+        /* Modales formulario */
+        .modal-modern {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 1100;
         }
-
-        .modal-content-fb {
+        .modal-content {
             background: white;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
+            border-radius: 28px;
+            max-width: 90%;
+            width: 400px;
             padding: 24px;
-        }
-
-        .upload-area-fb {
-            border: 2px dashed #cbd5e1;
-            border-radius: 16px;
-            padding: 32px;
-            text-align: center;
-            background: #fafcff;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .chat-container-fb {
-            max-height: 300px;
+            max-height: 85vh;
             overflow-y: auto;
-            background: #f8f9fa;
-            border-radius: 16px;
-            padding: 12px;
         }
-
-        .mensaje-fb {
+        .form-mobile input, .form-mobile textarea, .form-mobile select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #dde6e0;
+            border-radius: 24px;
+            font-size: 0.9rem;
+        }
+        .upload-zone {
+            background: #fafdfa;
+            border: 2px dashed #cbdcd2;
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            margin: 12px 0;
+        }
+        .btn-modern {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+        }
+        .chat-container {
+            background: #f8faf8;
+            border-radius: 20px;
+            padding: 12px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .mensaje {
             background: white;
             border-radius: 18px;
-            padding: 8px 14px;
+            padding: 8px 12px;
             margin-bottom: 8px;
             max-width: 80%;
+            font-size: 0.8rem;
         }
-
-        .mensaje-fb.emisor {
+        .mensaje.emisor {
             background: #059669;
             color: white;
             margin-left: auto;
         }
-
-        /* Responsive: en móviles una columna */
-        @media (max-width: 700px) {
-            .grid-dos-columnas {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .fb-input {
-            width: 100%;
-            padding: 12px 16px;
-            margin: 10px 0;
-            border: 1px solid #cbd5e1;
-            border-radius: 60px;
-            font-size: 1rem;
-            outline: none;
-        }
-        textarea.fb-input {
+        .puntos-badge {
+            background: #f59e0b;
+            color: white;
+            padding: 2px 8px;
             border-radius: 20px;
-            resize: vertical;
+            font-size: 10px;
+            margin-left: 8px;
+        }
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            padding: 20px;
+            text-align: center;
+        }
+        .google-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <!-- Cabecera FB -->
-    <div class="fb-header">
-        <div class="logo-area">
+
+<!-- Pantalla de login (se oculta cuando hay usuario) -->
+<div id="loginScreen" class="login-screen">
+    <i class="fas fa-exchange-alt" style="font-size: 64px; color: #059669; margin-bottom: 20px;"></i>
+    <h2 style="color: #2c3e2f;">Intercambia</h2>
+    <p style="color: #5e6e64; margin: 16px 0;">Conecta, intercambia y reutiliza objetos</p>
+    <button id="googleLoginBtn" class="google-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+            <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Iniciar sesión con Google
+    </button>
+</div>
+
+<!-- App principal (se muestra tras login) -->
+<div id="appContainer" style="display: none;">
+    <div class="mobile-header">
+        <div class="logo-area-mobile">
             <i class="fas fa-exchange-alt"></i>
             <h1>Intercambia</h1>
         </div>
-        <div id="userInfoFB" class="user-info-fb" style="display: none;"></div>
+        <div id="profileTopBtn" class="profile-top">
+            <img id="topAvatar" src="" alt="perfil">
+            <span id="topUserName"></span>
+        </div>
     </div>
 
-    <!-- Login card -->
-    <div id="loginSectionFB" class="card-fb" style="text-align: center; padding: 32px;">
-        <i class="fas fa-handshake" style="font-size: 48px; color: #059669; margin-bottom: 16px;"></i>
-        <h2>Trueque de objetos</h2>
-        <p style="margin: 16px 0; color: #5c5f66;">Inicia sesión para publicar, intercambiar y chatear</p>
-        <button id="googleLoginBtnFB" style="background: #1877f2; color: white; border: none; padding: 12px 24px; border-radius: 40px; font-weight: bold; font-size: 1rem; cursor: pointer;"><i class="fab fa-google"></i>  Continuar con Google</button>
-        <button id="logoutBtnFB" style="display: none; margin-top: 12px;" class="btn-fb-secondary">Cerrar sesión</button>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchMobileInput" placeholder="Buscar objetos o personas...">
     </div>
 
-    <!-- App principal (oculta hasta login) -->
-    <div id="appSectionsFB" style="display:none;">
-        <!-- Barra de búsqueda + categorías -->
-        <div class="card-fb search-card">
-            <div class="search-bar-fb">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInputFB" placeholder="Buscar objetos o usuarios...">
-            </div>
-            <div class="categories-fb" id="categoriesContainerFB"></div>
-        </div>
+    <div class="categories-scroll" id="categoriesMobileContainer"></div>
 
-        <!-- Navegación Facebook -->
-        <div class="nav-fb">
-            <button class="nav-fb-btn active" data-tab="feed"><i class="fas fa-store"></i> Objetos</button>
-            <button class="nav-fb-btn" data-tab="favoritos"><i class="fas fa-heart"></i> Favoritos</button>
-            <button class="nav-fb-btn" data-tab="publicar"><i class="fas fa-plus-circle"></i> Publicar</button>
-            <button class="nav-fb-btn" data-tab="misobjetos"><i class="fas fa-box"></i> Mis objetos</button>
-            <button class="nav-fb-btn" data-tab="chats"><i class="fas fa-comment-dots"></i> Chats</button>
-            <button class="nav-fb-btn" data-tab="perfil"><i class="fas fa-user-circle"></i> Perfil</button>
-        </div>
-
-        <!-- Feed: DOS COLUMNAS -->
-        <div id="tab-feed-fb"><div id="feedGridFB" class="grid-dos-columnas">Cargando objetos...</div></div>
-        
-        <!-- Favoritos: también dos columnas -->
-        <div id="tab-favoritos-fb" style="display:none;"><div id="favoritosGridFB" class="grid-dos-columnas"></div></div>
-
-        <!-- Publicar -->
-        <div id="tab-publicar-fb" style="display:none;">
-            <div class="card-fb" style="padding: 24px;">
-                <h3><i class="fas fa-camera"></i> Publicar nuevo objeto</h3>
-                <input type="text" id="tituloFB" placeholder="Título" class="fb-input">
-                <select id="categoriaFB" class="fb-input"></select>
-                <textarea id="descripcionFB" rows="3" placeholder="Descripción" class="fb-input"></textarea>
-                <div class="upload-area-fb" id="uploadPrincipalFB">📸 Foto principal</div>
-                <input type="file" id="fotoPrincipalInputFB" accept="image/*" style="display:none;">
-                <div id="previewPrincipalFB" style="margin:12px 0"></div>
-                <div class="upload-area-fb" id="uploadExtraFB">➕ Fotos adicionales (máx 4)</div>
-                <input type="file" id="fotosExtraInputFB" accept="image/*" multiple style="display:none;">
-                <div id="previewExtraFB" class="miniaturas-row"></div>
-                <div class="ubicacion-section" style="margin-top:16px">
-                    <label><i class="fas fa-map-marker-alt"></i> Ubicación</label>
-                    <button type="button" id="ubicarBtnFB" class="btn-fb-secondary" style="width:auto; padding:8px 12px;">Usar mi ubicación</button>
-                    <input type="text" id="direccionInputFB" placeholder="Dirección o punto de referencia" class="fb-input">
-                    <div id="mapaFB" style="height: 220px; margin-top:12px; border-radius: 16px; display:none;"></div>
-                    <input type="hidden" id="latFB" value="">
-                    <input type="hidden" id="lngFB" value="">
+    <!-- Vistas -->
+    <div id="feedView"><div id="feedGrid" class="grid-pinterest">Cargando...</div></div>
+    <div id="favoritosView" style="display:none;"><div id="favoritosGrid" class="grid-pinterest"></div></div>
+    <div id="crearView" style="display:none;">
+        <div style="background:white; margin:12px; border-radius:24px; padding:20px;">
+            <h3><i class="fas fa-plus-circle" style="color:#059669;"></i> Publicar objeto</h3>
+            <div class="form-mobile">
+                <input type="text" id="tituloMobile" placeholder="Título">
+                <select id="categoriaMobile">
+                    <option>Electrónica</option><option>Ropa</option><option>Libros</option><option>Mascotas</option><option>Hogar</option><option>Deportes</option>
+                </select>
+                <textarea id="descripcionMobile" rows="3" placeholder="Descripción, estado, qué buscas..."></textarea>
+                <div class="upload-zone" id="uploadMainMobile">📸 Foto principal (clic)</div>
+                <input type="file" id="fotoMainInput" accept="image/*" style="display:none;">
+                <div id="previewMainMobile" style="margin:8px 0;"></div>
+                <div class="upload-zone" id="uploadExtraMobile">➕ Fotos adicionales (máx 4)</div>
+                <input type="file" id="fotosExtraInput" accept="image/*" multiple style="display:none;">
+                <div id="previewExtraMobile" style="display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;"></div>
+                <div style="margin:16px 0;">
+                    <label>📍 Ubicación</label>
+                    <button type="button" id="ubicarBtnMobile" style="background:#059669; color:white; border:none; padding:8px; border-radius:40px; width:100%; margin:8px 0;">Usar mi ubicación</button>
+                    <input type="text" id="direccionMobile" placeholder="Dirección o referencia">
+                    <div id="mapaMobile" style="height: 180px; border-radius: 16px; margin-top: 10px; display: none;"></div>
+                    <input type="hidden" id="latMobile" value=""><input type="hidden" id="lngMobile" value="">
                 </div>
-                <button id="previewBtnFB" class="btn-fb-primary">Vista previa</button>
+                <button id="previewMobileBtn" class="btn-modern">Vista previa</button>
             </div>
         </div>
+    </div>
+    <div id="misCosasView" style="display:none;"><div id="misCosasGrid" class="grid-pinterest"></div></div>
+    <div id="mensajesView" style="display:none;">
+        <div id="listaChatsMobile" style="background:white; margin:12px; border-radius:24px; padding:16px;"></div>
+        <div id="chatDetalleMobile" style="margin:12px; display:none;"></div>
+    </div>
 
-        <!-- Mis objetos (dos columnas) -->
-        <div id="tab-misobjetos-fb" style="display:none;"><div id="misObjetosGridFB" class="grid-dos-columnas"></div></div>
-        
-        <!-- Chats -->
-        <div id="tab-chats-fb" style="display:none;">
-            <div id="listaChatsFB" class="card-fb" style="padding:12px"></div>
-            <div id="chatDetalleFB" style="display:none;" class="card-fb" style="padding:20px; margin-top:16px;"></div>
-        </div>
-        
-        <!-- Perfil -->
-        <div id="tab-perfil-fb" style="display:none;"><div id="perfilContentFB" class="card-fb" style="padding:24px; text-align:center;"></div></div>
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+        <button class="nav-bottom-item active" data-tab="feed"><i class="fas fa-home"></i><span>Inicio</span></button>
+        <button class="nav-bottom-item" data-tab="favoritos"><i class="fas fa-bookmark"></i><span>Guardados</span></button>
+        <button class="nav-bottom-item" data-tab="crear"><i class="fas fa-plus-circle"></i><span>Crear</span></button>
+        <button class="nav-bottom-item" data-tab="misCosas"><i class="fas fa-box"></i><span>Mis cosas</span></button>
+        <button class="nav-bottom-item" data-tab="mensajes"><i class="fas fa-comment-dots"></i><span>Mensajes</span></button>
     </div>
 </div>
 
-<!-- Modales -->
-<div id="previewModalFB" class="modal-fb"><div class="modal-content-fb"><h3>Confirmar publicación</h3><img id="previewImgFB" style="width:100%; border-radius: 16px;"><p id="previewTextFB"></p><button id="confirmPublicarFB" class="btn-fb-primary">Publicar</button><button id="cancelPreviewFB" class="btn-fb-secondary" style="margin-top:12px;">Cancelar</button></div></div>
-<div id="fotoModalFB" class="modal-fb"><div class="modal-content-fb" style="max-width:90vw;"><img id="fotoModalImgFB" style="width:100%; border-radius: 20px;"><button onclick="document.getElementById('fotoModalFB').style.display='none'" style="margin-top:12px;">Cerrar</button></div></div>
+<!-- MODAL DETALLE MARKETPLACE -->
+<div id="detailModal" class="modal-marketplace">
+    <div class="modal-header">
+        <h3>Detalle del objeto</h3>
+        <button class="close-modal" id="closeDetailModal"><i class="fas fa-times"></i></button>
+    </div>
+    <img id="modalMainImg" class="modal-img-principal" src="" alt="principal">
+    <div id="modalThumbnails" class="miniaturas-modal"></div>
+    <div class="modal-info">
+        <div class="modal-titulo" id="modalTitulo"></div>
+        <div class="modal-categoria" id="modalCategoria"></div>
+        <div class="modal-desc" id="modalDesc"></div>
+        <div class="modal-ubicacion"><i class="fas fa-map-marker-alt"></i> <span id="modalUbicacion"></span></div>
+        <div class="modal-usuario"><i class="fas fa-user"></i> <span id="modalUsuario"></span></div>
+        <div class="modal-acciones" id="modalAcciones"></div>
+    </div>
+</div>
+
+<!-- MODALES PREVIEW / FOTO -->
+<div id="previewModal" class="modal-modern"><div class="modal-content"><h3>Confirmar publicación</h3><img id="previewImgModal" style="width:100%; border-radius: 16px;"><p id="previewTextModal" style="margin:12px 0;"></p><button id="confirmarPublicarBtn" class="btn-modern">Publicar</button><button id="cancelPreviewBtn" style="background:#ccc; margin-top:12px;" class="btn-modern">Cancelar</button></div></div>
+<div id="fotoModal" class="modal-modern"><div class="modal-content"><img id="fotoAmpliada" style="width:100%; border-radius: 16px;"><button onclick="document.getElementById('fotoModal').style.display='none'" style="margin-top:12px;" class="btn-modern">Cerrar</button></div></div>
 
 <script>
-    // ------ ESTADO GLOBAL ------
+    // ========== CONFIGURACIÓN ==========
+    const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
+    const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
+    
     let currentUser = null;
+    let authToken = null;
     let objetos = [];
-    let favoritos = [];
+    let favoritosIds = new Set();
     let chats = [];
-    let nextId = 30;
-    let mapInstance = null;
-    let fotosExtraSeleccionadas = [];
+    let nextId = 100;
     let fotoPrincipalData = null;
+    let fotosExtraArr = [];
+    let mapaTemp = null;
+    let pollingInterval = null;
+    let ultimoMensajeId = 0;
 
-    const categoriasLista = ["Electrónica","Ropa","Libros","Mascotas","Hogar","Deportes"];
+    const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
-    // Funciones de renderizado con GRID DE DOS COLUMNAS
+    // ========== AUTENTICACIÓN REAL CON GOOGLE ==========
+    function getTokenFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        if (token) {
+            localStorage.setItem('auth_token', token);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return token;
+        }
+        return localStorage.getItem('auth_token');
+    }
+
+    async function verifyToken(token) {
+        try {
+            const response = await fetch(`${WORKER_URL}/auth/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data.user;
+        } catch (e) { return null; }
+    }
+
+    function loginWithGoogle() {
+        window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`;
+    }
+
+    function logout() {
+        localStorage.removeItem('auth_token');
+        currentUser = null;
+        authToken = null;
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('appContainer').style.display = 'none';
+    }
+
+    // ========== ONESIGNAL ==========
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+            appId: "68491021-9c85-423d-9e50-ddcffa0c2d63",
+            notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' },
+        });
+    });
+
+    async function guardarOneSignalId(email) {
+        try {
+            const OneSignal = window.OneSignal;
+            const userId = await OneSignal.User.getPushSubscriptionId();
+            if (userId) {
+                await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ onesignal_id: userId })
+                });
+            }
+        } catch(e) { console.error('Error guardando OneSignal ID:', e); }
+    }
+
+    // ========== API REAL ==========
+    async function apiFetch(path, options = {}) {
+        const headers = options.headers || {};
+        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+        const response = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
+        if (!response.ok) {
+            if (response.status === 401) { logout(); throw new Error('Sesión expirada'); }
+            throw new Error(await response.text());
+        }
+        return response.json();
+    }
+
+    async function cargarObjetosDesdeAPI() {
+        try {
+            const data = await apiFetch('/objetos');
+            objetos = data.map(obj => ({
+                id: obj.id,
+                titulo: obj.titulo,
+                categoria: obj.descripcion?.split('|')[0]?.trim() || 'General',
+                descripcion: obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '',
+                fotoPrincipal: obj.url,
+                fotos: obj.fotos_extra?.map(f => f.url) || [],
+                userId: obj.usuario,
+                userNombre: obj.usuario,
+                ubicacionTexto: obj.direccion || 'Sin ubicación',
+                lat: obj.latitud,
+                lng: obj.longitud,
+                intercambiado: obj.intercambiado === 1,
+                sospechoso: obj.sospechoso === 1
+            }));
+            renderFeed();
+            renderFavoritos();
+            renderMisCosas();
+        } catch(e) { console.error('Error cargando objetos:', e); }
+    }
+
+    async function cargarFavoritosDesdeAPI() {
+        try {
+            const data = await apiFetch('/favoritos');
+            favoritosIds = new Set(data.map(f => f.id));
+        } catch(e) { console.error('Error cargando favoritos:', e); }
+    }
+
+    async function agregarFavorito(id) {
+        await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) });
+        favoritosIds.add(id);
+        renderFeed(); renderFavoritos();
+    }
+
+    async function quitarFavorito(id) {
+        await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) });
+        favoritosIds.delete(id);
+        renderFeed(); renderFavoritos();
+    }
+
+    async function reportarObjeto(id, motivo) {
+        await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
+        alert('Reporte enviado. Gracias por ayudar a mantener la comunidad segura.');
+    }
+
+    async function eliminarObjeto(id) {
+        await apiFetch(`/objeto/${id}`, { method: 'DELETE' });
+        objetos = objetos.filter(o => o.id !== id);
+        renderFeed(); renderFavoritos(); renderMisCosas();
+        alert('Objeto eliminado correctamente');
+    }
+
+    async function enviarMensaje(objetoId, receptor, mensaje, archivo = null) {
+        if (archivo) {
+            const form = new FormData();
+            form.append('id_objeto', objetoId);
+            form.append('receptor', receptor);
+            form.append('mensaje', mensaje);
+            form.append('archivo', archivo);
+            const response = await fetch(`${WORKER_URL}/mensaje`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${authToken}` },
+                body: form
+            });
+            if (!response.ok) throw new Error(await response.text());
+            return response.json();
+        }
+        return await apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
+    }
+
+    async function obtenerMensajes(objetoId, otroUsuario) {
+        return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`);
+    }
+
+    async function obtenerMisConversaciones() {
+        return await apiFetch('/mis-conversaciones');
+    }
+
+    // ========== UI RENDER ==========
+    function renderCategorias() {
+        const container = document.getElementById("categoriesMobileContainer");
+        if(!container) return;
+        container.innerHTML = `<div class="categories-flex">
+            <button class="cat-mobile active" data-cat="all">Todos</button>
+            ${categorias.map(c => `<button class="cat-mobile" data-cat="${c}">${c}</button>`).join('')}
+        </div>`;
+        document.querySelectorAll('.cat-mobile').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.cat-mobile').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderFeed();
+            });
+        });
+    }
+
+    function getActiveCat() {
+        const active = document.querySelector('.cat-mobile.active');
+        return active ? active.dataset.cat : 'all';
+    }
+
     function renderFeed() {
-        const activeCat = document.querySelector('.cat-fb.active')?.dataset.cat || 'all';
-        const searchTerm = document.getElementById('searchInputFB')?.value.toLowerCase() || '';
+        const term = document.getElementById("searchMobileInput")?.value.toLowerCase() || "";
+        const cat = getActiveCat();
         let filtered = objetos.filter(o => !o.intercambiado);
-        if(activeCat !== 'all') filtered = filtered.filter(o => o.categoria === activeCat);
-        if(searchTerm) filtered = filtered.filter(o => o.titulo.toLowerCase().includes(searchTerm) || (o.userNombre && o.userNombre.toLowerCase().includes(searchTerm)));
-        const container = document.getElementById("feedGridFB");
+        if(cat !== "all") filtered = filtered.filter(o => o.categoria === cat);
+        if(term) filtered = filtered.filter(o => o.titulo.toLowerCase().includes(term) || o.userNombre.toLowerCase().includes(term));
+        const container = document.getElementById("feedGrid");
         if(!container) return;
-        if(filtered.length === 0) { container.innerHTML = '<div class="card-fb" style="padding:40px; text-align:center; grid-column:span 2;">No hay objetos disponibles</div>'; return; }
-        container.innerHTML = filtered.map(obj => renderObjetoCard(obj, true)).join('');
+        if(filtered.length===0){ container.innerHTML = '<div style="grid-column:span 2; text-align:center; padding:40px;">No hay objetos disponibles</div>'; return;}
+        container.innerHTML = filtered.map(obj => renderPinCard(obj)).join('');
         attachCardEvents();
     }
 
-    function renderFavoritos() {
-        const favObjs = objetos.filter(o => favoritos.includes(o.id) && !o.intercambiado);
-        const container = document.getElementById("favoritosGridFB");
-        if(!container) return;
-        if(favObjs.length === 0) { container.innerHTML = '<div class="card-fb" style="padding:40px; text-align:center; grid-column:span 2;">No tienes favoritos aún</div>'; return; }
-        container.innerHTML = favObjs.map(o => renderObjetoCard(o, true)).join('');
-        attachCardEvents();
-    }
-
-    function renderMisObjetos() {
-        const mis = objetos.filter(o => o.userId === currentUser?.uid);
-        const container = document.getElementById("misObjetosGridFB");
-        if(!container) return;
-        if(mis.length === 0) { container.innerHTML = '<div class="card-fb" style="padding:40px; text-align:center; grid-column:span 2;">No has publicado nada</div>'; return; }
-        container.innerHTML = mis.map(o => renderObjetoCard(o, true)).join('');
-        attachCardEvents();
-    }
-
-    function renderObjetoCard(obj, mostrarAcciones=true) {
-        const esFav = favoritos.includes(obj.id);
-        const intercambiadoClass = obj.intercambiado ? '<span class="badge-status">Intercambiado</span>' : '';
-        const fotosHtml = (obj.fotos && obj.fotos.length) ? `<div class="miniaturas-row">${obj.fotos.slice(0,4).map(f => `<img class="miniatura-fb" src="${f}" data-img="${f}">`).join('')}</div>` : '';
-        return `
-            <div class="objeto-fb-card" data-id="${obj.id}" data-objeto='${JSON.stringify(obj)}'>
-                <div style="position:relative;">
-                    <img class="card-img-top" src="${obj.fotoPrincipal || 'https://via.placeholder.com/300x200?text=Sin+imagen'}" alt="${obj.titulo}">
-                    <div class="favorito-fb ${esFav ? 'activo' : ''}" data-id="${obj.id}"><i class="fas fa-heart"></i></div>
-                </div>
-                <div class="card-body">
-                    <div class="card-category">${obj.categoria}</div>
-                    <div class="card-title">${obj.titulo}</div>
-                    <div class="card-desc">${obj.descripcion.substring(0,80)}...</div>
-                    ${fotosHtml}
-                    <div>${intercambiadoClass}</div>
-                    <div><i class="fas fa-map-marker-alt"></i> ${obj.ubicacionTexto || 'Ubicación no especificada'}</div>
-                    <div><i class="fas fa-user"></i> ${obj.userNombre || 'Anónimo'}</div>
-                    ${mostrarAcciones && obj.userId !== currentUser?.uid ? `<button class="btn-fb-primary intercambiar-trigger" data-id="${obj.id}">🤝 Proponer intercambio</button>` : ''}
-                    ${mostrarAcciones && obj.userId === currentUser?.uid ? `<button class="btn-fb-secondary eliminar-trigger" data-id="${obj.id}">Eliminar objeto</button>` : ''}
-                    ${mostrarAcciones && obj.userId !== currentUser?.uid ? `<button class="reportar-trigger" data-id="${obj.id}" style="background:#e4e6eb; margin-top:6px; width:100%; border:none; border-radius:8px; padding:6px;">⚠️ Reportar</button>` : ''}
-                </div>
-            </div>`;
+    function renderPinCard(obj) {
+        const esFav = favoritosIds.has(obj.id);
+        return `<div class="pin-card" data-id="${obj.id}" data-obj='${JSON.stringify(obj)}'>
+                    <img class="pin-img" src="${obj.fotoPrincipal}" alt="${obj.titulo}">
+                    <div class="pin-info">
+                        <div class="pin-category">${obj.categoria}</div>
+                        <div class="pin-title">${obj.titulo}</div>
+                        <div class="pin-desc">${obj.descripcion.substring(0, 80)}${obj.descripcion.length>80 ? '...' : ''}</div>
+                        <div class="ubicacion-user">
+                            <span><i class="fas fa-map-marker-alt"></i> ${obj.ubicacionTexto}</span>
+                            <div><i class="fas fa-user"></i> ${obj.userNombre}</div>
+                        </div>
+                        <div class="acciones-botones">
+                            <button class="btn-guardar ${esFav ? '' : 'outline'}" data-id="${obj.id}"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
+                            ${obj.userId !== currentUser?.email ? `<button class="btn-intercambiar" data-id="${obj.id}"><i class="fas fa-handshake"></i> Intercambiar</button>` : ''}
+                        </div>
+                        ${obj.userId !== currentUser?.email ? `<button class="btn-reportar" data-id="${obj.id}"><i class="fas fa-flag"></i> Reportar</button>` : `<button class="btn-eliminar" data-id="${obj.id}"><i class="fas fa-trash"></i> Eliminar</button>`}
+                    </div>
+                </div>`;
     }
 
     function attachCardEvents() {
-        document.querySelectorAll('.favorito-fb').forEach(el => {
-            el.removeEventListener('click', favHandler);
-            el.addEventListener('click', favHandler);
+        document.querySelectorAll('.btn-guardar').forEach(btn => {
+            btn.removeEventListener('click', favHandler);
+            btn.addEventListener('click', favHandler);
         });
-        document.querySelectorAll('.intercambiar-trigger').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); iniciarChat(id); }));
-        document.querySelectorAll('.eliminar-trigger').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); eliminarObjeto(id); }));
-        document.querySelectorAll('.reportar-trigger').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); alert("Reporte enviado al moderador."); }));
-        document.querySelectorAll('.miniatura-fb').forEach(img => img.addEventListener('click', (e) => { e.stopPropagation(); const src = img.dataset.img || img.src; document.getElementById('fotoModalImgFB').src = src; document.getElementById('fotoModalFB').style.display='flex'; }));
-        document.querySelectorAll('.objeto-fb-card').forEach(card => card.addEventListener('click', (e) => { if(e.target.classList.contains('favorito-fb') || e.target.closest('.intercambiar-trigger') || e.target.closest('.eliminar-trigger') || e.target.closest('.reportar-trigger')) return; const objData = JSON.parse(card.dataset.objeto); mostrarDetalleRapido(objData); }));
+        async function favHandler(e) { e.stopPropagation(); const id = parseInt(this.dataset.id); if(favoritosIds.has(id)) await quitarFavorito(id); else await agregarFavorito(id); renderFeed(); renderFavoritos(); }
+        
+        document.querySelectorAll('.btn-intercambiar').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); abrirChatConObjeto(id); }));
+        
+        document.querySelectorAll('.btn-reportar').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); const motivo = prompt('¿Por qué reportas este objeto?'); if(motivo) await reportarObjeto(id, motivo); }));
+        
+        document.querySelectorAll('.btn-eliminar').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); if(confirm("¿Eliminar este objeto?")) await eliminarObjeto(id); }));
+        
+        document.querySelectorAll('.pin-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if(e.target.closest('.btn-guardar') || e.target.closest('.btn-intercambiar') || e.target.closest('.btn-reportar') || e.target.closest('.btn-eliminar')) return;
+                const objData = JSON.parse(card.dataset.obj);
+                abrirDetalleModal(objData);
+            });
+        });
     }
 
-    function favHandler(e) { e.stopPropagation(); const id = parseInt(this.dataset.id); if(favoritos.includes(id)) favoritos = favoritos.filter(f => f !== id); else favoritos.push(id); renderFeed(); renderFavoritos(); renderMisObjetos(); }
-    function eliminarObjeto(id) { if(confirm("¿Eliminar este objeto?")) { objetos = objetos.filter(o => o.id !== id); renderFeed(); renderFavoritos(); renderMisObjetos(); } }
-
-    function iniciarChat(objetoId) { if(!currentUser) return; const obj = objetos.find(o => o.id === objetoId); if(!obj) return; let chat = chats.find(c => (c.objetoId === objetoId && ((c.user1 === currentUser.uid && c.user2 === obj.userId) || (c.user2 === currentUser.uid && c.user1 === obj.userId)))); if(!chat) { chat = { id: Date.now(), objetoId, user1: currentUser.uid, user2: obj.userId, mensajes: [], intercambioCompletado: false }; chats.push(chat); } abrirChat(chat.id); }
+    function renderFavoritos() { 
+        const favs = objetos.filter(o => favoritosIds.has(o.id) && !o.intercambiado); 
+        document.getElementById("favoritosGrid").innerHTML = favs.length ? favs.map(o=>renderPinCard(o)).join('') : '<div style="grid-column:span 2; text-align:center; padding:40px;">Sin favoritos</div>'; 
+        attachCardEvents(); 
+    }
     
-    function abrirChat(chatId) { const chat = chats.find(c => c.id === chatId); if(!chat) return; const objeto = objetos.find(o => o.id === chat.objetoId); document.getElementById("chatDetalleFB").style.display = "block"; document.getElementById("listaChatsFB").innerHTML = `<div class="conv-item">Chat sobre: ${objeto.titulo}</div>`; const chatDiv = document.getElementById("chatDetalleFB"); chatDiv.innerHTML = `<div class="card-fb" style="padding:20px;"><h4>${objeto.titulo}</h4><div id="chatMensajesFB" class="chat-container-fb"></div><div class="chat-input" style="display:flex; gap:8px; margin-top:12px;"><input type="text" id="mensajeInputFB" placeholder="Escribe..." style="flex:1; padding:10px; border-radius:40px; border:1px solid #cbd5e1;"><button id="enviarMsgFB" class="btn-fb-primary" style="width:auto; padding:10px 20px;">Enviar</button></div></div>`; function renderMsgs() { const msgsDiv = document.getElementById("chatMensajesFB"); if(!msgsDiv) return; msgsDiv.innerHTML = chat.mensajes.map(m => `<div class="mensaje-fb ${m.uid === currentUser.uid ? 'emisor' : 'receptor'}">${m.texto}</div>`).join(''); msgsDiv.scrollTop = msgsDiv.scrollHeight; } renderMsgs(); document.getElementById("enviarMsgFB").onclick = () => { const input = document.getElementById("mensajeInputFB"); if(input.value.trim()){ chat.mensajes.push({uid: currentUser.uid, texto: input.value, fecha: new Date()}); input.value = ""; renderMsgs(); } }; }
-
-    function mostrarDetalleRapido(obj){ alert(`${obj.titulo}\n${obj.descripcion}\n📍 ${obj.ubicacionTexto}\nUsuario: ${obj.userNombre}`); }
-
-    // Publicar lógica
-    document.getElementById("uploadPrincipalFB")?.addEventListener("click",()=>document.getElementById("fotoPrincipalInputFB").click());
-    document.getElementById("fotoPrincipalInputFB")?.addEventListener("change",(e)=>{ if(e.target.files[0]) { const reader = new FileReader(); reader.onload = ev => { fotoPrincipalData = ev.target.result; document.getElementById("previewPrincipalFB").innerHTML = `<img src="${fotoPrincipalData}" style="width:100px; border-radius:12px;">`; }; reader.readAsDataURL(e.target.files[0]); } });
-    document.getElementById("uploadExtraFB")?.addEventListener("click",()=>document.getElementById("fotosExtraInputFB").click());
-    document.getElementById("fotosExtraInputFB")?.addEventListener("change",(e)=>{ fotosExtraSeleccionadas = Array.from(e.target.files).slice(0,4); const preview = document.getElementById("previewExtraFB"); preview.innerHTML = fotosExtraSeleccionadas.map((f,i)=>`<img src="${URL.createObjectURL(f)}" style="width:60px;height:60px;border-radius:12px;">`).join(''); });
-    document.getElementById("ubicarBtnFB")?.addEventListener("click",()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos=>{ document.getElementById("latFB").value = pos.coords.latitude; document.getElementById("lngFB").value = pos.coords.longitude; const mapDiv = document.getElementById("mapaFB"); mapDiv.style.display = "block"; if(mapInstance) mapInstance.remove(); mapInstance = L.map('mapaFB').setView([pos.coords.latitude, pos.coords.longitude], 14); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapInstance); L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(mapInstance).bindPopup("Tu ubicación").openPopup(); }); else alert("Geolocalización no soportada"); });
-    document.getElementById("previewBtnFB")?.addEventListener("click",()=>{ if(!fotoPrincipalData){ alert("Selecciona foto principal"); return; } const titulo = document.getElementById("tituloFB").value; const categoria = document.getElementById("categoriaFB").value; const desc = document.getElementById("descripcionFB").value; const direccion = document.getElementById("direccionInputFB").value; document.getElementById("previewImgFB").src = fotoPrincipalData; document.getElementById("previewTextFB").innerHTML = `<strong>${titulo}</strong><br>${categoria}<br>${desc}<br><i class="fas fa-map-marker-alt"></i> ${direccion || "Ubicación aproximada"}`; document.getElementById("previewModalFB").style.display="flex"; document.getElementById("confirmPublicarFB").onclick = () => { const nuevasFotos = [fotoPrincipalData, ...fotosExtraSeleccionadas.map(f=> URL.createObjectURL(f))]; const nuevoObj = { id: nextId++, titulo, categoria, descripcion: desc, fotos: nuevasFotos.slice(1,5), fotoPrincipal: nuevasFotos[0], userId: currentUser.uid, userNombre: currentUser.displayName, ubicacionTexto: direccion || "Sin dirección", lat: parseFloat(document.getElementById("latFB").value)||null, lng: parseFloat(document.getElementById("lngFB").value)||null, intercambiado: false, fecha: new Date() }; objetos.unshift(nuevoObj); document.getElementById("previewModalFB").style.display="none"; renderFeed(); alert("¡Publicado exitosamente!"); limpiarFormulario(); }; });
-    function limpiarFormulario(){ document.getElementById("tituloFB").value=""; document.getElementById("descripcionFB").value=""; fotoPrincipalData=null; document.getElementById("previewPrincipalFB").innerHTML=""; fotosExtraSeleccionadas=[]; document.getElementById("previewExtraFB").innerHTML=""; document.getElementById("latFB").value=""; document.getElementById("lngFB").value=""; document.getElementById("direccionInputFB").value=""; if(mapInstance){ mapInstance.remove(); mapInstance=null; document.getElementById("mapaFB").style.display="none"; } }
-    function renderPerfil(){ const perfilDiv = document.getElementById("perfilContentFB"); if(currentUser) perfilDiv.innerHTML = `<img src="${currentUser.photoURL || 'https://via.placeholder.com/80'}" style="width:80px; border-radius:50%;"><h3>${currentUser.displayName}</h3><p>${currentUser.email}</p><p>⭐ Valoración: 4.8 (demo)</p><button class="btn-fb-secondary" id="editarPerfilMock">Editar perfil</button>`; document.getElementById("editarPerfilMock")?.addEventListener("click",()=>alert("Función en desarrollo")); }
-
-    // Data inicial
-    function initMockData(){
-        objetos = [
-            { id:1, titulo:"iPhone 8", categoria:"Electrónica", descripcion:"Batería nueva, 64gb", fotos:[], fotoPrincipal:"https://picsum.photos/id/0/300/200", userId:"user1", userNombre:"Carlos G.", ubicacionTexto:"Viña del Mar", intercambiado:false },
-            { id:2, titulo:"Novelas García Márquez", categoria:"Libros", descripcion:"Lote de 3 libros en buen estado", fotos:[], fotoPrincipal:"https://picsum.photos/id/20/300/200", userId:"user2", userNombre:"Ana M.", ubicacionTexto:"Valparaíso", intercambiado:false },
-            { id:3, titulo:"Pelota de fútbol", categoria:"Deportes", descripcion:"Semi nueva, ideal para cancha", fotos:[], fotoPrincipal:"https://picsum.photos/id/40/300/200", userId:"user1", userNombre:"Carlos G.", ubicacionTexto:"Quilpué", intercambiado:false },
-            { id:4, titulo:"Lámpara de pie", categoria:"Hogar", descripcion:"Madera vintage", fotos:[], fotoPrincipal:"https://picsum.photos/id/26/300/200", userId:"user3", userNombre:"Laura", ubicacionTexto:"Concón", intercambiado:false }
-        ];
-        favoritos = [];
-        chats = [];
+    function renderMisCosas() { 
+        const mis = objetos.filter(o => o.userId === currentUser?.email); 
+        document.getElementById("misCosasGrid").innerHTML = mis.length ? mis.map(o=>renderPinCard(o)).join('') : '<div style="grid-column:span 2; text-align:center; padding:40px;">No has publicado nada</div>'; 
+        attachCardEvents(); 
     }
 
-    // Login mock google
-    document.getElementById("googleLoginBtnFB")?.addEventListener("click",()=>{
-        currentUser = { uid:"user_"+Date.now(), displayName:"Usuario Demo", email:"demo@intercambia.com", photoURL:"https://randomuser.me/api/portraits/lego/1.jpg" };
-        document.getElementById("loginSectionFB").style.display = "none";
-        document.getElementById("appSectionsFB").style.display = "block";
-        document.getElementById("userInfoFB").style.display = "flex";
-        document.getElementById("userInfoFB").innerHTML = `<img src="${currentUser.photoURL}" style="width:32px; height:32px; border-radius:50%;"><span>${currentUser.displayName}</span>`;
-        document.getElementById("logoutBtnFB").style.display = "block";
-        renderFeed(); renderFavoritos(); renderMisObjetos(); renderPerfil();
-        loadCategories();
-    });
-    document.getElementById("logoutBtnFB")?.addEventListener("click",()=>{ currentUser = null; location.reload(); });
-
-    function loadCategories() {
-        const container = document.getElementById("categoriesContainerFB");
-        if(container) container.innerHTML = `<button class="cat-fb active" data-cat="all">Todos</button>` + categoriasLista.map(c => `<button class="cat-fb" data-cat="${c}">${c}</button>`).join('');
-        const selectCat = document.getElementById("categoriaFB");
-        if(selectCat) selectCat.innerHTML = categoriasLista.map(c => `<option value="${c}">${c}</option>`).join('');
-        document.querySelectorAll('.cat-fb').forEach(btn => btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.cat-fb').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderFeed();
-        }));
+    function abrirDetalleModal(obj) {
+        const allPhotos = [obj.fotoPrincipal, ...(obj.fotos || [])].filter(p => p);
+        document.getElementById("modalMainImg").src = allPhotos[0];
+        document.getElementById("modalTitulo").innerText = obj.titulo;
+        document.getElementById("modalCategoria").innerText = obj.categoria;
+        document.getElementById("modalDesc").innerText = obj.descripcion;
+        document.getElementById("modalUbicacion").innerText = obj.ubicacionTexto;
+        document.getElementById("modalUsuario").innerHTML = obj.userNombre;
+        
+        const thumbContainer = document.getElementById("modalThumbnails");
+        thumbContainer.innerHTML = allPhotos.map((photo, idx) => `<img class="miniatura-modal ${idx===0 ? 'active' : ''}" src="${photo}" data-index="${idx}">`).join('');
+        document.querySelectorAll('.miniatura-modal').forEach(thumb => {
+            thumb.addEventListener('click', (e) => {
+                document.querySelectorAll('.miniatura-modal').forEach(t => t.classList.remove('active'));
+                thumb.classList.add('active');
+                document.getElementById("modalMainImg").src = thumb.src;
+            });
+        });
+        
+        const accionesDiv = document.getElementById("modalAcciones");
+        const esFav = favoritosIds.has(obj.id);
+        accionesDiv.innerHTML = `
+            <button id="modalGuardarBtn" class="btn-modal btn-modal-secondary"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
+            ${obj.userId !== currentUser?.email ? `<button id="modalIntercambiarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-handshake"></i> Intercambiar</button>` : `<button id="modalEliminarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-trash"></i> Eliminar</button>`}
+        `;
+        document.getElementById("modalGuardarBtn")?.addEventListener("click", async () => { if(favoritosIds.has(obj.id)) await quitarFavorito(obj.id); else await agregarFavorito(obj.id); document.getElementById("detailModal").style.display = "none"; renderFeed(); renderFavoritos(); });
+        document.getElementById("modalIntercambiarBtn")?.addEventListener("click", () => { abrirChatConObjeto(obj.id); document.getElementById("detailModal").style.display = "none"; });
+        document.getElementById("modalEliminarBtn")?.addEventListener("click", async () => { if(confirm("Eliminar?")){ await eliminarObjeto(obj.id); document.getElementById("detailModal").style.display = "none"; } });
+        
+        document.getElementById("detailModal").style.display = "block";
     }
 
-    // Navegación tabs
-    document.querySelectorAll(".nav-fb-btn").forEach(btn => btn.addEventListener("click",()=>{
-        document.querySelectorAll(".nav-fb-btn").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        const tab = btn.dataset.tab;
-        document.getElementById("tab-feed-fb").style.display = tab === "feed" ? "block" : "none";
-        document.getElementById("tab-favoritos-fb").style.display = tab === "favoritos" ? "block" : "none";
-        document.getElementById("tab-publicar-fb").style.display = tab === "publicar" ? "block" : "none";
-        document.getElementById("tab-misobjetos-fb").style.display = tab === "misobjetos" ? "block" : "none";
-        document.getElementById("tab-chats-fb").style.display = tab === "chats" ? "block" : "none";
-        document.getElementById("tab-perfil-fb").style.display = tab === "perfil" ? "block" : "none";
-        if(tab === "favoritos") renderFavoritos();
-        if(tab === "misobjetos") renderMisObjetos();
-        if(tab === "chats") document.getElementById("listaChatsFB").innerHTML = "Inicia un intercambio desde cualquier objeto para chatear";
-        if(tab === "perfil") renderPerfil();
-    }));
+    // ========== CHAT ==========
+    async function abrirChatConObjeto(objetoId) {
+        const obj = objetos.find(o => o.id === objetoId);
+        if(!obj) return;
+        
+        // Cargar mensajes existentes
+        const msgs = await obtenerMensajes(objetoId, obj.userId);
+        
+        const contenedor = document.getElementById("chatDetalleMobile");
+        contenedor.style.display = "block";
+        contenedor.innerHTML = `<div style="background:white; border-radius:24px; padding:16px;">
+            <h4>${obj.titulo}</h4>
+            <div id="chatMsgsBox" class="chat-container"></div>
+            <div style="display:flex; gap:8px; margin-top:16px;">
+                <input type="text" id="msgInputMobile" style="flex:1; border-radius:40px; padding:10px; border:1px solid #ddd;">
+                <button id="sendMsgMobileBtn" class="btn-modern" style="width:auto; padding:0 20px;">Enviar</button>
+            </div>
+        </div>`;
+        
+        function cargarMensajes() {
+            const box = document.getElementById("chatMsgsBox");
+            if(box) box.innerHTML = msgs.map(m => `<div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}">${m.mensaje}</div>`).join('');
+        }
+        cargarMensajes();
+        
+        document.getElementById("sendMsgMobileBtn").onclick = async () => {
+            const input = document.getElementById("msgInputMobile");
+            if(input.value.trim()){
+                await enviarMensaje(objetoId, obj.userId, input.value);
+                input.value = "";
+                const nuevosMsgs = await obtenerMensajes(objetoId, obj.userId);
+                msgs.length = 0;
+                msgs.push(...nuevosMsgs);
+                cargarMensajes();
+            }
+        };
+        
+        switchTab("mensajes");
+    }
 
-    initMockData();
-    document.getElementById("searchInputFB")?.addEventListener("input",()=>renderFeed());
+    // ========== PUBLICAR OBJETO ==========
+    async function publicarObjeto(titulo, descripcion, categoria, fotos, lat, lng, direccion) {
+        const form = new FormData();
+        form.append('titulo', titulo);
+        form.append('descripcion', `${categoria} | ${descripcion}`);
+        form.append('latitud', lat || '');
+        form.append('longitud', lng || '');
+        form.append('direccion', direccion || '');
+        for (let i = 0; i < Math.min(fotos.length, 5); i++) {
+            form.append(`foto_${i}`, fotos[i]);
+        }
+        return await apiFetch('/objeto', { method: 'POST', body: form });
+    }
+
+    document.getElementById("uploadMainMobile")?.addEventListener("click",()=>document.getElementById("fotoMainInput").click());
+    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ if(e.target.files[0]){ const reader = new FileReader(); reader.onload = ev => { fotoPrincipalData = e.target.files[0]; document.getElementById("previewMainMobile").innerHTML = `<img src="${ev.target.result}" style="width:80px; border-radius:16px;">`; }; reader.readAsDataURL(e.target.files[0]); } });
+    document.getElementById("uploadExtraMobile")?.addEventListener("click",()=>document.getElementById("fotosExtraInput").click());
+    document.getElementById("fotosExtraInput")?.addEventListener("change",(e)=>{ fotosExtraArr = Array.from(e.target.files).slice(0,4); const cont = document.getElementById("previewExtraMobile"); cont.innerHTML = fotosExtraArr.map(f=>`<img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; border-radius:12px;">`).join(''); });
+    document.getElementById("ubicarBtnMobile")?.addEventListener("click",()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos=>{ document.getElementById("latMobile").value = pos.coords.latitude; document.getElementById("lngMobile").value = pos.coords.longitude; const mapDiv = document.getElementById("mapaMobile"); mapDiv.style.display = "block"; if(mapaTemp) mapaTemp.remove(); mapaTemp = L.map('mapaMobile').setView([pos.coords.latitude, pos.coords.longitude], 13); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaTemp); L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(mapaTemp); }); else alert("No se pudo"); });
+    document.getElementById("previewMobileBtn")?.addEventListener("click",()=>{ if(!fotoPrincipalData){ alert("Foto principal requerida"); return; } const tit = document.getElementById("tituloMobile").value; const cat = document.getElementById("categoriaMobile").value; const desc = document.getElementById("descripcionMobile").value; const dir = document.getElementById("direccionMobile").value; const reader = new FileReader(); reader.onload = e => { document.getElementById("previewImgModal").src = e.target.result; document.getElementById("previewTextModal").innerHTML = `<strong>${tit}</strong><br>${cat}<br>${desc}<br><i class="fas fa-map-marker-alt"></i> ${dir || "Sin dirección"}`; document.getElementById("previewModal").style.display="flex"; }; reader.readAsDataURL(fotoPrincipalData); });
+    document.getElementById("confirmarPublicarBtn").onclick = async () => { 
+        const tit = document.getElementById("tituloMobile").value;
+        const cat = document.getElementById("categoriaMobile").value;
+        const desc = document.getElementById("descripcionMobile").value;
+        const dir = document.getElementById("direccionMobile").value;
+        const lat = document.getElementById("latMobile").value;
+        const lng = document.getElementById("lngMobile").value;
+        const fotos = [fotoPrincipalData, ...fotosExtraArr];
+        await publicarObjeto(tit, desc, cat, fotos, lat, lng, dir);
+        document.getElementById("previewModal").style.display="none";
+        await cargarObjetosDesdeAPI();
+        limpiarForm();
+        alert("¡Objeto publicado!");
+    };
+    document.getElementById("cancelPreviewBtn").addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
+    function limpiarForm(){ 
+        document.getElementById("tituloMobile").value = ""; 
+        document.getElementById("descripcionMobile").value = ""; 
+        fotoPrincipalData = null; 
+        fotosExtraArr = []; 
+        document.getElementById("previewMainMobile").innerHTML = ""; 
+        document.getElementById("previewExtraMobile").innerHTML = ""; 
+        document.getElementById("direccionMobile").value = "";
+        document.getElementById("latMobile").value = "";
+        document.getElementById("lngMobile").value = "";
+        document.getElementById("mapaMobile").style.display = "none";
+        if(mapaTemp) mapaTemp.remove();
+    }
+
+    // ========== NAVEGACIÓN ==========
+    function switchTab(tabId) {
+        document.getElementById("feedView").style.display = tabId==="feed" ? "block" : "none";
+        document.getElementById("favoritosView").style.display = tabId==="favoritos" ? "block" : "none";
+        document.getElementById("crearView").style.display = tabId==="crear" ? "block" : "none";
+        document.getElementById("misCosasView").style.display = tabId==="misCosas" ? "block" : "none";
+        document.getElementById("mensajesView").style.display = tabId==="mensajes" ? "block" : "none";
+        if(tabId==="favoritos") renderFavoritos();
+        if(tabId==="misCosas") renderMisCosas();
+        if(tabId==="mensajes") cargarConversaciones();
+    }
+
+    async function cargarConversaciones() {
+        try {
+            const convs = await obtenerMisConversaciones();
+            const listaDiv = document.getElementById("listaChatsMobile");
+            if (!convs.length) { listaDiv.innerHTML = '<div style="text-align:center; padding:20px;">💬 No hay conversaciones activas aún.</div>'; return; }
+            listaDiv.innerHTML = convs.map(c => `
+                <div class="conv-item" style="padding:16px; border-bottom:1px solid #eef2ef; cursor:pointer;" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}">
+                    <strong>📦 ${c.titulo}</strong><br>💬 con ${c.otroUsuario}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
+                </div>
+            `).join('');
+            document.querySelectorAll('.conv-item').forEach(el => {
+                el.addEventListener('click', () => abrirChatConObjeto(parseInt(el.dataset.id)));
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    // ========== PERFIL ==========
+    function mostrarPerfil() {
+        alert(`👤 ${currentUser.name || currentUser.email}\n📧 ${currentUser.email}\n⭐ 4.9 · 15 intercambios`);
+    }
+
+    // ========== INICIALIZACIÓN ==========
+    async function init() {
+        const token = getTokenFromURL();
+        if (token) {
+            authToken = token;
+            const user = await verifyToken(token);
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                document.getElementById("topAvatar").src = currentUser.picture || 'https://ui-avatars.com/api/?background=059669&color=fff&rounded=true';
+                document.getElementById("topUserName").innerHTML = currentUser.name?.split(' ')[0] || currentUser.email.split('@')[0];
+                document.getElementById("profileTopBtn").addEventListener("click", mostrarPerfil);
+                await cargarObjetosDesdeAPI();
+                await cargarFavoritosDesdeAPI();
+                guardarOneSignalId(currentUser.email);
+            } else {
+                localStorage.removeItem('auth_token');
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appContainer').style.display = 'none';
+            }
+        } else {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+        }
+        renderCategorias();
+        document.getElementById("searchMobileInput").addEventListener("input", () => renderFeed());
+        document.getElementById("closeDetailModal").addEventListener("click", () => document.getElementById("detailModal").style.display = "none");
+        
+        document.querySelectorAll(".nav-bottom-item").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".nav-bottom-item").forEach(b=>b.classList.remove("active"));
+                btn.classList.add("active");
+                switchTab(btn.dataset.tab);
+            });
+        });
+    }
+    
+    document.getElementById("googleLoginBtn")?.addEventListener("click", loginWithGoogle);
+    init();
 </script>
 </body>
 </html>
