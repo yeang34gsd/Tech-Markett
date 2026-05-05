@@ -67,7 +67,7 @@
         .upload-zone { background: #fafdfa; border: 2px dashed #cbdcd2; border-radius: 20px; padding: 16px; text-align: center; cursor: pointer; margin: 12px 0; }
         .btn-modern { background: #059669; color: white; border: none; padding: 12px; border-radius: 40px; font-weight: 600; width: 100%; cursor: pointer; }
         .btn-modern:disabled { background: #9ac9b0; cursor: not-allowed; }
-        .chat-container { background: #f8faf8; border-radius: 20px; padding: 12px; max-height: 300px; overflow-y: auto; }
+        .chat-container { background: #f8faf8; border-radius: 20px; padding: 12px; max-height: 400px; overflow-y: auto; }
         .mensaje { background: white; border-radius: 18px; padding: 8px 12px; margin-bottom: 8px; max-width: 80%; font-size: 0.8rem; }
         .mensaje.emisor { background: #059669; color: white; margin-left: auto; }
         .mensaje-imagen { max-width: 150px; border-radius: 12px; margin-top: 6px; cursor: pointer; }
@@ -264,7 +264,9 @@
         const response = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
         if (!response.ok) {
             if (response.status === 401) { logout(); throw new Error('Sesión expirada'); }
-            throw new Error(await response.text());
+            const errorText = await response.text();
+            console.error('API Error:', errorText);
+            throw new Error(errorText);
         }
         return response.json();
     }
@@ -290,14 +292,14 @@
             renderFeed();
             renderFavoritos();
             renderMisCosas();
-        } catch(e) { console.error('Error:', e); }
+        } catch(e) { console.error('Error cargando objetos:', e); }
     }
 
     async function cargarFavoritosDesdeAPI() {
         try {
             const data = await apiFetch('/favoritos');
             favoritosIds = new Set(data.map(f => f.id));
-        } catch(e) { console.error('Error:', e); }
+        } catch(e) { console.error('Error cargando favoritos:', e); }
     }
 
     async function agregarFavorito(id) {
@@ -325,7 +327,7 @@
     }
 
     async function enviarMensaje(objetoId, receptor, mensaje, archivo = null) {
-        console.log(`📤 Enviando a ${receptor}: ${mensaje}`);
+        console.log(`📤 Enviando mensaje: objetoId=${objetoId}, receptor=${receptor}, mensaje=${mensaje}`);
         
         if (archivo) {
             const form = new FormData();
@@ -348,10 +350,12 @@
         });
     }
 
-    async function obtenerMensajes(objetoId, otroUsuario) {
+    async function obtenerMensajes(objetoId) {
         try {
             const id = parseInt(objetoId);
-            const response = await apiFetch(`/mensajes?id_objeto=${id}&otro=${encodeURIComponent(otroUsuario)}`);
+            console.log(`📥 Obteniendo mensajes para objetoId: ${id}`);
+            const response = await apiFetch(`/mensajes?id_objeto=${id}`);
+            console.log(`📥 Mensajes recibidos: ${response?.length || 0}`);
             return response || [];
         } catch(e) {
             console.error('Error en obtenerMensajes:', e);
@@ -362,6 +366,7 @@
     async function obtenerMisConversaciones() {
         try {
             const response = await apiFetch('/mis-conversaciones');
+            console.log(`📋 Conversaciones recibidas: ${response?.length || 0}`);
             return response || [];
         } catch(e) {
             console.error('Error en obtenerMisConversaciones:', e);
@@ -485,7 +490,7 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== CHAT ==========
+    // ========== CHAT VERSIÓN CORREGIDA ==========
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -496,21 +501,23 @@
     function iniciarPollingChat() {
         detenerPollingChat();
         chatPollingInterval = setInterval(async () => {
-            if (chatActual.id_objeto && chatActual.otroUsuario && document.getElementById('chatDetalleMobile')?.style.display === 'block') {
+            if (chatActual.id_objeto && document.getElementById('chatDetalleMobile')?.style.display === 'block') {
                 await cargarMensajesChat();
             }
         }, 5000);
     }
 
     async function cargarMensajesChat() {
-        if (!chatActual.id_objeto || !chatActual.otroUsuario) return;
+        if (!chatActual.id_objeto) return;
         try {
-            const msgs = await obtenerMensajes(chatActual.id_objeto, chatActual.otroUsuario);
+            const msgs = await obtenerMensajes(chatActual.id_objeto);
             const cont = document.getElementById('chatMsgsBox');
             if (!cont) return;
             
+            console.log(`🔄 Cargando mensajes para objeto ${chatActual.id_objeto}, encontrados: ${msgs.length}`);
+            
             if (!msgs || msgs.length === 0) {
-                cont.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">✨ No hay mensajes aún.</div>';
+                cont.innerHTML = '<div style="text-align:center; padding:20px;">✨ No hay mensajes aún.</div>';
                 ultimoMensajeId = 0;
                 return;
             }
@@ -534,17 +541,30 @@
 
     async function abrirChatConObjeto(objetoId) {
         detenerPollingChat();
-        const obj = objetos.find(o => o.id === parseInt(objetoId));
-        if(!obj) return;
         
-        const idObjetoNum = parseInt(objetoId);
-        chatActual = { id_objeto: idObjetoNum, otroUsuario: obj.userId, titulo: obj.titulo };
+        // Asegurar que objetoId es número
+        const idObjeto = parseInt(objetoId);
+        const obj = objetos.find(o => o.id === idObjeto);
+        if(!obj) {
+            console.error('❌ Objeto no encontrado:', idObjeto);
+            return;
+        }
+        
+        console.log(`📱 Abriendo chat: objeto ID=${idObjeto}, creado por=${obj.userId}, título=${obj.titulo}`);
+        
+        chatActual = { 
+            id_objeto: idObjeto, 
+            otroUsuario: obj.userId, 
+            titulo: obj.titulo 
+        };
         ultimoMensajeId = 0;
         
+        // Cargar mensajes iniciales
         let msgs = [];
         try {
-            msgs = await obtenerMensajes(idObjetoNum, obj.userId);
-        } catch(e) { console.error('Error cargando mensajes iniciales:', e); }
+            msgs = await obtenerMensajes(idObjeto);
+            console.log(`📥 Mensajes iniciales cargados: ${msgs.length}`);
+        } catch(e) { console.error('Error cargando mensajes:', e); }
         
         const contenedor = document.getElementById("chatDetalleMobile");
         contenedor.style.display = "block";
@@ -555,7 +575,7 @@
                     <button onclick="document.getElementById('chatDetalleMobile').style.display='none'" style="background:none; border:none; font-size:20px;">✕</button>
                 </div>
                 <small>Conversando con ${obj.userNombre}</small>
-                <div id="chatMsgsBox" class="chat-container" style="margin-top:12px; height:300px; overflow-y:auto;">
+                <div id="chatMsgsBox" class="chat-container" style="margin-top:12px; height:350px; overflow-y:auto;">
                     ${msgs.length === 0 ? '<div style="text-align:center; padding:20px;">✨ No hay mensajes aún.</div>' : 
                         msgs.map(m => {
                             const esEmisor = m.emisor === currentUser?.email;
@@ -577,26 +597,39 @@
             </div>
         `;
         
-        if (msgs.length > 0) ultimoMensajeId = msgs[msgs.length-1].id;
+        if (msgs.length > 0) {
+            const chatBox = document.getElementById('chatMsgsBox');
+            if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+            ultimoMensajeId = msgs[msgs.length-1].id;
+        }
+        
         iniciarPollingChat();
         
         document.getElementById("sendMsgMobileBtn").onclick = async () => {
             const input = document.getElementById("msgInputMobile");
             const texto = input.value.trim();
             if(texto){
-                await enviarMensaje(idObjetoNum, obj.userId, texto);
-                input.value = "";
-                await cargarMensajesChat();
+                console.log(`📤 Enviando: objeto=${idObjeto}, receptor=${obj.userId}, texto=${texto}`);
+                try {
+                    await enviarMensaje(idObjeto, obj.userId, texto);
+                    input.value = "";
+                    await cargarMensajesChat();
+                } catch(e) {
+                    console.error('Error enviando:', e);
+                    alert('Error al enviar: ' + e.message);
+                }
             }
         };
+        
         document.getElementById("msgInputMobile").addEventListener("keypress", (e) => {
             if (e.key === 'Enter') document.getElementById("sendMsgMobileBtn").click();
         });
+        
         document.getElementById("adjuntarArchivoBtn").onclick = () => document.getElementById("archivoAdjunto").click();
         document.getElementById("archivoAdjunto").onchange = async (e) => {
             const archivo = e.target.files[0];
             if (archivo) {
-                await enviarMensaje(idObjetoNum, obj.userId, "📎 Archivo", archivo);
+                await enviarMensaje(idObjeto, obj.userId, "📎 Archivo", archivo);
                 e.target.value = '';
                 await cargarMensajesChat();
             }
@@ -607,11 +640,14 @@
         try {
             const convs = await obtenerMisConversaciones();
             const listaDiv = document.getElementById("listaChatsMobile");
+            console.log('Conversaciones recibidas:', convs);
+            
             if (!convs || convs.length === 0) { 
                 listaDiv.innerHTML = '<div style="text-align:center; padding:20px;">💬 No hay conversaciones activas.</div>'; 
                 return; 
             }
             
+            // Eliminar duplicados
             const unicos = [];
             const vistos = new Set();
             for (const c of convs) {
@@ -621,18 +657,28 @@
                 }
             }
             
-            listaDiv.innerHTML = unicos.map(c => `
-                <div class="conv-item" data-id="${c.id_objeto}" style="padding:16px; border-bottom:1px solid #eef2ef; cursor:pointer;">
-                    <strong>📦 ${c.titulo || 'Objeto'}</strong><br>
-                    💬 con ${c.otroUsuario?.split('@')[0] || c.otroUsuario}<br>
-                    <small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
-                </div>
-            `).join('');
+            listaDiv.innerHTML = unicos.map(c => {
+                const otroUsuario = c.otroUsuario || 'Usuario';
+                return `
+                    <div class="conv-item" data-id="${c.id_objeto}" data-otro="${otroUsuario}" style="padding:16px; border-bottom:1px solid #eef2ef; cursor:pointer;">
+                        <strong>📦 ${c.titulo || 'Objeto'}</strong><br>
+                        💬 con ${otroUsuario.split('@')[0] || otroUsuario}<br>
+                        <small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
+                    </div>
+                `;
+            }).join('');
             
             document.querySelectorAll('.conv-item').forEach(el => {
-                el.addEventListener('click', () => abrirChatConObjeto(parseInt(el.dataset.id)));
+                el.addEventListener('click', () => {
+                    const idObjeto = parseInt(el.dataset.id);
+                    console.log('Abriendo conversación para objeto ID:', idObjeto);
+                    abrirChatConObjeto(idObjeto);
+                });
             });
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.error('Error cargando conversaciones:', e);
+            document.getElementById("listaChatsMobile").innerHTML = '<div style="text-align:center; padding:20px;">Error al cargar conversaciones</div>';
+        }
     }
 
     // ========== PUBLICAR OBJETO ==========
