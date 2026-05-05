@@ -66,6 +66,7 @@
         .form-mobile input, .form-mobile textarea, .form-mobile select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dde6e0; border-radius: 24px; font-size: 0.9rem; }
         .upload-zone { background: #fafdfa; border: 2px dashed #cbdcd2; border-radius: 20px; padding: 16px; text-align: center; cursor: pointer; margin: 12px 0; }
         .btn-modern { background: #059669; color: white; border: none; padding: 12px; border-radius: 40px; font-weight: 600; width: 100%; cursor: pointer; }
+        .btn-modern:disabled { background: #9ac9b0; cursor: not-allowed; }
         .chat-container { background: #f8faf8; border-radius: 20px; padding: 12px; max-height: 300px; overflow-y: auto; }
         .mensaje { background: white; border-radius: 18px; padding: 8px 12px; margin-bottom: 8px; max-width: 80%; font-size: 0.8rem; }
         .mensaje.emisor { background: #059669; color: white; margin-left: auto; }
@@ -79,6 +80,7 @@
         .conv-item { padding: 16px; border-bottom: 1px solid #eef2ef; cursor: pointer; transition: 0.2s; }
         .conv-item:hover { background: #f8faf8; }
         .mensaje-nuevo { background: #ef4444; color: white; padding: 2px 6px; border-radius: 20px; font-size: 10px; margin-left: 8px; }
+        .publicando { opacity: 0.6; pointer-events: none; }
         @media (max-width: 700px) { .grid-pinterest { gap: 8px; } }
     </style>
 </head>
@@ -189,16 +191,14 @@
     let authToken = null;
     let objetos = [];
     let favoritosIds = new Set();
-    let nextId = 100;
     let fotoPrincipalData = null;
-    let fotosExtraArr = [];
+    let fotosExtraSeleccionadas = [];
     let mapaTemp = null;
     
     // Chat global
     let chatPollingInterval = null;
     let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
     let ultimoMensajeId = 0;
-    let mensajesCache = [];
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -359,7 +359,7 @@
         if(!container) return;
         container.innerHTML = `<div class="categories-flex"><button class="cat-mobile active" data-cat="all">Todos</button>${categorias.map(c => `<button class="cat-mobile" data-cat="${c}">${c}</button>`).join('')}</div>`;
         document.querySelectorAll('.cat-mobile').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 document.querySelectorAll('.cat-mobile').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 renderFeed();
@@ -449,7 +449,7 @@
         const thumbContainer = document.getElementById("modalThumbnails");
         thumbContainer.innerHTML = allPhotos.map((photo, idx) => `<img class="miniatura-modal ${idx===0 ? 'active' : ''}" src="${photo}" data-index="${idx}">`).join('');
         document.querySelectorAll('.miniatura-modal').forEach(thumb => {
-            thumb.addEventListener('click', (e) => {
+            thumb.addEventListener('click', () => {
                 document.querySelectorAll('.miniatura-modal').forEach(t => t.classList.remove('active'));
                 thumb.classList.add('active');
                 document.getElementById("modalMainImg").src = thumb.src;
@@ -469,7 +469,7 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== CHAT CON POLLING ==========
+    // ========== CHAT CON POLLING CORREGIDO ==========
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -487,7 +487,7 @@
     }
 
     async function cargarMensajesChat() {
-        if (!chatActual.objetoId) return;
+        if (!chatActual.objetoId || !chatActual.otroUsuario) return;
         try {
             const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
             const cont = document.getElementById('chatMsgsBox');
@@ -498,7 +498,7 @@
             if (hayNuevos || ultimoMensajeId === 0) {
                 cont.innerHTML = msgs.map(m => `
                     <div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}">
-                        <strong>${m.emisor === currentUser?.email ? 'Tú' : m.emisor}</strong>: ${m.mensaje}
+                        <strong>${m.emisor === currentUser?.email ? 'Tú' : m.emisor.split('@')[0]}</strong>: ${m.mensaje || '📎 Archivo adjunto'}
                         ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
                         <small>${new Date(m.fecha).toLocaleTimeString()}</small>
                     </div>
@@ -517,13 +517,24 @@
         chatActual = { objetoId, otroUsuario: obj.userId, titulo: obj.titulo };
         ultimoMensajeId = 0;
         
+        // Cargar mensajes iniciales
+        const msgs = await obtenerMensajes(objetoId, obj.userId);
+        
         const contenedor = document.getElementById("chatDetalleMobile");
         contenedor.style.display = "block";
         contenedor.innerHTML = `
             <div style="background:white; border-radius:24px; padding:16px;">
                 <h4>💬 ${obj.titulo}</h4>
                 <small>Conversando con ${obj.userNombre}</small>
-                <div id="chatMsgsBox" class="chat-container" style="margin-top:12px;"></div>
+                <div id="chatMsgsBox" class="chat-container" style="margin-top:12px;">
+                    ${msgs.map(m => `
+                        <div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}">
+                            <strong>${m.emisor === currentUser?.email ? 'Tú' : m.emisor.split('@')[0]}</strong>: ${m.mensaje || '📎 Archivo adjunto'}
+                            ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
+                            <small>${new Date(m.fecha).toLocaleTimeString()}</small>
+                        </div>
+                    `).join('')}
+                </div>
                 <div class="chat-input-area">
                     <button class="chat-adjuntar" id="adjuntarArchivoBtn"><i class="fas fa-paperclip"></i></button>
                     <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje...">
@@ -533,7 +544,10 @@
             </div>
         `;
         
-        await cargarMensajesChat();
+        const chatBox = document.getElementById('chatMsgsBox');
+        if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+        if (msgs.length > 0) ultimoMensajeId = msgs[msgs.length-1].id;
+        
         iniciarPollingChat();
         
         document.getElementById("sendMsgMobileBtn").onclick = async () => {
@@ -567,7 +581,7 @@
             listaDiv.innerHTML = convs.map(c => `
                 <div class="conv-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}">
                     <strong>📦 ${c.titulo}</strong><br>
-                    💬 con ${c.otroUsuario}<br>
+                    💬 con ${c.otroUsuario.split('@')[0]}<br>
                     <small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
                 </div>
             `).join('');
@@ -580,7 +594,9 @@
         } catch(e) { console.error(e); }
     }
 
-    // ========== PUBLICAR OBJETO (con múltiples fotos) ==========
+    // ========== PUBLICAR OBJETO (con evita doble publicación) ==========
+    let publicando = false;
+
     async function publicarObjeto(titulo, descripcion, categoria, fotos, lat, lng, direccion) {
         const form = new FormData();
         form.append('titulo', titulo);
@@ -593,8 +609,6 @@
         }
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
-
-    let fotosExtraSeleccionadas = [];
 
     function actualizarPreviewFotosExtra() {
         const container = document.getElementById("previewExtraMobile");
@@ -635,19 +649,33 @@
         reader.readAsDataURL(fotoPrincipalData); 
     });
     
-    document.getElementById("confirmarPublicarBtn").onclick = async () => { 
-        const tit = document.getElementById("tituloMobile").value;
-        const cat = document.getElementById("categoriaMobile").value;
-        const desc = document.getElementById("descripcionMobile").value;
-        const dir = document.getElementById("direccionMobile").value;
-        const lat = document.getElementById("latMobile").value;
-        const lng = document.getElementById("lngMobile").value;
-        const fotos = [fotoPrincipalData, ...fotosExtraSeleccionadas];
-        await publicarObjeto(tit, desc, cat, fotos, lat, lng, dir);
-        document.getElementById("previewModal").style.display="none";
-        await cargarObjetosDesdeAPI();
-        limpiarForm();
-        alert("¡Objeto publicado!");
+    document.getElementById("confirmarPublicarBtn").onclick = async () => {
+        if (publicando) return;
+        publicando = true;
+        const btn = document.getElementById("confirmarPublicarBtn");
+        btn.disabled = true;
+        btn.textContent = "Publicando...";
+        
+        try {
+            const tit = document.getElementById("tituloMobile").value;
+            const cat = document.getElementById("categoriaMobile").value;
+            const desc = document.getElementById("descripcionMobile").value;
+            const dir = document.getElementById("direccionMobile").value;
+            const lat = document.getElementById("latMobile").value;
+            const lng = document.getElementById("lngMobile").value;
+            const fotos = [fotoPrincipalData, ...fotosExtraSeleccionadas];
+            await publicarObjeto(tit, desc, cat, fotos, lat, lng, dir);
+            document.getElementById("previewModal").style.display = "none";
+            await cargarObjetosDesdeAPI();
+            limpiarForm();
+            alert("¡Objeto publicado!");
+        } catch (error) {
+            alert("Error al publicar: " + error.message);
+        } finally {
+            publicando = false;
+            btn.disabled = false;
+            btn.textContent = "Publicar";
+        }
     };
     
     document.getElementById("cancelPreviewBtn").addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
@@ -675,7 +703,10 @@
         document.getElementById("mensajesView").style.display = tabId==="mensajes" ? "block" : "none";
         if(tabId==="favoritos") renderFavoritos();
         if(tabId==="misCosas") renderMisCosas();
-        if(tabId==="mensajes") { cargarConversaciones(); detenerPollingChat(); }
+        if(tabId==="mensajes") { 
+            detenerPollingChat();
+            cargarConversaciones(); 
+        }
     }
 
     function mostrarPerfil() {
