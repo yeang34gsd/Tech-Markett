@@ -4,1115 +4,1379 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>Intercambia - Trueque de objetos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: #f8f9fc;
-      color: #111;
+    :root {
+      --bg: #f6f4ef;
+      --surface: #ffffff;
+      --surface2: #f0ede6;
+      --border: #e8e3d8;
+      --text: #1a1714;
+      --text-muted: #7a7060;
+      --text-light: #a89f8f;
+      --accent: #c85a1e;
+      --accent-hover: #a84916;
+      --accent-soft: #fdf0e8;
+      --blue: #2563eb;
+      --blue-soft: #eff4ff;
+      --green: #16a34a;
+      --green-soft: #f0fdf4;
+      --yellow: #ca8a04;
+      --shadow-sm: 0 1px 3px rgba(26,23,20,0.06);
+      --shadow: 0 4px 16px rgba(26,23,20,0.08);
+      --shadow-lg: 0 12px 40px rgba(26,23,20,0.14);
+      --radius: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
     }
-    .internal-toast {
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── TOAST ── */
+    .toast {
       position: fixed;
-      bottom: 30px;
+      bottom: 28px;
       left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #1e293b;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 60px;
-      font-size: 0.85rem;
-      z-index: 1500;
-      transition: transform 0.25s ease, opacity 0.2s;
+      transform: translateX(-50%) translateY(60px);
+      background: var(--text);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      z-index: 9999;
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), opacity 0.2s;
       opacity: 0;
       pointer-events: none;
-      backdrop-filter: blur(8px);
-      background: rgba(15, 23, 42, 0.9);
-      white-space: normal;
-      text-align: center;
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
     }
-    .internal-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* Login */
+    /* ── LOGIN ── */
     .login-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(145deg, #ffffff 0%, #f0f4fa 100%);
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #1a1714 0%, #2d2620 50%, #1a1714 100%);
       z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.35s;
+      transition: opacity 0.4s, visibility 0.4s;
     }
-    .login-screen.hidden { visibility: hidden; opacity: 0; pointer-events: none; }
+    .login-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
     .login-card {
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(20px);
-      border-radius: 48px;
+      background: var(--surface);
+      border-radius: var(--radius-xl);
       width: 90%;
-      max-width: 380px;
-      padding: 2.2rem 1.5rem;
-      box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25);
+      max-width: 360px;
+      padding: 2.5rem 2rem;
       text-align: center;
+      box-shadow: var(--shadow-lg);
     }
-    .login-icon {
-      background: #1b74e4;
-      width: 70px;
-      height: 70px;
-      border-radius: 30px;
+    .login-brand {
+      width: 64px; height: 64px;
+      background: var(--accent);
+      border-radius: 20px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 1rem;
+      margin-bottom: 1.2rem;
     }
-    .login-icon i { font-size: 2.4rem; color: white; }
-    .login-card h2 { font-size: 1.9rem; font-weight: 700; color: #1e293b; }
-    .login-card p { color: #5b6c8f; font-size: 0.9rem; margin: 0.5rem 0 1.5rem; }
+    .login-brand i { font-size: 1.8rem; color: white; }
+    .login-card h2 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--text); }
+    .login-card p { color: var(--text-muted); font-size: 0.88rem; margin: 0.5rem 0 1.8rem; line-height: 1.5; }
     .btn-google {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 60px;
-      padding: 0.9rem 1rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 40px;
+      padding: 0.85rem 1.2rem;
       width: 100%;
       font-weight: 600;
+      font-size: 0.9rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       cursor: pointer;
+      color: var(--text);
+      transition: background 0.2s, border-color 0.2s;
     }
+    .btn-google:hover { background: var(--surface2); border-color: var(--text-light); }
 
-    /* App */
+    /* ── HEADER ── */
     .app-container { opacity: 0; visibility: hidden; transition: opacity 0.3s; }
     .app-container.active { opacity: 1; visibility: visible; }
+
     .market-header {
-      background: white;
-      border-bottom: 1px solid #eef2f6;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       z-index: 90;
-      padding: 0.7rem 0.9rem;
+      padding: 0.65rem 1rem;
     }
     .header-container {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 0.8rem;
+      gap: 0.75rem;
     }
-    .logo-area { display: flex; align-items: center; gap: 0.3rem; }
-    .market-icon { font-size: 1.8rem; color: #1b74e4; }
-    .logo-text { font-size: 1.35rem; font-weight: 800; color: #0a2540; }
+    .logo-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon i { color: white; font-size: 1rem; }
+    .logo-text { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--text); }
+
     .search-bar { flex: 1; }
     .search-wrapper {
-      background: #f1f5f9;
+      background: var(--surface2);
       border-radius: 40px;
-      padding: 0.45rem 0.9rem;
+      padding: 0.42rem 0.9rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
     }
+    .search-wrapper:focus-within { border-color: var(--accent); }
+    .search-wrapper i { color: var(--text-light); font-size: 0.85rem; }
     .search-wrapper input {
       background: transparent;
       border: none;
       width: 100%;
       font-size: 0.85rem;
       outline: none;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
     }
-    .header-actions { display: flex; align-items: center; gap: 8px; }
-    
-    /* Botón de categorías */
-    .categories-btn-container {
-      position: relative;
-    }
+
+    .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+    /* Categories dropdown */
+    .categories-btn-container { position: relative; }
     .categories-btn {
-      background: #f1f5f9;
-      border: none;
+      background: var(--surface2);
+      border: 1px solid var(--border);
       border-radius: 40px;
-      padding: 0.4rem 1rem;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #1e293b;
+      padding: 0.42rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
     }
-    .categories-dropdown {
+    .categories-btn:hover { background: var(--border); }
+
+    .dropdown {
       position: absolute;
-      top: 45px;
+      top: calc(100% + 8px);
       left: 0;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
       width: 200px;
       overflow: hidden;
-      z-index: 100;
+      z-index: 200;
       display: none;
+      border: 1px solid var(--border);
     }
-    .categories-dropdown.show { display: block; }
-    .cat-dropdown-item {
-      padding: 12px 16px;
+    .dropdown.show { display: block; }
+
+    .cat-item {
+      padding: 10px 14px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       cursor: pointer;
-      transition: background 0.2s;
-      font-size: 0.85rem;
-      color: #1e293b;
+      font-size: 0.83rem;
+      color: var(--text);
+      transition: background 0.15s;
     }
-    .cat-dropdown-item:hover { background: #f1f5f9; }
-    .cat-dropdown-item i { width: 20px; color: #64748b; }
-    .cat-dropdown-item.active { background: #1b74e4; color: white; }
-    .cat-dropdown-item.active i { color: white; }
-    
-    /* Menú de perfil */
+    .cat-item:hover { background: var(--surface2); }
+    .cat-item.active { background: var(--accent); color: white; }
+    .cat-item.active i { color: white; }
+    .cat-item i { width: 16px; color: var(--text-muted); font-size: 0.8rem; }
+
+    /* Profile dropdown */
     .profile-menu-container { position: relative; }
     .profile-badge {
-      background: #eef2ff;
+      background: var(--surface2);
+      border: 1px solid var(--border);
       border-radius: 40px;
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 0.2rem 0.6rem 0.2rem 0.2rem;
+      padding: 3px 10px 3px 3px;
       cursor: pointer;
+      transition: background 0.2s;
     }
+    .profile-badge:hover { background: var(--border); }
     .mini-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 40px;
-      background: #3b82f6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
       color: white;
       overflow: hidden;
+      font-size: 0.75rem;
     }
     .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    
+    .profile-badge .chevron { font-size: 0.65rem; color: var(--text-muted); }
+
     .profile-dropdown {
       position: absolute;
-      top: 45px;
+      top: calc(100% + 8px);
       right: 0;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      width: 200px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      width: 190px;
       overflow: hidden;
-      z-index: 100;
+      z-index: 200;
       display: none;
+      border: 1px solid var(--border);
     }
     .profile-dropdown.show { display: block; }
     .dropdown-item {
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       cursor: pointer;
-      transition: background 0.2s;
-      font-size: 0.85rem;
+      font-size: 0.83rem;
       font-weight: 500;
-      color: #1e293b;
+      color: var(--text);
+      transition: background 0.15s;
     }
-    .dropdown-item:hover { background: #f1f5f9; }
-    .dropdown-item i { width: 20px; color: #64748b; }
-    .dropdown-divider { height: 1px; background: #e2e8f0; margin: 4px 0; }
-    
-    .sell-btn {
-      background: #1b74e4;
-      border-radius: 30px;
+    .dropdown-item:hover { background: var(--surface2); }
+    .dropdown-item i { width: 16px; color: var(--text-muted); font-size: 0.8rem; }
+    .dropdown-item.danger { color: #dc2626; }
+    .dropdown-item.danger i { color: #dc2626; }
+    .dropdown-divider { height: 1px; background: var(--border); }
+
+    .publish-btn {
+      background: var(--accent);
+      border-radius: 40px;
       padding: 0 1rem;
-      height: 38px;
+      height: 36px;
       display: flex;
       align-items: center;
       gap: 6px;
       color: white;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 0.83rem;
       cursor: pointer;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
     }
-    
+    .publish-btn:hover { background: var(--accent-hover); }
+
+    /* ── GRID ── */
+    .section-label {
+      padding: 1rem 1rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
     .listings-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-      gap: 0.9rem;
-      padding: 0 0.9rem 1rem;
-      margin-top: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 0.85rem;
+      padding: 0 1rem 1.5rem;
     }
+
+    /* ── CARD ── */
     .product-card {
-      background: white;
-      border-radius: 20px;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      border: 1px solid #edf2f7;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
       position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    .favorite-star {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(255,255,255,0.8);
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #94a3b8;
-      z-index: 2;
-      backdrop-filter: blur(2px);
-      font-size: 1.1rem;
-    }
-    .favorite-star.active { color: #eab308; }
-    .delete-btn {
+    .product-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+    .card-badges {
       position: absolute;
       top: 8px;
       left: 8px;
-      background: rgba(220,38,38,0.9);
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      right: 8px;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .badge-cat {
+      background: rgba(26,23,20,0.6);
+      backdrop-filter: blur(6px);
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+      pointer-events: none;
+    }
+    .fav-btn {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(6px);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text-light);
+      font-size: 0.95rem;
+      pointer-events: all;
+      transition: transform 0.15s, color 0.15s;
+      border: none;
+    }
+    .fav-btn:hover { transform: scale(1.15); }
+    .fav-btn.active { color: var(--yellow); }
+
+    .delete-btn-card {
+      position: absolute;
+      top: 42px;
+      right: 8px;
+      width: 28px; height: 28px;
+      background: rgba(220,38,38,0.85);
+      backdrop-filter: blur(4px);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
       cursor: pointer;
       color: white;
-      z-index: 2;
-      font-size: 0.8rem;
+      z-index: 3;
+      font-size: 0.7rem;
+      border: none;
+      transition: background 0.2s;
     }
+    .delete-btn-card:hover { background: rgba(185,28,28,1); }
+
     .card-img {
       aspect-ratio: 1/1;
-      background: #f1f5f9;
+      background: var(--surface2);
       position: relative;
       overflow: hidden;
+      cursor: pointer;
     }
-    .card-img img { width: 100%; height: 100%; object-fit: cover; }
-    .miniaturas {
-      display: flex;
-      gap: 4px;
-      padding: 6px;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(4px);
-      overflow-x: auto;
+    .card-img img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .product-card:hover .card-img img { transform: scale(1.04); }
+
+    /* Thumbnail strip */
+    .thumb-strip {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      gap: 3px;
+      padding: 5px;
+      background: linear-gradient(to top, rgba(26,23,20,0.55), transparent);
+      overflow-x: auto;
+      scrollbar-width: none;
     }
-    .miniatura { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
-    .miniatura.activa { border-color: #1b74e4; }
-    .card-info { padding: 0.6rem; }
-    .badge-intercambio {
-      background: #10b981;
+    .thumb-strip::-webkit-scrollbar { display: none; }
+    .thumb {
+      width: 32px; height: 32px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+    .thumb.active { border-color: white; }
+
+    /* Photo count badge */
+    .photo-count {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(26,23,20,0.65);
+      backdrop-filter: blur(4px);
       color: white;
-      font-size: 0.65rem;
-      padding: 2px 8px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      padding: 2px 7px;
       border-radius: 20px;
-      display: inline-block;
+      pointer-events: none;
+    }
+
+    .card-info { padding: 0.65rem; }
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       margin-bottom: 4px;
     }
-    .title { font-size: 0.85rem; font-weight: 600; color: #1e293b; margin: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .usuario {
+    .card-user {
       font-size: 0.7rem;
-      color: #64748b;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       gap: 4px;
-      margin-top: 4px;
       cursor: pointer;
     }
-    .ubicacion { font-size: 0.65rem; color: #94a3b8; display: flex; align-items: center; gap: 4px; margin-top: 4px; }
-    .intercambiar-btn {
-      background: #1b74e4;
+    .card-user:hover { color: var(--accent); }
+    .card-location {
+      font-size: 0.67rem;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 3px;
+    }
+    .card-actions { display: flex; gap: 5px; margin-top: 8px; }
+    .btn-chat {
+      flex: 1;
+      background: var(--accent);
       border: none;
       border-radius: 40px;
-      padding: 6px 12px;
-      margin-top: 8px;
-      width: 100%;
+      padding: 6px 10px;
       color: white;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 0.7rem;
       cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
     }
-    .reportar-btn {
-      background: #f59e0b;
-      border: none;
+    .btn-chat:hover { background: var(--accent-hover); }
+    .btn-report {
+      background: var(--surface2);
+      border: 1px solid var(--border);
       border-radius: 40px;
-      padding: 4px 8px;
-      margin-top: 4px;
-      width: 100%;
-      font-size: 0.6rem;
-      color: white;
+      padding: 6px 8px;
+      color: var(--text-muted);
+      font-size: 0.68rem;
       cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s, color 0.2s;
+      display: flex; align-items: center; justify-content: center;
     }
-    .load-more { text-align: center; margin: 1rem 0 2rem; }
-    .load-more-btn { background: #fff; border:1px solid #cbd5e1; padding:0.6rem 1.8rem; border-radius:40px; font-weight:600; cursor: pointer; }
+    .btn-report:hover { background: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+    .own-label {
+      font-size: 0.68rem;
+      color: var(--text-light);
+      text-align: center;
+      margin-top: 8px;
+      font-style: italic;
+    }
 
-    /* Modal */
-    .modal {
+    /* Empty */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    .empty-state i { font-size: 2.5rem; color: var(--text-light); }
+    .empty-state p { margin-top: 0.8rem; color: var(--text-muted); font-size: 0.9rem; }
+
+    /* Load more */
+    .load-more { text-align: center; margin: 0.5rem 0 2rem; }
+    .load-more-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      padding: 0.6rem 2rem;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      transition: background 0.2s;
+    }
+    .load-more-btn:hover { background: var(--surface2); }
+
+    /* ── PHOTO GALLERY MODAL ── */
+    .gallery-modal {
       display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-      justify-content: center;
+      position: fixed; inset: 0;
+      background: rgba(10,8,6,0.93);
+      z-index: 5000;
+      flex-direction: column;
       align-items: center;
-      z-index: 2000;
+      justify-content: center;
     }
-    .modal-content { max-width: 90vw; max-height: 90vh; text-align: center; }
-    .modal-content img { max-width: 100%; max-height: 75vh; border-radius: 20px; }
-    .modal-content button { margin-top: 16px; background: white; padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; font-weight: 600; }
+    .gallery-modal.open { display: flex; }
+    .gallery-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: white;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+      z-index: 2;
+    }
+    .gallery-close:hover { background: rgba(255,255,255,0.25); }
+    .gallery-counter {
+      position: absolute;
+      top: 20px; left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.6);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .gallery-main {
+      width: 100%;
+      max-width: 700px;
+      padding: 0 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .gallery-img {
+      max-width: 100%;
+      max-height: 72vh;
+      border-radius: var(--radius);
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .gallery-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: white;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .gallery-nav:hover { background: rgba(255,255,255,0.28); }
+    .gallery-nav.prev { left: 0; }
+    .gallery-nav.next { right: 0; }
+    .gallery-nav:disabled { opacity: 0.25; cursor: default; }
 
-    /* Chat */
+    .gallery-thumbs {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 0 1rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      max-width: 700px;
+    }
+    .gallery-thumbs::-webkit-scrollbar { display: none; }
+    .gallery-thumb {
+      width: 58px; height: 58px;
+      object-fit: cover;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      flex-shrink: 0;
+      opacity: 0.6;
+      transition: opacity 0.15s, border-color 0.15s;
+    }
+    .gallery-thumb.active { border-color: white; opacity: 1; }
+
+    /* ── CHAT ── */
     .chat-sidebar {
       position: fixed;
-      top: 0;
-      right: -100%;
-      width: 100%;
-      max-width: 400px;
+      top: 0; right: -100%;
+      width: 100%; max-width: 400px;
       height: 100%;
-      background: white;
+      background: var(--surface);
       z-index: 1000;
-      transition: right 0.3s ease;
-      box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
+      transition: right 0.3s cubic-bezier(.4,0,.2,1);
+      box-shadow: -4px 0 30px rgba(0,0,0,0.12);
+      display: flex; flex-direction: column;
     }
     .chat-sidebar.open { right: 0; }
     .chat-header {
       padding: 1rem;
-      background: #1b74e4;
+      background: var(--accent);
       color: white;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      display: flex; align-items: center; gap: 1rem;
+      flex-shrink: 0;
     }
-    .chat-header button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
+    .chat-header button { background: none; border: none; color: white; font-size: 1.1rem; cursor: pointer; }
+    .chat-header .chat-title { font-weight: 700; font-size: 0.9rem; }
     .chat-messages {
-      flex: 1;
-      overflow-y: auto;
+      flex: 1; overflow-y: auto;
       padding: 1rem;
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       gap: 0.5rem;
+      background: var(--bg);
     }
     .message {
       max-width: 80%;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 18px;
+      font-size: 0.84rem;
+      line-height: 1.4;
     }
-    .message.sent {
-      background: #1b74e4;
-      color: white;
-      align-self: flex-end;
+    .message.sent { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .message.received { background: var(--surface); color: var(--text); align-self: flex-start; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+    .message-time { font-size: 0.6rem; opacity: 0.6; margin-top: 2px; }
+    .chat-input-bar {
+      padding: 0.85rem 1rem;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 0.5rem;
+      background: var(--surface);
     }
-    .message.received {
-      background: #f1f5f9;
-      color: #1e293b;
-      align-self: flex-start;
-    }
-    .chat-input {
-      padding: 1rem;
-      border-top: 1px solid #e2e8f0;
-      display: flex;
-      gap: 0.5rem;
-    }
-    .chat-input input {
+    .chat-input-bar input {
       flex: 1;
-      padding: 0.7rem;
-      border: 1px solid #e2e8f0;
+      padding: 0.65rem 1rem;
+      border: 1.5px solid var(--border);
       border-radius: 40px;
       outline: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      background: var(--surface2);
+      color: var(--text);
+      transition: border-color 0.2s;
     }
-    .chat-input button {
-      background: #1b74e4;
+    .chat-input-bar input:focus { border-color: var(--accent); }
+    .chat-input-bar button {
+      background: var(--accent);
       border: none;
       border-radius: 40px;
       padding: 0 1.2rem;
       color: white;
       cursor: pointer;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.83rem;
+      transition: background 0.2s;
     }
+    .chat-input-bar button:hover { background: var(--accent-hover); }
 
-    /* Upload panel */
-    .upload-panel-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
+    /* ── UPLOAD PANEL ── */
+    .panel-overlay {
+      position: fixed; inset: 0;
+      background: rgba(10,8,6,0.7);
+      backdrop-filter: blur(6px);
       z-index: 300;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      visibility: hidden;
-      opacity: 0;
+      display: flex; align-items: center; justify-content: center;
+      visibility: hidden; opacity: 0;
       transition: 0.2s;
     }
-    .upload-panel-overlay.active { visibility: visible; opacity: 1; }
+    .panel-overlay.active { visibility: visible; opacity: 1; }
     .upload-panel {
-      background: white;
-      width: 90%;
-      max-width: 500px;
-      border-radius: 48px;
-      padding: 1.8rem 1.5rem;
+      background: var(--surface);
+      width: 90%; max-width: 480px;
+      border-radius: var(--radius-xl);
+      padding: 2rem 1.75rem;
       max-height: 90vh;
       overflow-y: auto;
+      box-shadow: var(--shadow-lg);
     }
-    .upload-panel h3 { font-size: 1.6rem; font-weight: 700; margin-bottom: 1rem; }
-    .upload-panel input, .upload-panel select, .upload-panel textarea {
+    .upload-panel h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.6rem;
+      color: var(--text);
+      margin-bottom: 1.2rem;
+    }
+    .field-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.05em; text-transform: uppercase; }
+    .field-group { margin-bottom: 1rem; }
+    .upload-panel input,
+    .upload-panel select,
+    .upload-panel textarea {
       width: 100%;
-      padding: 0.9rem;
-      margin-bottom: 1rem;
-      border-radius: 30px;
-      border: 1px solid #e2e8f0;
-      background: #f9fafc;
+      padding: 0.8rem 1rem;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
       outline: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      transition: border-color 0.2s;
     }
+    .upload-panel input:focus,
+    .upload-panel select:focus,
+    .upload-panel textarea:focus { border-color: var(--accent); }
+
     .upload-area {
-      border: 2px dashed #cbd5e1;
-      border-radius: 24px;
-      padding: 20px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
       text-align: center;
-      margin-bottom: 1rem;
       cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      color: var(--text-muted);
+      font-size: 0.85rem;
     }
-    .fotos-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-    .foto-preview { position: relative; width: 80px; height: 80px; }
-    .foto-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
-    .foto-preview button {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: #dc2626;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
+    .upload-area:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .fotos-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .foto-prev-wrap { position: relative; width: 72px; height: 72px; }
+    .foto-prev-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+    .foto-prev-wrap button {
+      position: absolute; top: -6px; right: -6px;
+      background: #dc2626; color: white;
+      border: none; border-radius: 50%;
+      width: 20px; height: 20px; cursor: pointer; font-size: 0.65rem;
+    }
+    .panel-actions { display: flex; gap: 0.75rem; margin-top: 1.2rem; }
+    .btn-cancel {
+      flex: 1; background: var(--surface2);
+      border: 1.5px solid var(--border);
+      padding: 0.8rem;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 0.88rem;
       cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
     }
     .btn-publish {
-      background: #1b74e4;
-      color: white;
-      border: none;
-      padding: 0.9rem;
+      flex: 2; background: var(--accent);
+      color: white; border: none;
+      padding: 0.8rem;
       border-radius: 40px;
       font-weight: 700;
-      width: 100%;
-      margin-top: 0.5rem;
+      font-size: 0.88rem;
       cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
     }
-    .btn-cancel {
-      background: #f1f5f9;
-      border: none;
-      padding: 0.9rem;
-      border-radius: 40px;
-      font-weight: 700;
-      width: 100%;
+    .btn-publish:hover { background: var(--accent-hover); }
+
+    /* Conversations */
+    .conv-item {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       cursor: pointer;
-      margin-top: 0.5rem;
+      border: 1px solid var(--border);
+      transition: background 0.15s;
     }
-    .panel-actions { display: flex; gap: 1rem; margin-top: 0.5rem; }
+    .conv-item:hover { background: var(--surface2); }
   </style>
 </head>
 <body>
 
-<div id="internalToast" class="internal-toast"><i class="fas fa-info-circle"></i> <span id="toastMessage"></span></div>
+<div id="internalToast" class="toast"><i class="fas fa-info-circle"></i> <span id="toastMsg"></span></div>
 
 <!-- Login -->
 <div id="loginScreen" class="login-screen">
   <div class="login-card">
-    <div class="login-icon"><i class="fas fa-exchange-alt"></i></div>
+    <div class="login-brand"><i class="fas fa-exchange-alt"></i></div>
     <h2>Intercambia</h2>
-    <p>Trueque de objetos - Publica, intercambia y conversa</p>
-    <button id="googleLoginBtn" class="btn-google"><i class="fab fa-google"></i> Iniciar sesión con Google</button>
+    <p>Publica objetos, encuentra trueques y conversa con otros usuarios</p>
+    <button id="googleLoginBtn" class="btn-google">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Continuar con Google
+    </button>
   </div>
 </div>
 
-<!-- App Principal -->
+<!-- App -->
 <div id="appContainer" class="app-container">
   <header class="market-header">
     <div class="header-container">
-      <div class="logo-area"><i class="fas fa-exchange-alt market-icon"></i><span class="logo-text">Intercambia</span></div>
-      <div class="search-bar"><div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Buscar objetos..."></div></div>
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fas fa-exchange-alt"></i></div>
+        <span class="logo-text">Intercambia</span>
+      </div>
+      <div class="search-bar">
+        <div class="search-wrapper">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Buscar objetos...">
+        </div>
+      </div>
       <div class="header-actions">
-        <!-- Botón de categorías desplegable -->
         <div class="categories-btn-container">
-          <button id="categoriesBtn" class="categories-btn"><i class="fas fa-filter"></i> Categorías <i class="fas fa-chevron-down"></i></button>
-          <div id="categoriesDropdown" class="categories-dropdown">
-            <div class="cat-dropdown-item active" data-cat="all"><i class="fas fa-store"></i> Todos</div>
-            <div class="cat-dropdown-item" data-cat="Electrónica"><i class="fas fa-laptop"></i> Electrónica</div>
-            <div class="cat-dropdown-item" data-cat="Ropa"><i class="fas fa-tshirt"></i> Ropa</div>
-            <div class="cat-dropdown-item" data-cat="Libros"><i class="fas fa-book"></i> Libros</div>
-            <div class="cat-dropdown-item" data-cat="Mascotas"><i class="fas fa-paw"></i> Mascotas</div>
-            <div class="cat-dropdown-item" data-cat="Hogar"><i class="fas fa-home"></i> Hogar</div>
-            <div class="cat-dropdown-item" data-cat="Deportes"><i class="fas fa-futbol"></i> Deportes</div>
-            <div class="cat-dropdown-item" data-cat="Otros"><i class="fas fa-tag"></i> Otros</div>
+          <button id="categoriesBtn" class="categories-btn">
+            <i class="fas fa-sliders-h"></i> <span id="catLabel">Todos</span> <i class="fas fa-chevron-down" style="font-size:0.65rem;"></i>
+          </button>
+          <div id="categoriesDropdown" class="dropdown">
+            <div class="cat-item active" data-cat="all"><i class="fas fa-store"></i> Todos</div>
+            <div class="cat-item" data-cat="Electrónica"><i class="fas fa-laptop"></i> Electrónica</div>
+            <div class="cat-item" data-cat="Ropa"><i class="fas fa-tshirt"></i> Ropa</div>
+            <div class="cat-item" data-cat="Libros"><i class="fas fa-book"></i> Libros</div>
+            <div class="cat-item" data-cat="Mascotas"><i class="fas fa-paw"></i> Mascotas</div>
+            <div class="cat-item" data-cat="Hogar"><i class="fas fa-home"></i> Hogar</div>
+            <div class="cat-item" data-cat="Deportes"><i class="fas fa-futbol"></i> Deportes</div>
+            <div class="cat-item" data-cat="Otros"><i class="fas fa-tag"></i> Otros</div>
           </div>
         </div>
-        
-        <!-- Menú de perfil -->
         <div class="profile-menu-container">
           <div id="userProfileBadge" class="profile-badge">
             <div id="headerAvatar" class="mini-avatar"><i class="fas fa-user"></i></div>
-            <span id="headerUserName" style="font-size:0.75rem;">Perfil</span>
-            <i class="fas fa-chevron-down" style="font-size:0.7rem; color:#64748b;"></i>
+            <span id="headerUserName" style="font-size:0.75rem; font-weight:600;">Perfil</span>
+            <i class="fas fa-chevron-down chevron"></i>
           </div>
           <div id="profileDropdown" class="profile-dropdown">
-            <div class="dropdown-item" data-action="misobjetos">
-              <i class="fas fa-box"></i> Mis objetos
-            </div>
-            <div class="dropdown-item" data-action="favoritos">
-              <i class="fas fa-star"></i> Favoritos
-            </div>
-            <div class="dropdown-item" data-action="chats">
-              <i class="fas fa-comment-dots"></i> Chats
-            </div>
+            <div class="dropdown-item" data-action="misobjetos"><i class="fas fa-box-open"></i> Mis objetos</div>
+            <div class="dropdown-item" data-action="favoritos"><i class="fas fa-star"></i> Favoritos</div>
+            <div class="dropdown-item" data-action="chats"><i class="fas fa-comment-dots"></i> Chats</div>
+            <div class="dropdown-item" data-action="todos"><i class="fas fa-store"></i> Ver todo</div>
             <div class="dropdown-divider"></div>
-            <div class="dropdown-item" data-action="perfil">
-              <i class="fas fa-user-circle"></i> Mi perfil
-            </div>
-            <div class="dropdown-item" data-action="logout">
-              <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-            </div>
+            <div class="dropdown-item danger" data-action="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</div>
           </div>
         </div>
-        
-        <div id="openUploadPanelBtn" class="sell-btn"><i class="fas fa-plus-circle"></i> <span>Publicar</span></div>
+        <button id="openUploadPanelBtn" class="publish-btn"><i class="fas fa-plus"></i> Publicar</button>
       </div>
     </div>
   </header>
 
-  <!-- Grid de resultados -->
+  <div id="sectionLabel" class="section-label">Todos los objetos</div>
   <div id="feedGrid" class="listings-grid"></div>
   <div class="load-more"><button id="loadMoreBtn" class="load-more-btn">Cargar más</button></div>
 </div>
 
-<!-- Chat lateral -->
+<!-- Gallery Modal -->
+<div id="galleryModal" class="gallery-modal">
+  <button class="gallery-close" id="galleryClose"><i class="fas fa-times"></i></button>
+  <div class="gallery-counter" id="galleryCounter">1 / 1</div>
+  <div class="gallery-main">
+    <button class="gallery-nav prev" id="galleryPrev"><i class="fas fa-chevron-left"></i></button>
+    <img class="gallery-img" id="galleryImg" src="" alt="">
+    <button class="gallery-nav next" id="galleryNext"><i class="fas fa-chevron-right"></i></button>
+  </div>
+  <div class="gallery-thumbs" id="galleryThumbs"></div>
+</div>
+
+<!-- Chat -->
 <div id="chatSidebar" class="chat-sidebar">
   <div class="chat-header">
     <button id="closeChatBtn"><i class="fas fa-arrow-left"></i></button>
-    <span id="chatWithName">Chat</span>
+    <div>
+      <div class="chat-title" id="chatWithName">Chat</div>
+      <div style="font-size:0.7rem; opacity:0.75;" id="chatSubtitle"></div>
+    </div>
   </div>
   <div id="chatMessages" class="chat-messages"></div>
-  <div class="chat-input">
+  <div class="chat-input-bar">
     <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
     <button id="sendChatBtn">Enviar</button>
   </div>
 </div>
 
-<!-- Panel Publicar -->
-<div id="uploadPanelOverlay" class="upload-panel-overlay">
+<!-- Upload Panel -->
+<div id="uploadPanelOverlay" class="panel-overlay">
   <div class="upload-panel">
-    <h3><i class="fas fa-cloud-upload-alt"></i> Publicar objeto</h3>
-    <input type="text" id="uploadTitle" placeholder="Título *">
-    <select id="uploadCategory">
-      <option value="Electrónica">📱 Electrónica</option>
-      <option value="Ropa">👕 Ropa</option>
-      <option value="Libros">📚 Libros</option>
-      <option value="Mascotas">🐾 Mascotas</option>
-      <option value="Hogar">🏠 Hogar</option>
-      <option value="Deportes">⚽ Deportes</option>
-      <option value="Otros">🎁 Otros</option>
-    </select>
-    <textarea id="uploadDesc" rows="2" placeholder="Descripción (estado, qué buscas a cambio...) *"></textarea>
-    <input type="text" id="uploadLocation" placeholder="Ubicación (ej. Ciudad de México, Condesa)">
-    <div id="uploadArea" class="upload-area">📸 Haz clic para seleccionar fotos (máx 5)</div>
-    <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
-    <div id="fotosPreview" class="fotos-preview"></div>
+    <h3>Publicar objeto</h3>
+    <div class="field-group">
+      <div class="field-label">Título *</div>
+      <input type="text" id="uploadTitle" placeholder="¿Qué ofreces?">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Categoría</div>
+      <select id="uploadCategory">
+        <option value="Electrónica">📱 Electrónica</option>
+        <option value="Ropa">👕 Ropa</option>
+        <option value="Libros">📚 Libros</option>
+        <option value="Mascotas">🐾 Mascotas</option>
+        <option value="Hogar">🏠 Hogar</option>
+        <option value="Deportes">⚽ Deportes</option>
+        <option value="Otros">🎁 Otros</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Descripción *</div>
+      <textarea id="uploadDesc" rows="3" placeholder="Estado del objeto, qué buscarías a cambio..."></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Ubicación</div>
+      <input type="text" id="uploadLocation" placeholder="Ciudad, barrio...">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Fotos (máx. 5) *</div>
+      <div id="uploadArea" class="upload-area"><i class="fas fa-camera" style="margin-bottom:4px; display:block;"></i> Haz clic para seleccionar fotos</div>
+      <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+      <div id="fotosPreview" class="fotos-preview"></div>
+    </div>
     <div class="panel-actions">
       <button id="cancelUploadBtn" class="btn-cancel">Cancelar</button>
-      <button id="publishArticleBtn" class="btn-publish">Publicar</button>
+      <button id="publishArticleBtn" class="btn-publish"><i class="fas fa-paper-plane"></i> Publicar</button>
     </div>
-  </div>
-</div>
-
-<!-- Modal fotos -->
-<div id="fotoModal" class="modal">
-  <div class="modal-content">
-    <img id="fotoModalImg" src="">
-    <button onclick="document.getElementById('fotoModal').style.display='none'">Cerrar</button>
   </div>
 </div>
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-  // ========== CONFIGURACIÓN ==========
-  const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
-  const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
-  
-  let currentUser = null;
-  let authToken = null;
-  let favoritosIds = new Set();
-  let todosProductos = [];
-  let misProductos = [];
-  let currentView = "todos"; // todos, misobjetos, favoritos, chats
-  let currentCategory = "all";
-  let searchQuery = "";
-  let visibleItems = 8;
-  let selectedFiles = [];
-  
-  // Chat
-  let chatObjetoId = null;
-  let chatConUsuario = null;
-  let mensajesPolling = null;
+const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
 
-  // ========== TOAST ==========
-  function showToast(msg, isError = false) {
-    const toast = document.getElementById("internalToast");
-    document.getElementById("toastMessage").innerText = msg;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2600);
-  }
+let currentUser = null;
+let authToken = null;
+let favoritosIds = new Set();
+let todosProductos = [];
+let currentView = "todos";
+let currentCategory = "all";
+let searchQuery = "";
+let visibleItems = 8;
+let selectedFiles = [];
+let chatObjetoId = null;
+let chatConUsuario = null;
+let mensajesPolling = null;
 
-  // ========== AUTENTICACIÓN ==========
-  function getTokenFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) { localStorage.setItem('auth_token', token); window.history.replaceState({}, document.title, window.location.pathname); return token; }
-    return localStorage.getItem('auth_token');
-  }
-  
-  async function verifyToken(token) {
-    try {
-      const res = await fetch(`${WORKER_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data.user;
-    } catch(e) { return null; }
-  }
-  
-  function loginWithGoogle() { window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`; }
-  
-  async function logout() { localStorage.removeItem('auth_token'); authToken = null; currentUser = null; location.reload(); }
+// Gallery state
+let galleryPhotos = [];
+let galleryIndex = 0;
+let galleryStartX = 0;
 
-  // ========== API ==========
-  async function apiFetch(path, options = {}) {
-    const headers = options.headers || {};
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-    const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
-    if (!res.ok) { if (res.status === 401) logout(); throw new Error(await res.text()); }
-    return res.json();
-  }
-  
-  async function obtenerObjetos() { return await apiFetch('/objetos'); }
-  async function obtenerMisObjetos() { return await apiFetch('/mis-objetos'); }
-  async function obtenerFavoritos() { try { return await apiFetch('/favoritos'); } catch(e) { return []; } }
-  async function agregarFavorito(id) { return await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }); }
-  async function quitarFavorito(id) { return await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); }
-  async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
-  async function enviarMensaje(objetoId, receptor, mensaje) { return await apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) }); }
-  async function obtenerMensajes(objetoId, otroUsuario) { return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`); }
-  async function obtenerConversaciones() { return await apiFetch('/mis-conversaciones'); }
-  
-  async function publicarObjeto(titulo, descripcion, categoria, ubicacion, fotos) {
-    const form = new FormData();
-    form.append('titulo', titulo);
-    form.append('descripcion', `${categoria} | ${descripcion} | ${ubicacion || 'Sin ubicación'}`);
-    form.append('direccion', ubicacion || '');
-    for (let i = 0; i < Math.min(fotos.length, 5); i++) form.append(`foto_${i}`, fotos[i]);
-    return await apiFetch('/objeto', { method: 'POST', body: form });
-  }
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById("internalToast");
+  document.getElementById("toastMsg").innerText = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2600);
+}
 
-  // ========== FAVORITOS ==========
-  async function toggleFavorito(id, btn) {
-    if (favoritosIds.has(id)) { 
-      await quitarFavorito(id); 
-      favoritosIds.delete(id); 
-      if (btn) btn.classList.remove('active');
-      showToast('Eliminado de favoritos');
-    } else { 
-      await agregarFavorito(id); 
-      favoritosIds.add(id); 
-      if (btn) btn.classList.add('active');
-      showToast('Agregado a favoritos');
-    }
-    if (currentView === 'favoritos') await renderFavoritos();
-    if (currentView === 'todos') renderTodos();
-  }
+// ── AUTH ──
+function getTokenFromURL() {
+  const p = new URLSearchParams(window.location.search);
+  const token = p.get('token');
+  if (token) { localStorage.setItem('auth_token', token); window.history.replaceState({}, '', window.location.pathname); return token; }
+  return localStorage.getItem('auth_token');
+}
+async function verifyToken(token) {
+  try {
+    const res = await fetch(`${WORKER_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!res.ok) return null;
+    return (await res.json()).user;
+  } catch { return null; }
+}
+function loginWithGoogle() { window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`; }
+async function logout() { localStorage.removeItem('auth_token'); location.reload(); }
 
-  // ========== RENDER ==========
-  function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-  
-  function renderProductosGrid(productos, showDelete = false) {
-    const grid = document.getElementById("feedGrid");
-    if (!productos || productos.length === 0) { 
-      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-store-slash" style="font-size:2rem; color:#94a3b8;"></i><p style="margin-top:8px;">No hay objetos para mostrar</p></div>`; 
-      return; 
-    }
-    
-    grid.innerHTML = productos.map(p => {
-      const categoria = p.descripcion?.split('|')[0]?.trim() || 'General';
-      const ubicacion = p.direccion || (p.descripcion?.split('|')[2]?.trim()) || 'Sin ubicación';
-      const esFavorito = favoritosIds.has(p.id);
-      const fotosExtra = p.fotos_extra || [];
-      const todasLasFotos = [p.url, ...fotosExtra.map(f => f.url)];
-      const esMiObjeto = currentUser && p.usuario === currentUser.email;
-      
-      return `
-        <div class="product-card" data-id="${p.id}">
-          <div class="favorite-star ${esFavorito ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorito(${p.id}, this)">${esFavorito ? '★' : '☆'}</div>
-          ${showDelete && esMiObjeto ? `<div class="delete-btn" onclick="event.stopPropagation(); eliminarObjetoPrompt(${p.id})"><i class="fas fa-trash-alt"></i></div>` : ''}
-          <div class="card-img">
-            <img class="imagen-principal" src="${p.url}" onerror="this.src='https://placehold.co/300x300?text=Sin+imagen'" onclick="mostrarFotoAmpliada('${p.url}')">
-            ${todasLasFotos.length > 1 ? `
-              <div class="miniaturas">
-                ${todasLasFotos.map((url, idx) => `<img class="miniatura ${idx === 0 ? 'activa' : ''}" src="${url}" onerror="this.src='https://placehold.co/60x60?text=Error'" onclick="event.stopPropagation(); cambiarFotoPrincipal(this, '${url}')">`).join('')}
-              </div>
-            ` : ''}
-          </div>
-          <div class="card-info">
-            <span class="badge-intercambio">🔄 Trueque</span>
-            <div class="title">${escapeHtml(p.titulo)}</div>
-            <div class="usuario" onclick="verPerfilUsuario('${escapeHtml(p.usuario)}')"><i class="fas fa-user-circle"></i> ${escapeHtml(p.usuario)}</div>
-            <div class="ubicacion"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(ubicacion)}</div>
-            ${p.usuario !== currentUser?.email ? `
-              <button class="intercambiar-btn" onclick="abrirChat(${p.id}, '${escapeHtml(p.usuario)}', '${escapeHtml(p.titulo)}')">💬 Intercambiar</button>
-              <button class="reportar-btn" onclick="reportarObjeto(${p.id})">⚠️ Reportar</button>
-            ` : '<span style="font-size:11px; color:#94a3b8; text-align:center; display:block; margin-top:8px;">(tu objeto)</span>'}
-          </div>
+// ── API ──
+async function apiFetch(path, options = {}) {
+  const headers = options.headers || {};
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
+  if (!res.ok) { if (res.status === 401) logout(); throw new Error(await res.text()); }
+  return res.json();
+}
+const obtenerObjetos = () => apiFetch('/objetos');
+const obtenerMisObjetos = () => apiFetch('/mis-objetos');
+const obtenerFavoritos = () => apiFetch('/favoritos').catch(() => []);
+const agregarFavorito = id => apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) });
+const quitarFavorito = id => apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) });
+const eliminarObjeto = id => apiFetch(`/objeto/${id}`, { method: 'DELETE' });
+const enviarMensaje = (oid, receptor, msg) => apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: oid, receptor, mensaje: msg }) });
+const obtenerMensajes = (oid, otro) => apiFetch(`/mensajes?id_objeto=${oid}&otro=${encodeURIComponent(otro)}`);
+const obtenerConversaciones = () => apiFetch('/mis-conversaciones');
+async function publicarObjeto(titulo, desc, categoria, ubicacion, fotos) {
+  const form = new FormData();
+  form.append('titulo', titulo);
+  form.append('descripcion', `${categoria} | ${desc} | ${ubicacion || 'Sin ubicación'}`);
+  form.append('direccion', ubicacion || '');
+  for (let i = 0; i < Math.min(fotos.length, 5); i++) form.append(`foto_${i}`, fotos[i]);
+  return apiFetch('/objeto', { method: 'POST', body: form });
+}
+
+// ── FAVORITES ──
+async function toggleFavorito(id, btn) {
+  if (favoritosIds.has(id)) {
+    await quitarFavorito(id);
+    favoritosIds.delete(id);
+    btn.classList.remove('active');
+    btn.innerHTML = '☆';
+    showToast('Eliminado de favoritos');
+  } else {
+    await agregarFavorito(id);
+    favoritosIds.add(id);
+    btn.classList.add('active');
+    btn.innerHTML = '★';
+    showToast('Guardado en favoritos');
+  }
+  if (currentView === 'favoritos') renderFavoritos();
+}
+
+// ── GALLERY MODAL ──
+function openGallery(photos, startIndex) {
+  galleryPhotos = photos;
+  galleryIndex = startIndex;
+  document.getElementById('galleryModal').classList.add('open');
+  renderGalleryState();
+}
+function renderGalleryState() {
+  const img = document.getElementById('galleryImg');
+  const counter = document.getElementById('galleryCounter');
+  const thumbs = document.getElementById('galleryThumbs');
+  const prev = document.getElementById('galleryPrev');
+  const next = document.getElementById('galleryNext');
+  img.src = galleryPhotos[galleryIndex];
+  counter.textContent = `${galleryIndex + 1} / ${galleryPhotos.length}`;
+  prev.disabled = galleryIndex === 0;
+  next.disabled = galleryIndex === galleryPhotos.length - 1;
+  thumbs.innerHTML = galleryPhotos.map((url, i) => `
+    <img class="gallery-thumb ${i === galleryIndex ? 'active' : ''}" src="${url}" onerror="this.src='https://placehold.co/60x60?text=Error'" onclick="galleryGoTo(${i})">
+  `).join('');
+  // scroll active thumb into view
+  setTimeout(() => {
+    const active = thumbs.querySelector('.active');
+    if (active) active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, 50);
+}
+function galleryGoTo(i) { galleryIndex = i; renderGalleryState(); }
+document.getElementById('galleryPrev').onclick = () => { if (galleryIndex > 0) { galleryIndex--; renderGalleryState(); } };
+document.getElementById('galleryNext').onclick = () => { if (galleryIndex < galleryPhotos.length - 1) { galleryIndex++; renderGalleryState(); } };
+document.getElementById('galleryClose').onclick = () => document.getElementById('galleryModal').classList.remove('open');
+document.getElementById('galleryModal').addEventListener('click', (e) => { if (e.target === document.getElementById('galleryModal')) document.getElementById('galleryModal').classList.remove('open'); });
+
+// Swipe support for gallery
+document.getElementById('galleryImg').addEventListener('touchstart', (e) => { galleryStartX = e.touches[0].clientX; }, { passive: true });
+document.getElementById('galleryImg').addEventListener('touchend', (e) => {
+  const diff = galleryStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 40) {
+    if (diff > 0 && galleryIndex < galleryPhotos.length - 1) { galleryIndex++; renderGalleryState(); }
+    else if (diff < 0 && galleryIndex > 0) { galleryIndex--; renderGalleryState(); }
+  }
+});
+
+// Arrow keys
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('galleryModal').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft' && galleryIndex > 0) { galleryIndex--; renderGalleryState(); }
+  if (e.key === 'ArrowRight' && galleryIndex < galleryPhotos.length - 1) { galleryIndex++; renderGalleryState(); }
+  if (e.key === 'Escape') document.getElementById('galleryModal').classList.remove('open');
+});
+
+// ── RENDER ──
+function escH(s) { if (!s) return ''; return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function renderProductosGrid(productos, showDelete = false) {
+  const grid = document.getElementById("feedGrid");
+  if (!productos || !productos.length) {
+    grid.innerHTML = `<div class="empty-state"><i class="fas fa-store-slash"></i><p>No hay objetos para mostrar</p></div>`;
+    return;
+  }
+  grid.innerHTML = productos.map(p => {
+    const categoria = p.descripcion?.split('|')[0]?.trim() || 'General';
+    const ubicacion = p.direccion || p.descripcion?.split('|')[2]?.trim() || 'Sin ubicación';
+    const esFav = favoritosIds.has(p.id);
+    const fotosExtra = p.fotos_extra || [];
+    const todasFotos = [p.url, ...fotosExtra.map(f => f.url)].filter(Boolean);
+    const esMio = currentUser && p.usuario === currentUser.email;
+    const fotosJson = escH(JSON.stringify(todasFotos));
+
+    return `
+      <div class="product-card" data-id="${p.id}">
+        <div class="card-badges">
+          <span class="badge-cat">${escH(categoria)}</span>
+          <button class="fav-btn ${esFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorito(${p.id}, this)">${esFav ? '★' : '☆'}</button>
         </div>
-      `;
-    }).join('');
-  }
-  
-  window.cambiarFotoPrincipal = (miniatura, url) => {
-    const card = miniatura.closest('.product-card');
-    const imgPrincipal = card.querySelector('.imagen-principal');
-    imgPrincipal.src = url;
-    card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
-    miniatura.classList.add('activa');
-  };
-  
-  window.mostrarFotoAmpliada = (url) => { 
-    document.getElementById('fotoModalImg').src = url; 
-    document.getElementById('fotoModal').style.display = 'flex'; 
-  };
-  
-  window.verPerfilUsuario = (email) => { showToast(`👤 Perfil de ${email}`); };
-  
-  window.eliminarObjetoPrompt = async (id) => {
-    if (confirm('¿Eliminar esta publicación? No se puede deshacer.')) {
-      try {
-        await eliminarObjeto(id);
-        showToast('✅ Publicación eliminada');
-        if (currentView === 'misobjetos') await renderMisObjetos();
-        if (currentView === 'todos') renderTodos();
-      } catch(e) { showToast('❌ Error al eliminar', true); }
-    }
-  };
-  
-  window.reportarObjeto = async (id) => {
-    const motivo = prompt('Motivo del reporte:');
-    if (motivo && motivo.trim()) { 
-      await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }); 
-      showToast('✅ Reporte enviado'); 
-    }
-  };
-  
-  function renderTodos() {
-    let filtered = [...todosProductos];
-    if (currentCategory !== "all") filtered = filtered.filter(p => (p.descripcion?.split('|')[0]?.trim() || 'General') === currentCategory);
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => p.titulo.toLowerCase().includes(q) || p.usuario.toLowerCase().includes(q));
-    }
-    filtered.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-    const toShow = filtered.slice(0, visibleItems);
-    renderProductosGrid(toShow, false);
-    const loadBtn = document.getElementById("loadMoreBtn");
-    if (filtered.length <= visibleItems) loadBtn.style.display = "none";
-    else loadBtn.style.display = "inline-block";
-  }
-  
-  async function renderMisObjetos() {
-    try {
-      misProductos = await obtenerMisObjetos();
-      renderProductosGrid(misProductos, true);
-      document.getElementById("loadMoreBtn").style.display = "none";
-    } catch(e) { showToast('Error cargando tus objetos', true); }
-  }
-  
-  async function renderFavoritos() {
-    try {
-      const favoritos = await obtenerFavoritos();
-      renderProductosGrid(favoritos, false);
-      document.getElementById("loadMoreBtn").style.display = "none";
-    } catch(e) { showToast('Error cargando favoritos', true); }
-  }
-  
-  async function renderConversaciones() {
-    try {
-      const convs = await obtenerConversaciones();
-      const grid = document.getElementById("feedGrid");
-      if (!convs.length) {
-        grid.innerHTML = `<div style="text-align:center; padding:2rem;"><i class="fas fa-comments" style="font-size:2rem; color:#94a3b8;"></i><p>No hay conversaciones activas</p></div>`;
-        return;
-      }
-      grid.innerHTML = convs.map(c => `
-        <div style="background:white; border-radius:20px; padding:1rem; margin-bottom:0.5rem; cursor:pointer;" onclick="abrirChat(${c.id_objeto}, '${escapeHtml(c.otroUsuario)}', '${escapeHtml(c.titulo)}')">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div><strong>${escapeHtml(c.titulo)}</strong><br><small>con ${escapeHtml(c.otroUsuario)}</small></div>
-            <i class="fas fa-comment-dots" style="color:#1b74e4;"></i>
+        ${esMio && showDelete ? `<button class="delete-btn-card" onclick="event.stopPropagation(); eliminarObjetoPrompt(${p.id})" title="Eliminar"><i class="fas fa-trash-alt"></i></button>` : ''}
+        <div class="card-img" onclick="openGallery(${fotosJson}, 0)">
+          <img class="imagen-principal" src="${escH(todasFotos[0] || '')}" onerror="this.src='https://placehold.co/300x300?text=Sin+imagen'" alt="${escH(p.titulo)}">
+          ${todasFotos.length > 1 ? `
+            <div class="thumb-strip">
+              ${todasFotos.map((url, idx) => `<img class="thumb ${idx === 0 ? 'active' : ''}" src="${escH(url)}" onerror="this.src='https://placehold.co/40x40'" onclick="event.stopPropagation(); switchCardPhoto(this, '${escH(url)}', ${p.id}, ${idx}, ${fotosJson})">`).join('')}
+            </div>
+            <span class="photo-count"><i class="fas fa-images"></i> ${todasFotos.length}</span>
+          ` : ''}
+        </div>
+        <div class="card-info">
+          <div class="card-title">${escH(p.titulo)}</div>
+          <div class="card-user" onclick="event.stopPropagation(); showToast('👤 ${escH(p.usuario)}')">
+            <i class="fas fa-user-circle"></i> ${escH(p.usuario)}
           </div>
-          <div style="font-size:0.7rem; color:#64748b; margin-top:4px;">Último mensaje: ${new Date(c.ultimaFecha).toLocaleString()}</div>
+          <div class="card-location"><i class="fas fa-map-marker-alt"></i> ${escH(ubicacion)}</div>
+          ${!esMio ? `
+            <div class="card-actions">
+              <button class="btn-chat" onclick="event.stopPropagation(); abrirChat(${p.id}, '${escH(p.usuario)}', '${escH(p.titulo)}')">
+                <i class="fas fa-comments"></i> Intercambiar
+              </button>
+              <button class="btn-report" onclick="event.stopPropagation(); reportarObjeto(${p.id})" title="Reportar">
+                <i class="fas fa-flag"></i>
+              </button>
+            </div>
+          ` : `<div class="own-label">Tu publicación</div>`}
         </div>
-      `).join('');
-      document.getElementById("loadMoreBtn").style.display = "none";
-    } catch(e) { console.error(e); }
-  }
-  
-  function switchToView(view) {
-    currentView = view;
-    visibleItems = 8;
-    
-    if (view === 'todos') renderTodos();
-    else if (view === 'misobjetos') renderMisObjetos();
-    else if (view === 'favoritos') renderFavoritos();
-    else if (view === 'chats') renderConversaciones();
-  }
-  
-  function loadMore() { visibleItems += 8; if (currentView === 'todos') renderTodos(); }
+      </div>
+    `;
+  }).join('');
+}
 
-  // ========== CHAT ==========
-  async function cargarMensajes() {
-    if (!chatObjetoId || !chatConUsuario) return;
-    try {
-      const mensajes = await obtenerMensajes(chatObjetoId, chatConUsuario);
-      const container = document.getElementById('chatMessages');
-      container.innerHTML = mensajes.map(m => `
-        <div class="message ${m.emisor === currentUser?.email ? 'sent' : 'received'}">
-          <strong>${m.emisor === currentUser?.email ? 'Tú' : m.emisor}</strong>: ${escapeHtml(m.mensaje)}
-          <div style="font-size:0.6rem; opacity:0.7;">${new Date(m.fecha).toLocaleTimeString()}</div>
-        </div>
-      `).join('');
-      container.scrollTop = container.scrollHeight;
-    } catch(e) { console.error(e); }
-  }
-  
-  async function enviarMensajeChat() {
-    const input = document.getElementById('chatInput');
-    const texto = input.value.trim();
-    if (!texto || !chatObjetoId || !chatConUsuario) return;
-    input.value = '';
-    await enviarMensaje(chatObjetoId, chatConUsuario, texto);
-    await cargarMensajes();
-  }
-  
-  function startPolling() {
-    if (mensajesPolling) clearInterval(mensajesPolling);
-    mensajesPolling = setInterval(() => {
-      if (chatObjetoId && chatConUsuario) cargarMensajes();
-    }, 3000);
-  }
-  
-  window.abrirChat = async (objetoId, otroUsuario, titulo) => {
-    chatObjetoId = objetoId;
-    chatConUsuario = otroUsuario;
-    document.getElementById('chatWithName').innerText = `${titulo} - con ${otroUsuario}`;
-    document.getElementById('chatSidebar').classList.add('open');
-    await cargarMensajes();
-    startPolling();
-  };
-  
-  function cerrarChat() {
-    if (mensajesPolling) clearInterval(mensajesPolling);
-    chatObjetoId = null;
-    chatConUsuario = null;
-    document.getElementById('chatSidebar').classList.remove('open');
-  }
-  
-  document.getElementById('closeChatBtn').onclick = cerrarChat;
-  document.getElementById('sendChatBtn').onclick = enviarMensajeChat;
-  document.getElementById('chatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensajeChat(); });
+window.switchCardPhoto = (thumb, url, cardId, idx, photos) => {
+  const card = thumb.closest('.product-card');
+  const img = card.querySelector('.imagen-principal');
+  img.src = url;
+  // update onclick to open gallery at this index
+  card.querySelector('.card-img').onclick = () => openGallery(photos, idx);
+  card.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === idx));
+};
 
-  // ========== SUBIDA ==========
-  function actualizarPreviews() {
-    const container = document.getElementById('fotosPreview');
-    container.innerHTML = '';
-    selectedFiles.forEach((file, idx) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const div = document.createElement('div'); div.className = 'foto-preview';
-        div.innerHTML = `<img src="${e.target.result}"><button onclick="eliminarFoto(${idx})">✕</button>`;
-        container.appendChild(div);
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-  
-  window.eliminarFoto = (idx) => { selectedFiles.splice(idx, 1); actualizarPreviews(); };
-  
-  document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
-  document.getElementById('fileInput').onchange = (e) => {
-    const archivos = Array.from(e.target.files);
-    selectedFiles = [...selectedFiles, ...archivos].slice(0, 5);
-    actualizarPreviews();
-  };
-  
-  document.getElementById('openUploadPanelBtn').onclick = () => {
-    if (!currentUser) { showToast('Inicia sesión primero', true); return; }
-    document.getElementById('uploadPanelOverlay').classList.add('active');
-  };
-  
-  document.getElementById('cancelUploadBtn').onclick = () => document.getElementById('uploadPanelOverlay').classList.remove('active');
-  
-  document.getElementById('publishArticleBtn').onclick = async () => {
-    const titulo = document.getElementById('uploadTitle').value.trim();
-    const categoria = document.getElementById('uploadCategory').value;
-    const desc = document.getElementById('uploadDesc').value.trim();
-    const ubicacion = document.getElementById('uploadLocation').value.trim();
-    if (!titulo || !desc || selectedFiles.length === 0) { 
-      showToast('❌ Completa título, descripción y al menos una foto', true); 
-      return; 
-    }
+window.eliminarObjetoPrompt = async (id) => {
+  if (confirm('¿Eliminar esta publicación? Esta acción no se puede deshacer.')) {
     try {
-      await publicarObjeto(titulo, desc, categoria, ubicacion, selectedFiles);
-      showToast('✅ Objeto publicado correctamente');
-      document.getElementById('uploadPanelOverlay').classList.remove('active');
-      document.getElementById('uploadTitle').value = '';
-      document.getElementById('uploadDesc').value = '';
-      document.getElementById('uploadLocation').value = '';
-      selectedFiles = [];
-      actualizarPreviews();
-      await cargarProductos();
-      if (currentView === 'misobjetos') await renderMisObjetos();
-    } catch(e) { showToast('❌ Error: ' + e.message, true); }
-  };
+      await eliminarObjeto(id);
+      showToast('Publicación eliminada');
+      if (currentView === 'misobjetos') renderMisObjetos();
+      else { todosProductos = todosProductos.filter(p => p.id !== id); renderTodos(); }
+    } catch { showToast('Error al eliminar'); }
+  }
+};
 
-  // ========== CARGAR DATOS ==========
-  async function cargarProductos() {
-    try {
-      const objetos = await obtenerObjetos();
-      todosProductos = objetos;
-      renderTodos();
-    } catch(e) { showToast('Error al cargar productos', true); }
+window.reportarObjeto = async (id) => {
+  const motivo = prompt('¿Por qué quieres reportar esta publicación?');
+  if (motivo?.trim()) {
+    await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
+    showToast('Reporte enviado, gracias');
   }
-  
-  async function cargarFavoritosIniciales() {
+};
+
+function renderTodos() {
+  document.getElementById('sectionLabel').textContent = currentCategory === 'all' ? 'Todos los objetos' : currentCategory;
+  let list = [...todosProductos];
+  if (currentCategory !== 'all') list = list.filter(p => (p.descripcion?.split('|')[0]?.trim() || 'General') === currentCategory);
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(p => p.titulo?.toLowerCase().includes(q) || p.usuario?.toLowerCase().includes(q));
+  }
+  list.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  renderProductosGrid(list.slice(0, visibleItems), false);
+  document.getElementById("loadMoreBtn").style.display = list.length > visibleItems ? 'inline-block' : 'none';
+}
+
+async function renderMisObjetos() {
+  document.getElementById('sectionLabel').textContent = 'Mis objetos';
+  try {
+    const items = await obtenerMisObjetos();
+    renderProductosGrid(items, true);
+    document.getElementById("loadMoreBtn").style.display = 'none';
+  } catch { showToast('Error al cargar tus objetos'); }
+}
+
+async function renderFavoritos() {
+  document.getElementById('sectionLabel').textContent = 'Favoritos';
+  try {
     const favs = await obtenerFavoritos();
-    favoritosIds = new Set(favs.map(f => f.id));
-  }
+    renderProductosGrid(favs, false);
+    document.getElementById("loadMoreBtn").style.display = 'none';
+  } catch { showToast('Error al cargar favoritos'); }
+}
 
-  // ========== CATEGORÍAS ==========
-  function setupCategorias() {
-    const categories = ["all", "Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes", "Otros"];
-    const catNames = { all:"Todos", Electronica:"Electrónica", Ropa:"Ropa", Libros:"Libros", Mascotas:"Mascotas", Hogar:"Hogar", Deportes:"Deportes", Otros:"Otros" };
-    
-    document.querySelectorAll('.cat-dropdown-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const cat = item.getAttribute('data-cat');
-        currentCategory = cat;
-        visibleItems = 8;
-        
-        document.querySelectorAll('.cat-dropdown-item').forEach(c => c.classList.remove('active'));
-        item.classList.add('active');
-        
-        categoriesDropdown.classList.remove('show');
-        renderTodos();
-      });
-    });
-  }
-  
-  // Cerrar dropdowns al hacer clic fuera
-  document.addEventListener('click', () => {
+async function renderConversaciones() {
+  document.getElementById('sectionLabel').textContent = 'Mis chats';
+  try {
+    const convs = await obtenerConversaciones();
+    const grid = document.getElementById("feedGrid");
+    document.getElementById("loadMoreBtn").style.display = 'none';
+    if (!convs.length) {
+      grid.innerHTML = `<div class="empty-state"><i class="fas fa-comments"></i><p>No hay conversaciones activas</p></div>`;
+      return;
+    }
+    grid.innerHTML = `<div style="grid-column:1/-1; display:flex; flex-direction:column; gap:8px;">${convs.map(c => `
+      <div class="conv-item" onclick="abrirChat(${c.id_objeto}, '${escH(c.otroUsuario)}', '${escH(c.titulo)}')">
+        <div>
+          <div style="font-weight:600; font-size:0.88rem;">${escH(c.titulo)}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">con ${escH(c.otroUsuario)}</div>
+          <div style="font-size:0.68rem; color:var(--text-light); margin-top:2px;">${new Date(c.ultimaFecha).toLocaleString()}</div>
+        </div>
+        <i class="fas fa-chevron-right" style="color:var(--text-light);"></i>
+      </div>
+    `).join('')}</div>`;
+  } catch (e) { console.error(e); }
+}
+
+function switchToView(view) {
+  currentView = view;
+  visibleItems = 8;
+  if (view === 'todos') renderTodos();
+  else if (view === 'misobjetos') renderMisObjetos();
+  else if (view === 'favoritos') renderFavoritos();
+  else if (view === 'chats') renderConversaciones();
+}
+
+// ── CHAT ──
+async function cargarMensajes() {
+  if (!chatObjetoId || !chatConUsuario) return;
+  try {
+    const msgs = await obtenerMensajes(chatObjetoId, chatConUsuario);
+    const c = document.getElementById('chatMessages');
+    c.innerHTML = msgs.map(m => `
+      <div class="message ${m.emisor === currentUser?.email ? 'sent' : 'received'}">
+        <div>${escH(m.mensaje)}</div>
+        <div class="message-time">${new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+      </div>
+    `).join('');
+    c.scrollTop = c.scrollHeight;
+  } catch (e) { console.error(e); }
+}
+
+async function enviarMensajeChat() {
+  const input = document.getElementById('chatInput');
+  const txt = input.value.trim();
+  if (!txt || !chatObjetoId || !chatConUsuario) return;
+  input.value = '';
+  await enviarMensaje(chatObjetoId, chatConUsuario, txt);
+  await cargarMensajes();
+}
+
+window.abrirChat = async (objetoId, otroUsuario, titulo) => {
+  chatObjetoId = objetoId;
+  chatConUsuario = otroUsuario;
+  document.getElementById('chatWithName').textContent = titulo;
+  document.getElementById('chatSubtitle').textContent = `con ${otroUsuario}`;
+  document.getElementById('chatSidebar').classList.add('open');
+  await cargarMensajes();
+  if (mensajesPolling) clearInterval(mensajesPolling);
+  mensajesPolling = setInterval(cargarMensajes, 3000);
+};
+
+document.getElementById('closeChatBtn').onclick = () => {
+  if (mensajesPolling) clearInterval(mensajesPolling);
+  chatObjetoId = null; chatConUsuario = null;
+  document.getElementById('chatSidebar').classList.remove('open');
+};
+document.getElementById('sendChatBtn').onclick = enviarMensajeChat;
+document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') enviarMensajeChat(); });
+
+// ── UPLOAD ──
+function actualizarPreviews() {
+  const c = document.getElementById('fotosPreview');
+  c.innerHTML = '';
+  selectedFiles.forEach((file, i) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const d = document.createElement('div'); d.className = 'foto-prev-wrap';
+      d.innerHTML = `<img src="${e.target.result}"><button onclick="eliminarFoto(${i})">✕</button>`;
+      c.appendChild(d);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+window.eliminarFoto = i => { selectedFiles.splice(i, 1); actualizarPreviews(); };
+
+document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange = e => {
+  selectedFiles = [...selectedFiles, ...Array.from(e.target.files)].slice(0, 5);
+  actualizarPreviews();
+};
+document.getElementById('openUploadPanelBtn').onclick = () => {
+  if (!currentUser) { showToast('Inicia sesión primero'); return; }
+  document.getElementById('uploadPanelOverlay').classList.add('active');
+};
+document.getElementById('cancelUploadBtn').onclick = () => document.getElementById('uploadPanelOverlay').classList.remove('active');
+document.getElementById('publishArticleBtn').onclick = async () => {
+  const titulo = document.getElementById('uploadTitle').value.trim();
+  const categoria = document.getElementById('uploadCategory').value;
+  const desc = document.getElementById('uploadDesc').value.trim();
+  const ubicacion = document.getElementById('uploadLocation').value.trim();
+  if (!titulo || !desc || !selectedFiles.length) { showToast('Completa título, descripción y al menos una foto'); return; }
+  try {
+    await publicarObjeto(titulo, desc, categoria, ubicacion, selectedFiles);
+    showToast('¡Objeto publicado!');
+    document.getElementById('uploadPanelOverlay').classList.remove('active');
+    document.getElementById('uploadTitle').value = '';
+    document.getElementById('uploadDesc').value = '';
+    document.getElementById('uploadLocation').value = '';
+    selectedFiles = [];
+    actualizarPreviews();
+    todosProductos = await obtenerObjetos();
+    if (currentView === 'todos') renderTodos();
+    else if (currentView === 'misobjetos') renderMisObjetos();
+  } catch (e) { showToast('Error: ' + e.message); }
+};
+
+// ── CATEGORIES DROPDOWN ──
+const categoriesBtn = document.getElementById('categoriesBtn');
+const categoriesDropdown = document.getElementById('categoriesDropdown');
+categoriesBtn.addEventListener('click', e => { e.stopPropagation(); categoriesDropdown.classList.toggle('show'); });
+document.querySelectorAll('.cat-item').forEach(item => {
+  item.addEventListener('click', () => {
+    currentCategory = item.dataset.cat;
+    visibleItems = 8;
+    document.querySelectorAll('.cat-item').forEach(c => c.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('catLabel').textContent = item.textContent.trim().replace(/^[^\s]+\s/, '').trim();
     categoriesDropdown.classList.remove('show');
+    if (currentView !== 'todos') switchToView('todos');
+    else renderTodos();
+  });
+});
+
+// ── PROFILE DROPDOWN ──
+const profileBadge = document.getElementById('userProfileBadge');
+const profileDropdown = document.getElementById('profileDropdown');
+profileBadge.addEventListener('click', e => { e.stopPropagation(); profileDropdown.classList.toggle('show'); });
+document.querySelectorAll('.dropdown-item').forEach(item => {
+  item.addEventListener('click', e => {
+    e.stopPropagation();
+    const action = item.dataset.action;
+    if (action === 'logout') logout();
+    else switchToView(action);
     profileDropdown.classList.remove('show');
   });
-  
-  const categoriesBtn = document.getElementById('categoriesBtn');
-  const categoriesDropdown = document.getElementById('categoriesDropdown');
-  categoriesBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    categoriesDropdown.classList.toggle('show');
-  });
-  
-  document.getElementById("searchInput").addEventListener('input', (e) => { searchQuery = e.target.value; visibleItems = 8; renderTodos(); });
-  document.getElementById("loadMoreBtn").addEventListener('click', loadMore);
-  
-  // Menú de perfil
-  const profileBadge = document.getElementById('userProfileBadge');
-  const profileDropdown = document.getElementById('profileDropdown');
-  
-  profileBadge.addEventListener('click', (e) => {
-    e.stopPropagation();
-    profileDropdown.classList.toggle('show');
-  });
-  
-  document.querySelectorAll('.dropdown-item').forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const action = item.getAttribute('data-action');
-      if (action === 'misobjetos') switchToView('misobjetos');
-      else if (action === 'favoritos') switchToView('favoritos');
-      else if (action === 'chats') switchToView('chats');
-      else if (action === 'perfil') showToast(`👤 ${currentUser?.name || currentUser?.email}`);
-      else if (action === 'logout') logout();
-      profileDropdown.classList.remove('show');
-    });
-  });
+});
 
-  // ========== INICIALIZACIÓN ==========
-  async function init() {
-    const token = getTokenFromURL();
-    if (token) { 
-      authToken = token; 
-      const user = await verifyToken(token); 
-      if (user) {
-        currentUser = user;
-      } else { 
-        localStorage.removeItem('auth_token'); 
-        authToken = null; 
-      }
-    }
-    
-    if (currentUser) {
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('appContainer').classList.add('active');
-      const avatarDiv = document.getElementById('headerAvatar');
-      if (currentUser.picture) avatarDiv.innerHTML = `<img src="${currentUser.picture}">`;
-      else avatarDiv.innerHTML = `<i class="fas fa-user"></i>`;
-      document.getElementById('headerUserName').innerText = currentUser.name?.split(' ')[0] || 'Perfil';
-      await cargarFavoritosIniciales();
-      await cargarProductos();
-      setupCategorias();
-    } else {
-      document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('appContainer').classList.remove('active');
-    }
+document.addEventListener('click', () => {
+  categoriesDropdown.classList.remove('show');
+  profileDropdown.classList.remove('show');
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  visibleItems = 8;
+  if (currentView !== 'todos') switchToView('todos');
+  else renderTodos();
+});
+
+document.getElementById('loadMoreBtn').addEventListener('click', () => { visibleItems += 8; renderTodos(); });
+
+// ── INIT ──
+async function init() {
+  const token = getTokenFromURL();
+  if (token) {
+    authToken = token;
+    const user = await verifyToken(token);
+    if (user) currentUser = user;
+    else { localStorage.removeItem('auth_token'); authToken = null; }
   }
-  
-  document.getElementById("googleLoginBtn").onclick = loginWithGoogle;
-  init();
-  
-  // OneSignal
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) { 
-    await OneSignal.init({ 
-      appId: "68491021-9c85-423d-9e50-ddcffa0c2d63", 
-      notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' } 
-    }); 
-  });
+  if (currentUser) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appContainer').classList.add('active');
+    const avatarDiv = document.getElementById('headerAvatar');
+    avatarDiv.innerHTML = currentUser.picture ? `<img src="${currentUser.picture}">` : `<i class="fas fa-user"></i>`;
+    document.getElementById('headerUserName').textContent = currentUser.name?.split(' ')[0] || 'Perfil';
+    const favs = await obtenerFavoritos();
+    favoritosIds = new Set(favs.map(f => f.id));
+    todosProductos = await obtenerObjetos();
+    renderTodos();
+  }
+}
+document.getElementById("googleLoginBtn").onclick = loginWithGoogle;
+init();
+
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+  await OneSignal.init({ appId: "68491021-9c85-423d-9e50-ddcffa0c2d63", notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' } });
+});
 </script>
 </body>
 </html>
