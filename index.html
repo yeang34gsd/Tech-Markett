@@ -83,7 +83,7 @@
         .btn-modern:hover { background: #047857; transform: scale(1.02); }
         .btn-modern:disabled { background: #9ac9b0; cursor: not-allowed; }
 
-        /* ========== BANDEJA DE MENSAJES ESTILO MESSENGER ========== */
+        /* ========== BANDEJA DE MENSAJES ESTILO MESSENGER RESPONSIVE ========== */
         .messenger-container {
             display: flex;
             background: white;
@@ -93,6 +93,7 @@
             height: calc(100vh - 180px);
             min-height: 500px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: relative;
         }
 
         /* Panel izquierdo - lista de conversaciones */
@@ -103,18 +104,33 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: transform 0.3s ease;
         }
 
         .conversations-header {
             padding: 16px;
             border-bottom: 1px solid #eef2ef;
             background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .conversations-header h3 {
             font-size: 1.1rem;
             font-weight: 600;
             color: #1f2937;
+        }
+
+        .back-to-list-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #059669;
+            padding: 8px;
+            border-radius: 50%;
         }
 
         .conversations-search {
@@ -142,7 +158,6 @@
             padding: 8px 0;
         }
 
-        /* Elemento de conversación */
         .conversation-item {
             display: flex;
             align-items: center;
@@ -186,9 +201,6 @@
             color: #1f2937;
             font-size: 0.9rem;
             margin-bottom: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .conversation-last-message {
@@ -202,15 +214,6 @@
         .conversation-time {
             font-size: 0.7rem;
             color: #8aa59a;
-        }
-
-        .conversation-badge {
-            background: #059669;
-            color: white;
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 20px;
-            margin-left: 8px;
         }
 
         /* Panel derecho - chat activo */
@@ -229,6 +232,17 @@
             display: flex;
             align-items: center;
             gap: 12px;
+        }
+
+        .chat-back-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #059669;
+            padding: 8px;
+            border-radius: 50%;
         }
 
         .chat-active-avatar {
@@ -424,15 +438,68 @@
             border-radius: 4px;
         }
 
+        /* ========== RESPONSIVE: MODO MÓVIL (estilo Messenger) ========== */
+        @media (max-width: 768px) {
+            .messenger-container {
+                height: calc(100vh - 160px);
+                overflow: hidden;
+            }
+
+            /* Ocultar lista cuando el chat está abierto */
+            .messenger-container.chat-open .conversations-list {
+                transform: translateX(-100%);
+                position: absolute;
+                width: 100%;
+                z-index: 1;
+                background: #f8faf8;
+                height: 100%;
+            }
+
+            .messenger-container.chat-open .chat-active {
+                width: 100%;
+            }
+
+            .conversations-list {
+                width: 100%;
+                transition: transform 0.3s ease;
+            }
+
+            .chat-active {
+                width: 100%;
+            }
+
+            .chat-back-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .conversations-header .back-to-list-btn {
+                display: none;
+            }
+
+            /* Cuando el chat está abierto, mostrar botón de volver */
+            .messenger-container.chat-open .chat-back-btn {
+                display: flex;
+            }
+
+            .conversation-item {
+                padding: 10px 12px;
+            }
+
+            .conversation-avatar {
+                width: 44px;
+                height: 44px;
+            }
+
+            .mensaje {
+                max-width: 85%;
+            }
+        }
+
         /* LOGIN */
         .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 20px; text-align: center; }
         .google-btn { background: #4285f4; color: white; border: none; padding: 14px 28px; border-radius: 40px; font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; margin-top: 20px; }
-
-        @media (max-width: 700px) {
-            .messenger-container { flex-direction: column; height: auto; }
-            .conversations-list { width: 100%; max-height: 300px; }
-            .chat-active { min-height: 500px; }
-        }
     </style>
 </head>
 <body>
@@ -835,7 +902,7 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== BANDEJA DE MENSAJES ESTILO MESSENGER ==========
+    // ========== BANDEJA DE MENSAJES ESTILO MESSENGER RESPONSIVE ==========
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -846,7 +913,7 @@
     function iniciarPollingChat() {
         detenerPollingChat();
         chatPollingInterval = setInterval(async () => {
-            if (chatActual.id_objeto && chatActual.otroUsuario && document.getElementById('chatActiveContent')) {
+            if (chatActual.id_objeto && chatActual.otroUsuario && document.getElementById('chatMessagesArea')) {
                 await cargarMensajesChat();
             }
         }, 5000);
@@ -883,6 +950,20 @@
         } catch(e) { console.error('Error cargando mensajes:', e); }
     }
 
+    function closeChatOnMobile() {
+        const messengerContainer = document.getElementById('messengerContainer');
+        if (messengerContainer && window.innerWidth <= 768) {
+            messengerContainer.classList.remove('chat-open');
+        }
+    }
+
+    function openChatOnMobile() {
+        const messengerContainer = document.getElementById('messengerContainer');
+        if (messengerContainer && window.innerWidth <= 768) {
+            messengerContainer.classList.add('chat-open');
+        }
+    }
+
     async function abrirChatDirecto(objetoId, otroUsuario, titulo) {
         detenerPollingChat();
         
@@ -917,6 +998,9 @@
         
         iniciarPollingChat();
         
+        // Abrir modo chat en móvil
+        openChatOnMobile();
+        
         // Marcar conversación como activa en la lista
         document.querySelectorAll('.conversation-item').forEach(item => {
             item.classList.remove('active');
@@ -933,6 +1017,7 @@
         contenedor.innerHTML = `
             <div class="chat-active">
                 <div class="chat-active-header">
+                    <button class="chat-back-btn" id="chatBackBtn"><i class="fas fa-arrow-left"></i></button>
                     <div class="chat-active-avatar">${chatActual.otroNombre.charAt(0).toUpperCase()}</div>
                     <div class="chat-active-info">
                         <div class="chat-active-name">${chatActual.otroNombre}</div>
@@ -974,7 +1059,11 @@
         document.getElementById("closeChatBtn").onclick = () => {
             chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
             renderChatActivo();
+            closeChatOnMobile();
             document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
+        };
+        document.getElementById("chatBackBtn").onclick = () => {
+            closeChatOnMobile();
         };
     }
 
@@ -982,7 +1071,6 @@
         const convs = await obtenerMisConversaciones();
         conversacionesCache = convs;
         
-        // Enriquecer conversaciones con nombres
         for (const c of conversacionesCache) {
             const obj = objetos.find(o => o.id === c.id_objeto);
             c.titulo = obj?.titulo || c.titulo || 'Objeto';
@@ -1021,7 +1109,10 @@
         `;
         
         const messengerContainer = document.getElementById('messengerContainer');
-        if (messengerContainer) messengerContainer.innerHTML = messengerHtml;
+        if (messengerContainer) {
+            messengerContainer.innerHTML = messengerHtml;
+            messengerContainer.classList.remove('chat-open');
+        }
         
         document.querySelectorAll('.conversation-item').forEach(el => {
             el.addEventListener('click', () => {
@@ -1052,6 +1143,9 @@
                     item.classList.add('active');
                 }
             });
+            openChatOnMobile();
+        } else {
+            renderChatActivo();
         }
     }
 
