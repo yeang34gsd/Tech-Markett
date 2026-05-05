@@ -1,1654 +1,627 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>Intercambia – Trueque de objetos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    :root {
-      --bg: #0a0a0a;
-      --surface: #131313;
-      --surface2: #1c1c1c;
-      --surface3: #242424;
-      --surface4: #2e2e2e;
-      --border: rgba(255,255,255,0.055);
-      --border-hover: rgba(255,255,255,0.13);
-      --accent: #d4f53c;
-      --accent-dark: #b8d930;
-      --accent-muted: rgba(212,245,60,0.08);
-      --text: #efefef;
-      --text-muted: #777;
-      --text-dim: #3a3a3a;
-      --red: #f04444;
-      --gold: #f5c842;
-      --radius-sm: 10px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-    ::-webkit-scrollbar { width: 3px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--surface4); border-radius: 3px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Intercambia - Trueque de objetos (2 columnas)</title>
+    <!-- Leaflet y Font Awesome -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .toast {
-      position: fixed; bottom: 30px; left: 50%;
-      transform: translateX(-50%) translateY(16px);
-      background: var(--surface3);
-      border: 1px solid var(--border-hover);
-      padding: 10px 20px;
-      border-radius: 100px;
-      font-size: 0.8rem;
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.22s;
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      white-space: nowrap;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .toast .dot {
-      width: 6px; height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 20px 0 40px 0;
+        }
 
-    .screen {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.35s, visibility 0.35s;
-    }
-    .screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    #loginScreen { background: var(--bg); }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
 
-    .login-card {
-      width: 90%;
-      max-width: 380px;
-      text-align: center;
-      padding: 3rem 2rem;
-    }
-    .login-logo {
-      display: inline-flex;
-      width: 64px;
-      height: 64px;
-      background: var(--accent);
-      border-radius: 18px;
-      margin-bottom: 2rem;
-      align-items: center;
-      justify-content: center;
-      transform: rotate(-8deg);
-    }
-    .login-logo i { font-size: 1.6rem; color: #0a0a0a; }
-    .login-card h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: 3rem;
-      font-weight: 800;
-      letter-spacing: -2px;
-      margin-bottom: 0.7rem;
-    }
-    .login-card h1 span { color: var(--accent); }
-    .login-card p {
-      color: var(--text-muted);
-      font-size: 0.88rem;
-      margin-bottom: 2rem;
-    }
-    .btn-google {
-      background: var(--surface2);
-      border: 1px solid var(--border-hover);
-      border-radius: 100px;
-      padding: 0.9rem;
-      width: 100%;
-      font-weight: 600;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-google:hover {
-      background: var(--surface3);
-      border-color: var(--accent);
-      transform: translateY(-2px);
-    }
+        /* Header estilo Facebook */
+        .fb-header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
 
-    #perfilScreen {
-      background: rgba(0,0,0,0.9);
-      backdrop-filter: blur(24px);
-      z-index: 1001;
-    }
-    .perfil-card {
-      background: var(--surface);
-      border: 1px solid var(--border-hover);
-      border-radius: 28px;
-      width: 92%;
-      max-width: 440px;
-      padding: 2rem 1.5rem;
-      max-height: 92vh;
-      overflow-y: auto;
-    }
-    .perfil-card h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.5rem;
-      font-weight: 800;
-      margin-bottom: 0.3rem;
-    }
-    .perfil-card h2 span { color: var(--accent); }
-    .avatar-circle {
-      width: 86px;
-      height: 86px;
-      border-radius: 50%;
-      background: var(--surface2);
-      border: 2px dashed var(--border-hover);
-      margin: 0 auto 0.7rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      cursor: pointer;
-      position: relative;
-    }
-    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-    .avatar-circle i { font-size: 1.8rem; color: var(--text-dim); }
-    .field-input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      font-family: inherit;
-      color: var(--text);
-      margin-bottom: 0.7rem;
-    }
-    .field-input:focus {
-      border-color: var(--accent);
-      outline: none;
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: #0a0a0a;
-      border: none;
-      border-radius: 100px;
-      padding: 0.85rem;
-      width: 100%;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 0.5rem;
-    }
-    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 0.85rem;
-      width: 100%;
-      color: var(--text-muted);
-      cursor: pointer;
-      margin-top: 0.5rem;
-    }
-    .btn-secondary:hover { background: var(--surface2); color: var(--text); }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .app-container {
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s;
-    }
-    .app-container.active {
-      opacity: 1;
-      visibility: visible;
-    }
+        .logo-area i {
+            font-size: 32px;
+            color: #059669;
+            background: #e6f7ef;
+            padding: 8px;
+            border-radius: 50%;
+        }
 
-    .market-header {
-      background: rgba(10,10,10,0.92);
-      backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      padding: 0.8rem 1rem;
-      z-index: 90;
-    }
-    .header-row1 {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      margin-bottom: 0.7rem;
-    }
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-    .logo-icon {
-      width: 30px;
-      height: 30px;
-      background: var(--accent);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transform: rotate(-8deg);
-    }
-    .logo-icon i { font-size: 0.75rem; color: #0a0a0a; }
-    .logo-text {
-      font-family: 'Syne', sans-serif;
-      font-size: 1rem;
-      font-weight: 800;
-    }
-    .search-bar { flex: 1; }
-    .search-wrapper {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 0.4rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .search-wrapper input {
-      background: transparent;
-      border: none;
-      width: 100%;
-      font-size: 0.8rem;
-      color: var(--text);
-      outline: none;
-    }
-    .publish-btn {
-      background: var(--accent);
-      color: #0a0a0a;
-      border: none;
-      border-radius: 100px;
-      padding: 0.4rem 1rem;
-      font-weight: 700;
-      font-size: 0.75rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .hdr-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--surface2);
-      overflow: hidden;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .hdr-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .logo-area h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
 
-    .categories-row {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-    }
-    .cat-pill {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 5px 14px;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .cat-pill.active {
-      background: var(--accent);
-      color: #0a0a0a;
-      font-weight: 700;
-    }
+        .user-info-fb {
+            background: #f0f2f5;
+            border-radius: 40px;
+            padding: 6px 16px 6px 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
 
-    .feed-section {
-      padding: 1rem;
-    }
-    .section-label {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.6rem;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .back-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 3px 10px;
-      font-size: 0.65rem;
-      cursor: pointer;
-      display: none;
-    }
-    .back-btn.show { display: flex; }
-    .listings-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
-    }
+        /* Card genérica */
+        .card-fb {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
 
-    .product-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      overflow: hidden;
-      transition: transform 0.2s;
-    }
-    .product-card:hover { transform: translateY(-4px); border-color: var(--border-hover); }
-    .card-img {
-      aspect-ratio: 1/1;
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-    }
-    .card-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .fav-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 28px;
-      height: 28px;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(8px);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 3;
-      font-size: 0.8rem;
-    }
-    .fav-btn.active { color: var(--gold); }
-    .delete-btn {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      width: 26px;
-      height: 26px;
-      background: rgba(240,68,68,0.85);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 0.65rem;
-      color: white;
-    }
-    .miniaturas {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      display: flex;
-      gap: 4px;
-      padding: 8px;
-      overflow-x: auto;
-      z-index: 2;
-    }
-    .miniatura {
-      width: 32px;
-      height: 32px;
-      object-fit: cover;
-      border-radius: 6px;
-      cursor: pointer;
-      border: 1.5px solid transparent;
-    }
-    .miniatura.activa { border-color: var(--accent); }
-    .card-info { padding: 0.7rem; }
-    .card-user {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 6px;
-      cursor: pointer;
-    }
-    .card-user-avatar {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--surface3);
-      overflow: hidden;
-    }
-    .card-user-name {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-    .card-title {
-      font-weight: 600;
-      font-size: 0.8rem;
-      margin-bottom: 6px;
-    }
-    .card-actions {
-      display: flex;
-      gap: 6px;
-      margin-top: 6px;
-    }
-    .btn-chat {
-      flex: 1;
-      background: var(--accent-muted);
-      border: 1px solid rgba(212,245,60,0.15);
-      border-radius: 100px;
-      padding: 5px;
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: var(--accent);
-      cursor: pointer;
-      text-align: center;
-    }
-    .btn-chat:hover {
-      background: rgba(212,245,60,0.15);
-    }
-    .btn-more {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      width: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      position: relative;
-    }
-    .more-menu {
-      position: absolute;
-      bottom: 100%;
-      right: 0;
-      background: var(--surface);
-      border: 1px solid var(--border-hover);
-      border-radius: 12px;
-      overflow: hidden;
-      display: none;
-      min-width: 130px;
-    }
-    .more-menu.show { display: block; }
-    .more-menu-item {
-      padding: 8px 12px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .more-menu-item:hover { background: var(--surface2); }
-    .more-menu-item.danger { color: var(--red); }
-    .owner-actions { margin-top: 6px; }
-    .btn-intercambiado {
-      width: 100%;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 5px;
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-    .btn-intercambiado:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
+        .search-card {
+            padding: 16px;
+        }
 
-    .side-panel {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 100%;
-      max-width: 380px;
-      height: 100%;
-      background: var(--surface);
-      z-index: 500;
-      transition: right 0.3s;
-      border-left: 1px solid var(--border);
-      overflow-y: auto;
-    }
-    .side-panel.open { right: 0; }
-    .side-panel-header {
-      padding: 1rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      position: sticky;
-      top: 0;
-      background: var(--surface);
-    }
-    .back-circle-btn {
-      width: 32px;
-      height: 32px;
-      background: var(--surface2);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .perfil-banner {
-      text-align: center;
-      padding: 1.5rem;
-    }
-    .perfil-avatar-big {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: var(--surface2);
-      margin: 0 auto 0.8rem;
-      overflow: hidden;
-    }
-    .perfil-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
-    .perfil-display-name {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
-    .perfil-username {
-      font-size: 0.7rem;
-      color: var(--accent);
-    }
-    .perfil-bio {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-top: 8px;
-    }
-    .perfil-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding: 0 1rem;
-    }
-    .perfil-obj-card {
-      background: var(--surface2);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    .perfil-obj-img { aspect-ratio: 1/1; }
-    .perfil-obj-img img { width: 100%; height: 100%; object-fit: cover; }
-    .perfil-obj-title {
-      font-size: 0.7rem;
-      padding: 6px;
-    }
-    .valorar-section {
-      padding: 1rem;
-      border-top: 1px solid var(--border);
-      margin-top: 1rem;
-    }
-    .star-picker {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 0.8rem;
-    }
-    .star-pick {
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--text-dim);
-    }
-    .star-pick.selected { color: var(--gold); }
+        .search-bar-fb {
+            background: #f0f2f5;
+            border-radius: 40px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
 
-    .chat-sidebar {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 100%;
-      max-width: 380px;
-      height: 100%;
-      background: var(--surface);
-      z-index: 600;
-      transition: right 0.3s;
-      display: flex;
-      flex-direction: column;
-    }
-    .chat-sidebar.open { right: 0; }
-    .chat-header {
-      padding: 1rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .message {
-      max-width: 80%;
-      padding: 8px 12px;
-      border-radius: 16px;
-      font-size: 0.8rem;
-    }
-    .message.sent {
-      background: var(--accent);
-      color: #0a0a0a;
-      align-self: flex-end;
-    }
-    .message.received {
-      background: var(--surface2);
-      align-self: flex-start;
-    }
-    .chat-input-wrap {
-      padding: 0.8rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 8px;
-    }
-    .chat-input-wrap input {
-      flex: 1;
-      padding: 0.6rem 1rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      color: var(--text);
-    }
-    .send-btn {
-      background: var(--accent);
-      border: none;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      cursor: pointer;
-    }
+        .search-bar-fb i {
+            color: #8a8f98;
+        }
 
-    .upload-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(16px);
-      z-index: 400;
-      display: flex;
-      align-items: flex-end;
-      visibility: hidden;
-      opacity: 0;
-    }
-    .upload-overlay.active {
-      visibility: visible;
-      opacity: 1;
-    }
-    .upload-panel {
-      background: var(--surface);
-      border-radius: 28px 28px 0 0;
-      width: 100%;
-      max-width: 500px;
-      margin: 0 auto;
-      padding: 1.5rem;
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-    .upload-field {
-      width: 100%;
-      padding: 0.7rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      margin-bottom: 0.7rem;
-    }
-    .upload-area {
-      border: 1.5px dashed var(--surface4);
-      border-radius: 12px;
-      padding: 1rem;
-      text-align: center;
-      cursor: pointer;
-      margin-bottom: 0.7rem;
-    }
-    .fotos-preview {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 0.7rem;
-    }
-    .foto-preview {
-      width: 60px;
-      height: 60px;
-      position: relative;
-    }
-    .foto-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-    .remove-foto {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      width: 18px;
-      height: 18px;
-      background: var(--red);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.6rem;
-      cursor: pointer;
-    }
+        .search-bar-fb input {
+            background: transparent;
+            border: none;
+            flex: 1;
+            font-size: 1rem;
+            outline: none;
+        }
 
-    .foto-modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.95);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-    }
-    .foto-modal-overlay.open { display: flex; }
-    .foto-modal-main {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-    .foto-modal-main img {
-      max-width: 90vw;
-      max-height: 80vh;
-      border-radius: 16px;
-    }
-    .modal-nav-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,0.6);
-      border: none;
-      color: white;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1.2rem;
-    }
-    .modal-nav-btn.prev { left: -50px; }
-    .modal-nav-btn.next { right: -50px; }
-    .foto-counter {
-      text-align: center;
-      margin-top: 1rem;
-      color: var(--text-muted);
-    }
-    .foto-modal-close {
-      background: var(--surface2);
-      border: none;
-      color: var(--text);
-      padding: 8px 24px;
-      border-radius: 100px;
-      margin-top: 1rem;
-      cursor: pointer;
-    }
+        .categories-fb {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
 
-    .load-more { text-align: center; padding: 1rem; }
-    .load-more-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 0.5rem 2rem;
-      cursor: pointer;
-    }
-    .skeleton {
-      background: var(--surface);
-      border-radius: 18px;
-      overflow: hidden;
-    }
-    .skeleton-img {
-      aspect-ratio: 1/1;
-      background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.6s infinite;
-    }
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    .empty-state {
-      text-align: center;
-      padding: 3rem;
-      color: var(--text-muted);
-      grid-column: 1/-1;
-    }
-  </style>
+        .cat-fb {
+            background: #f0f2f5;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .cat-fb.active {
+            background: #059669;
+            color: white;
+        }
+
+        /* Navegación */
+        .nav-fb {
+            display: flex;
+            gap: 12px;
+            background: white;
+            border-radius: 16px;
+            padding: 8px 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .nav-fb-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #475569;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-fb-btn i {
+            font-size: 1.1rem;
+        }
+
+        .nav-fb-btn.active {
+            background: #e6f7ef;
+            color: #059669;
+        }
+
+        /* ⭐⭐⭐ IMPORTANTE: GRID DE DOS COLUMNAS FIJAS ⭐⭐⭐ */
+        .grid-dos-columnas {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        /* Card de objeto estilo Facebook Marketplace */
+        .objeto-fb-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .objeto-fb-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-img-top {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #e4e6eb;
+        }
+
+        .card-body {
+            padding: 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .card-category {
+            font-size: 0.7rem;
+            color: #059669;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 0.8rem;
+            color: #4b5563;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .miniaturas-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .miniatura-fb {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .badge-status {
+            background: #e4e6eb;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .btn-fb-primary {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 8px 0;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-fb-secondary {
+            background: #e4e6eb;
+            color: #1e293b;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .favorito-fb {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            color: #5c5f66;
+            transition: 0.2s;
+        }
+
+        .favorito-fb.activo {
+            color: #fbbf24;
+        }
+
+        /* modales */
+        .modal-fb {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content-fb {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            padding: 24px;
+        }
+
+        .upload-area-fb {
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            background: #fafcff;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .chat-container-fb {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 12px;
+        }
+
+        .mensaje-fb {
+            background: white;
+            border-radius: 18px;
+            padding: 8px 14px;
+            margin-bottom: 8px;
+            max-width: 80%;
+        }
+
+        .mensaje-fb.emisor {
+            background: #059669;
+            color: white;
+            margin-left: auto;
+        }
+
+        /* Responsive: en móviles una columna */
+        @media (max-width: 700px) {
+            .grid-dos-columnas {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fb-input {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 10px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 60px;
+            font-size: 1rem;
+            outline: none;
+        }
+        textarea.fb-input {
+            border-radius: 20px;
+            resize: vertical;
+        }
+    </style>
 </head>
 <body>
-
-<div id="toast" class="toast"><div class="dot"></div><span id="toastMsg"></span></div>
-
-<div id="loginScreen" class="screen">
-  <div class="login-card">
-    <div class="login-logo"><i class="fas fa-exchange-alt"></i></div>
-    <h1>Inter<span>cambia</span></h1>
-    <p>Dale una segunda vida a tus objetos.<br>Publica, conecta e intercambia.</p>
-    <button id="googleLoginBtn" class="btn-google">
-      <svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Continuar con Google
-    </button>
-  </div>
-</div>
-
-<div id="perfilScreen" class="screen hidden">
-  <div class="perfil-card">
-    <h2>Tu <span>perfil</span></h2>
-    <p>Completa tus datos para generar confianza</p>
-    <div class="avatar-circle" id="avatarCircle">
-      <i class="fas fa-camera" id="avatarIcon"></i>
-      <img id="avatarPreview" src="" style="display:none">
-    </div>
-    <input type="file" id="avatarFileInput" accept="image/*" style="display:none">
-    <input type="text" id="pfNombre" class="field-input" placeholder="Nombre público *" maxlength="40">
-    <textarea id="pfBio" class="field-input" rows="2" placeholder="Bio" maxlength="120"></textarea>
-    <input type="text" id="pfCiudad" class="field-input" placeholder="Ciudad">
-    <input type="number" id="pfEdad" class="field-input" placeholder="Edad">
-    <button id="guardarPerfilBtn" class="btn-primary">Guardar perfil</button>
-    <button id="saltarPerfilBtn" class="btn-secondary">Completar después</button>
-  </div>
-</div>
-
-<div id="appContainer" class="app-container">
-  <header class="market-header">
-    <div class="header-row1">
-      <div class="logo-area">
-        <div class="logo-icon"><i class="fas fa-exchange-alt"></i></div>
-        <span class="logo-text">Intercambia</span>
-      </div>
-      <div class="search-bar">
-        <div class="search-wrapper">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Buscar...">
+<div class="container">
+    <!-- Cabecera FB -->
+    <div class="fb-header">
+        <div class="logo-area">
+            <i class="fas fa-exchange-alt"></i>
+            <h1>Intercambia</h1>
         </div>
-      </div>
-      <div id="hdrAvatarWrap" class="hdr-avatar"><i class="fas fa-user"></i></div>
-      <button id="openUploadPanelBtn" class="publish-btn"><i class="fas fa-plus"></i> Publicar</button>
+        <div id="userInfoFB" class="user-info-fb" style="display: none;"></div>
     </div>
-    <div class="categories-row">
-      <div class="cat-pill active" data-cat="all">✦ Todo</div>
-      <div class="cat-pill" data-cat="Electrónica">📱 Electrónica</div>
-      <div class="cat-pill" data-cat="Ropa">👕 Ropa</div>
-      <div class="cat-pill" data-cat="Libros">📚 Libros</div>
-      <div class="cat-pill" data-cat="Mascotas">🐾 Mascotas</div>
-      <div class="cat-pill" data-cat="Hogar">🏠 Hogar</div>
-      <div class="cat-pill" data-cat="Deportes">⚽ Deportes</div>
-      <div class="cat-pill" data-cat="Otros">🎁 Otros</div>
-    </div>
-    <div id="profileDropdown" class="side-panel" style="right: auto; left: auto; width: 200px; display: none; position: absolute; top: 60px; right: 10px;">
-      <div class="dropdown-item" data-action="miPerfil">👤 Mi perfil</div>
-      <div class="dropdown-item" data-action="misobjetos">📦 Mis objetos</div>
-      <div class="dropdown-item" data-action="favoritos">⭐ Favoritos</div>
-      <div class="dropdown-item" data-action="chats">💬 Chats</div>
-      <div class="dropdown-item" data-action="editarPerfil">✏️ Editar perfil</div>
-      <div class="dropdown-item" data-action="logout">🚪 Cerrar sesión</div>
-    </div>
-  </header>
 
-  <div class="feed-section">
-    <div class="section-label">
-      <span id="sectionLabel">Publicaciones recientes</span>
-      <button class="back-btn" id="backToFeedBtn"><i class="fas fa-arrow-left"></i> Volver</button>
+    <!-- Login card -->
+    <div id="loginSectionFB" class="card-fb" style="text-align: center; padding: 32px;">
+        <i class="fas fa-handshake" style="font-size: 48px; color: #059669; margin-bottom: 16px;"></i>
+        <h2>Trueque de objetos</h2>
+        <p style="margin: 16px 0; color: #5c5f66;">Inicia sesión para publicar, intercambiar y chatear</p>
+        <button id="googleLoginBtnFB" style="background: #1877f2; color: white; border: none; padding: 12px 24px; border-radius: 40px; font-weight: bold; font-size: 1rem; cursor: pointer;"><i class="fab fa-google"></i>  Continuar con Google</button>
+        <button id="logoutBtnFB" style="display: none; margin-top: 12px;" class="btn-fb-secondary">Cerrar sesión</button>
     </div>
-    <div id="feedGrid" class="listings-grid"></div>
-  </div>
-  <div class="load-more"><button id="loadMoreBtn" class="load-more-btn">Cargar más</button></div>
+
+    <!-- App principal (oculta hasta login) -->
+    <div id="appSectionsFB" style="display:none;">
+        <!-- Barra de búsqueda + categorías -->
+        <div class="card-fb search-card">
+            <div class="search-bar-fb">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInputFB" placeholder="Buscar objetos o usuarios...">
+            </div>
+            <div class="categories-fb" id="categoriesContainerFB"></div>
+        </div>
+
+        <!-- Navegación Facebook -->
+        <div class="nav-fb">
+            <button class="nav-fb-btn active" data-tab="feed"><i class="fas fa-store"></i> Objetos</button>
+            <button class="nav-fb-btn" data-tab="favoritos"><i class="fas fa-heart"></i> Favoritos</button>
+            <button class="nav-fb-btn" data-tab="publicar"><i class="fas fa-plus-circle"></i> Publicar</button>
+            <button class="nav-fb-btn" data-tab="misobjetos"><i class="fas fa-box"></i> Mis objetos</button>
+            <button class="nav-fb-btn" data-tab="chats"><i class="fas fa-comment-dots"></i> Chats</button>
+            <button class="nav-fb-btn" data-tab="perfil"><i class="fas fa-user-circle"></i> Perfil</button>
+        </div>
+
+        <!-- Feed: DOS COLUMNAS -->
+        <div id="tab-feed-fb"><div id="feedGridFB" class="grid-dos-columnas">Cargando objetos...</div></div>
+        
+        <!-- Favoritos: también dos columnas -->
+        <div id="tab-favoritos-fb" style="display:none;"><div id="favoritosGridFB" class="grid-dos-columnas"></div></div>
+
+        <!-- Publicar -->
+        <div id="tab-publicar-fb" style="display:none;">
+            <div class="card-fb" style="padding: 24px;">
+                <h3><i class="fas fa-camera"></i> Publicar nuevo objeto</h3>
+                <input type="text" id="tituloFB" placeholder="Título" class="fb-input">
+                <select id="categoriaFB" class="fb-input"></select>
+                <textarea id="descripcionFB" rows="3" placeholder="Descripción" class="fb-input"></textarea>
+                <div class="upload-area-fb" id="uploadPrincipalFB">📸 Foto principal</div>
+                <input type="file" id="fotoPrincipalInputFB" accept="image/*" style="display:none;">
+                <div id="previewPrincipalFB" style="margin:12px 0"></div>
+                <div class="upload-area-fb" id="uploadExtraFB">➕ Fotos adicionales (máx 4)</div>
+                <input type="file" id="fotosExtraInputFB" accept="image/*" multiple style="display:none;">
+                <div id="previewExtraFB" class="miniaturas-row"></div>
+                <div class="ubicacion-section" style="margin-top:16px">
+                    <label><i class="fas fa-map-marker-alt"></i> Ubicación</label>
+                    <button type="button" id="ubicarBtnFB" class="btn-fb-secondary" style="width:auto; padding:8px 12px;">Usar mi ubicación</button>
+                    <input type="text" id="direccionInputFB" placeholder="Dirección o punto de referencia" class="fb-input">
+                    <div id="mapaFB" style="height: 220px; margin-top:12px; border-radius: 16px; display:none;"></div>
+                    <input type="hidden" id="latFB" value="">
+                    <input type="hidden" id="lngFB" value="">
+                </div>
+                <button id="previewBtnFB" class="btn-fb-primary">Vista previa</button>
+            </div>
+        </div>
+
+        <!-- Mis objetos (dos columnas) -->
+        <div id="tab-misobjetos-fb" style="display:none;"><div id="misObjetosGridFB" class="grid-dos-columnas"></div></div>
+        
+        <!-- Chats -->
+        <div id="tab-chats-fb" style="display:none;">
+            <div id="listaChatsFB" class="card-fb" style="padding:12px"></div>
+            <div id="chatDetalleFB" style="display:none;" class="card-fb" style="padding:20px; margin-top:16px;"></div>
+        </div>
+        
+        <!-- Perfil -->
+        <div id="tab-perfil-fb" style="display:none;"><div id="perfilContentFB" class="card-fb" style="padding:24px; text-align:center;"></div></div>
+    </div>
 </div>
 
-<div id="perfilPublicoPanel" class="side-panel">
-  <div class="side-panel-header">
-    <div class="back-circle-btn" id="closePerfilPublicoBtn"><i class="fas fa-arrow-left"></i></div>
-    <span>Perfil</span>
-  </div>
-  <div class="perfil-banner">
-    <div class="perfil-avatar-big" id="ppAvatar"><i class="fas fa-user"></i></div>
-    <div class="perfil-display-name" id="ppName">—</div>
-    <div class="perfil-username" id="ppUsername"></div>
-    <div class="perfil-bio" id="ppBio"></div>
-    <div class="perfil-stars" id="ppStars"></div>
-  </div>
-  <div class="perfil-objetos">
-    <h4 style="padding: 0 1rem 0.5rem;">Objetos publicados</h4>
-    <div class="perfil-grid" id="ppGrid"></div>
-  </div>
-  <div class="valorar-section" id="valorarSection">
-    <h4>Dejar valoración</h4>
-    <div class="star-picker" id="starPicker">
-      <span class="star-pick" data-v="1">★</span>
-      <span class="star-pick" data-v="2">★</span>
-      <span class="star-pick" data-v="3">★</span>
-      <span class="star-pick" data-v="4">★</span>
-      <span class="star-pick" data-v="5">★</span>
-    </div>
-    <textarea id="valorarComentario" class="field-input" rows="2" placeholder="Comentario..."></textarea>
-    <button id="enviarValoracionBtn" class="btn-primary">Enviar valoración</button>
-  </div>
-</div>
-
-<div id="chatSidebar" class="chat-sidebar">
-  <div class="chat-header">
-    <div class="back-circle-btn" id="closeChatBtn"><i class="fas fa-arrow-left"></i></div>
-    <div>
-      <div id="chatWithName" style="font-weight: 600;">Chat</div>
-      <div id="chatObjetoName" style="font-size: 0.7rem; color: var(--text-muted);"></div>
-    </div>
-  </div>
-  <div id="chatMessages" class="chat-messages"></div>
-  <div class="chat-input-wrap">
-    <input type="file" id="chatFileInput" style="display:none">
-    <div class="attach-btn" id="attachBtn" style="background: var(--surface2); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">📎</div>
-    <input type="text" id="chatInput" placeholder="Mensaje...">
-    <button id="sendChatBtn" class="send-btn">📤</button>
-  </div>
-</div>
-
-<div id="uploadPanelOverlay" class="upload-overlay">
-  <div class="upload-panel">
-    <h3 style="margin-bottom: 1rem;">✦ Publicar objeto</h3>
-    <input type="text" id="uploadTitle" class="upload-field" placeholder="Título *">
-    <select id="uploadCategory" class="upload-field">
-      <option value="Electrónica">Electrónica</option>
-      <option value="Ropa">Ropa</option>
-      <option value="Libros">Libros</option>
-      <option value="Mascotas">Mascotas</option>
-      <option value="Hogar">Hogar</option>
-      <option value="Deportes">Deportes</option>
-      <option value="Otros">Otros</option>
-    </select>
-    <textarea id="uploadDesc" class="upload-field" rows="2" placeholder="Descripción *"></textarea>
-    <input type="text" id="uploadLocation" class="upload-field" placeholder="Ubicación">
-    <div id="uploadArea" class="upload-area">
-      <div>📸 Haz clic para subir fotos</div>
-      <small>Máximo 5 imágenes</small>
-    </div>
-    <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
-    <div id="fotosPreview" class="fotos-preview"></div>
-    <div style="display: flex; gap: 10px;">
-      <button id="cancelUploadBtn" class="btn-secondary" style="flex:1;">Cancelar</button>
-      <button id="publishArticleBtn" class="btn-primary" style="flex:2;">Publicar</button>
-    </div>
-  </div>
-</div>
-
-<div id="fotoModalOverlay" class="foto-modal-overlay">
-  <div class="foto-modal-main">
-    <button class="modal-nav-btn prev" id="modalPrevBtn">◀</button>
-    <img id="fotoModalImg" src="" alt="">
-    <button class="modal-nav-btn next" id="modalNextBtn">▶</button>
-  </div>
-  <div class="foto-counter" id="fotoCounter"></div>
-  <button class="foto-modal-close" id="fotoModalClose">Cerrar</button>
-</div>
+<!-- Modales -->
+<div id="previewModalFB" class="modal-fb"><div class="modal-content-fb"><h3>Confirmar publicación</h3><img id="previewImgFB" style="width:100%; border-radius: 16px;"><p id="previewTextFB"></p><button id="confirmPublicarFB" class="btn-fb-primary">Publicar</button><button id="cancelPreviewFB" class="btn-fb-secondary" style="margin-top:12px;">Cancelar</button></div></div>
+<div id="fotoModalFB" class="modal-fb"><div class="modal-content-fb" style="max-width:90vw;"><img id="fotoModalImgFB" style="width:100%; border-radius: 20px;"><button onclick="document.getElementById('fotoModalFB').style.display='none'" style="margin-top:12px;">Cerrar</button></div></div>
 
 <script>
-const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
+    // ------ ESTADO GLOBAL ------
+    let currentUser = null;
+    let objetos = [];
+    let favoritos = [];
+    let chats = [];
+    let nextId = 30;
+    let mapInstance = null;
+    let fotosExtraSeleccionadas = [];
+    let fotoPrincipalData = null;
 
-let authToken = null;
-let currentUser = null;
-let currentUserPerfil = null;
-let favoritosIds = new Set();
-let todosProductos = [];
-let currentView = "todos";
-let currentCategory = "all";
-let searchQuery = "";
-let visibleItems = 8;
-let selectedFiles = [];
-let chatObjetoId = null;
-let chatConUsuario = null;
-let mensajesPolling = null;
-let perfilPublicoActual = null;
-let valoracionSeleccionada = 0;
-let avatarFileSeleccionado = null;
-let currentModalPhotos = [];
-let currentModalIndex = 0;
+    const categoriasLista = ["Electrónica","Ropa","Libros","Mascotas","Hogar","Deportes"];
 
-function showToast(msg) {
-  const el = document.getElementById("toast");
-  document.getElementById("toastMsg").innerText = msg;
-  el.classList.add("show");
-  setTimeout(() => el.classList.remove("show"), 2500);
-}
+    // Funciones de renderizado con GRID DE DOS COLUMNAS
+    function renderFeed() {
+        const activeCat = document.querySelector('.cat-fb.active')?.dataset.cat || 'all';
+        const searchTerm = document.getElementById('searchInputFB')?.value.toLowerCase() || '';
+        let filtered = objetos.filter(o => !o.intercambiado);
+        if(activeCat !== 'all') filtered = filtered.filter(o => o.categoria === activeCat);
+        if(searchTerm) filtered = filtered.filter(o => o.titulo.toLowerCase().includes(searchTerm) || (o.userNombre && o.userNombre.toLowerCase().includes(searchTerm)));
+        const container = document.getElementById("feedGridFB");
+        if(!container) return;
+        if(filtered.length === 0) { container.innerHTML = '<div class="card-fb" style="padding:40px; text-align:center; grid-column:span 2;">No hay objetos disponibles</div>'; return; }
+        container.innerHTML = filtered.map(obj => renderObjetoCard(obj, true)).join('');
+        attachCardEvents();
+    }
 
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-}
+    function renderFavoritos() {
+        const favObjs = objetos.filter(o => favoritos.includes(o.id) && !o.intercambiado);
+        const container = document.getElementById("favoritosGridFB");
+        if(!container) return;
+        if(favObjs.length === 0) { container.innerHTML = '<div class="card-fb" style="padding:40px; text-align:center; grid-column:span 2;">No tienes favoritos aún</div>'; return; }
+        container.innerHTML = favObjs.map(o => renderObjetoCard(o, true)).join('');
+        attachCardEvents();
+    }
 
-function getTokenFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
-  if (token) {
-    localStorage.setItem('auth_token', token);
-    window.history.replaceState({}, document.title, window.location.pathname);
-    return token;
-  }
-  return localStorage.getItem('auth_token');
-}
+    function renderMisObjetos() {
+        const mis = objetos.filter(o => o.userId === currentUser?.uid);
+        const container = document.getElementById("misObjetosGridFB");
+        if(!container) return;
+        if(mis.length === 0) { container.innerHTML = '<div class="card-fb" style="padding:40px; text-align:center; grid-column:span 2;">No has publicado nada</div>'; return; }
+        container.innerHTML = mis.map(o => renderObjetoCard(o, true)).join('');
+        attachCardEvents();
+    }
 
-async function verifyToken(token) {
-  try {
-    const res = await fetch(`${WORKER_URL}/auth/me`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) return null;
-    return (await res.json()).user;
-  } catch(e) { return null; }
-}
-
-function loginWithGoogle() {
-  window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`;
-}
-
-function logout() {
-  localStorage.removeItem('auth_token');
-  localStorage.removeItem('perfil_saltado');
-  location.reload();
-}
-
-async function apiFetch(path, options = {}) {
-  const headers = options.headers || {};
-  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-  const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
-  if (!res.ok) {
-    if (res.status === 401) logout();
-    throw new Error(await res.text());
-  }
-  return res.json();
-}
-
-const api = {
-  objetos: () => apiFetch('/objetos'),
-  misObjetos: () => apiFetch('/mis-objetos'),
-  favoritos: () => apiFetch('/favoritos').catch(() => []),
-  agregarFav: (id) => apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }),
-  quitarFav: (id) => apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }),
-  eliminarObjeto: (id) => apiFetch(`/objeto/${id}`, { method: 'DELETE' }),
-  marcarIntercambiado: (id) => apiFetch(`/objeto/${id}`, { method: 'PATCH' }),
-  mensajes: (oId, otroEmail) => apiFetch(`/mensajes?id_objeto=${oId}&otro=${encodeURIComponent(otroEmail)}`),
-  conversaciones: () => apiFetch('/mis-conversaciones'),
-  perfilPublico: (username) => apiFetch(`/usuario/buscar?username=${encodeURIComponent(username)}`),
-  miPerfil: () => apiFetch('/perfil'),
-  completarPerfil: (data) => apiFetch('/perfil/completar', { method: 'POST', body: JSON.stringify(data) }),
-  valorar: (data) => apiFetch('/valorar', { method: 'POST', body: JSON.stringify(data) }),
-  reporte: (id, motivo) => apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }),
-};
-
-function openPhotoGallery(photos, startIndex) {
-  if (!photos.length) return;
-  currentModalPhotos = photos;
-  currentModalIndex = startIndex;
-  document.getElementById('fotoModalImg').src = photos[currentModalIndex];
-  document.getElementById('fotoCounter').innerText = `${currentModalIndex + 1} / ${photos.length}`;
-  document.getElementById('fotoModalOverlay').classList.add('open');
-}
-
-function nextPhoto() {
-  if (currentModalPhotos.length === 0) return;
-  currentModalIndex = (currentModalIndex + 1) % currentModalPhotos.length;
-  document.getElementById('fotoModalImg').src = currentModalPhotos[currentModalIndex];
-  document.getElementById('fotoCounter').innerText = `${currentModalIndex + 1} / ${currentModalPhotos.length}`;
-}
-
-function prevPhoto() {
-  if (currentModalPhotos.length === 0) return;
-  currentModalIndex = (currentModalIndex - 1 + currentModalPhotos.length) % currentModalPhotos.length;
-  document.getElementById('fotoModalImg').src = currentModalPhotos[currentModalIndex];
-  document.getElementById('fotoCounter').innerText = `${currentModalIndex + 1} / ${currentModalPhotos.length}`;
-}
-
-function renderSkeletons(n = 8) {
-  const grid = document.getElementById('feedGrid');
-  grid.innerHTML = Array.from({ length: n }, () => `
-    <div class="skeleton">
-      <div class="skeleton-img"></div>
-      <div style="padding: 10px;">
-        <div style="height: 10px; background: var(--surface2); border-radius: 5px; margin-bottom: 6px;"></div>
-        <div style="height: 8px; background: var(--surface2); border-radius: 5px; width: 60%;"></div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderProductosGrid(productos, esMioView = false) {
-  const grid = document.getElementById('feedGrid');
-  if (!productos?.length) {
-    grid.innerHTML = `<div class="empty-state">📦 No hay objetos para mostrar</div>`;
-    return;
-  }
-
-  grid.innerHTML = productos.map(p => {
-    const todasFotos = [p.url, ...(p.fotos_extra || []).map(f => f.url)];
-    const esMio = esMioView || (currentUserPerfil?.username && p.username === currentUserPerfil?.username);
-    const esFav = favoritosIds.has(p.id);
-    const displayName = p.display_name || p.username || 'Usuario';
-    const username = p.username || '';
-
-    return `
-      <div class="product-card" data-id="${p.id}" data-fotos='${JSON.stringify(todasFotos)}'>
-        <div class="card-img">
-          <img src="${esc(p.url)}" loading="lazy" onerror="this.src='https://placehold.co/300x300/1c1c1c/3a3a3a?text=?'">
-          <div class="fav-btn ${esFav ? 'active' : ''}">${esFav ? '♥' : '♡'}</div>
-          ${esMio ? `<div class="delete-btn" data-deleteid="${p.id}">🗑️</div>` : ''}
-          ${todasFotos.length > 1 ? `
-            <div class="miniaturas">
-              ${todasFotos.map((url, i) => `
-                <img class="miniatura ${i === 0 ? 'activa' : ''}" data-idx="${i}" src="${esc(url)}" onerror="this.style.display='none'">
-              `).join('')}
-            </div>
-          ` : ''}
-        </div>
-        <div class="card-info">
-          <div class="card-user" data-username="${esc(username)}">
-            <div class="card-user-avatar">${p.avatar_url ? `<img src="${esc(p.avatar_url)}">` : '<i class="fas fa-user"></i>'}</div>
-            <span class="card-user-name">${esc(displayName)}</span>
-          </div>
-          <div class="card-title">${esc(p.titulo)}</div>
-          ${esMio ? `
-            <div class="owner-actions">
-              <button class="btn-intercambiado" data-intercambiadoid="${p.id}">✓ Marcar intercambiado</button>
-            </div>
-          ` : `
-            <div class="card-actions">
-              <button class="btn-chat" data-chatid="${p.id}" data-chatusername="${esc(username)}" data-chattitulo="${esc(p.titulo)}">💬 Intercambiar</button>
-              <div class="btn-more" data-moreid="${p.id}">
-                <i class="fas fa-ellipsis-h"></i>
-                <div class="more-menu" id="more-${p.id}">
-                  ${username ? `<div class="more-menu-item" data-viewprofile="${esc(username)}"><i class="fas fa-user"></i> Ver perfil</div>` : ''}
-                  <div class="more-menu-item danger" data-reportid="${p.id}"><i class="fas fa-flag"></i> Reportar</div>
+    function renderObjetoCard(obj, mostrarAcciones=true) {
+        const esFav = favoritos.includes(obj.id);
+        const intercambiadoClass = obj.intercambiado ? '<span class="badge-status">Intercambiado</span>' : '';
+        const fotosHtml = (obj.fotos && obj.fotos.length) ? `<div class="miniaturas-row">${obj.fotos.slice(0,4).map(f => `<img class="miniatura-fb" src="${f}" data-img="${f}">`).join('')}</div>` : '';
+        return `
+            <div class="objeto-fb-card" data-id="${obj.id}" data-objeto='${JSON.stringify(obj)}'>
+                <div style="position:relative;">
+                    <img class="card-img-top" src="${obj.fotoPrincipal || 'https://via.placeholder.com/300x200?text=Sin+imagen'}" alt="${obj.titulo}">
+                    <div class="favorito-fb ${esFav ? 'activo' : ''}" data-id="${obj.id}"><i class="fas fa-heart"></i></div>
                 </div>
-              </div>
-            </div>
-          `}
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-async function toggleFavorito(id, btn) {
-  try {
-    if (favoritosIds.has(id)) {
-      await api.quitarFav(id);
-      favoritosIds.delete(id);
-      btn.classList.remove('active');
-      btn.innerText = '♡';
-    } else {
-      await api.agregarFav(id);
-      favoritosIds.add(id);
-      btn.classList.add('active');
-      btn.innerText = '♥';
+                <div class="card-body">
+                    <div class="card-category">${obj.categoria}</div>
+                    <div class="card-title">${obj.titulo}</div>
+                    <div class="card-desc">${obj.descripcion.substring(0,80)}...</div>
+                    ${fotosHtml}
+                    <div>${intercambiadoClass}</div>
+                    <div><i class="fas fa-map-marker-alt"></i> ${obj.ubicacionTexto || 'Ubicación no especificada'}</div>
+                    <div><i class="fas fa-user"></i> ${obj.userNombre || 'Anónimo'}</div>
+                    ${mostrarAcciones && obj.userId !== currentUser?.uid ? `<button class="btn-fb-primary intercambiar-trigger" data-id="${obj.id}">🤝 Proponer intercambio</button>` : ''}
+                    ${mostrarAcciones && obj.userId === currentUser?.uid ? `<button class="btn-fb-secondary eliminar-trigger" data-id="${obj.id}">Eliminar objeto</button>` : ''}
+                    ${mostrarAcciones && obj.userId !== currentUser?.uid ? `<button class="reportar-trigger" data-id="${obj.id}" style="background:#e4e6eb; margin-top:6px; width:100%; border:none; border-radius:8px; padding:6px;">⚠️ Reportar</button>` : ''}
+                </div>
+            </div>`;
     }
-    if (currentView === 'favoritos') renderFavoritos();
-  } catch(e) { showToast('Error: ' + e.message); }
-}
 
-function renderTodos() {
-  document.getElementById('sectionLabel').innerText = 'Publicaciones recientes';
-  document.getElementById('backToFeedBtn').classList.remove('show');
-  let filtered = [...todosProductos];
-  if (currentCategory !== 'all') {
-    filtered = filtered.filter(p => (p.descripcion?.split('|')[0]?.trim()) === currentCategory);
-  }
-  if (searchQuery.trim()) {
-    const q = searchQuery.toLowerCase();
-    filtered = filtered.filter(p =>
-      p.titulo?.toLowerCase().includes(q) ||
-      p.display_name?.toLowerCase().includes(q)
-    );
-  }
-  filtered.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-  renderProductosGrid(filtered.slice(0, visibleItems), false);
-  document.getElementById('loadMoreBtn').style.display = filtered.length > visibleItems ? 'block' : 'none';
-}
-
-async function renderMisObjetos() {
-  renderSkeletons(4);
-  document.getElementById('sectionLabel').innerText = 'Mis publicaciones';
-  document.getElementById('backToFeedBtn').classList.add('show');
-  const datos = await api.misObjetos();
-  renderProductosGrid(datos, true);
-  document.getElementById('loadMoreBtn').style.display = 'none';
-}
-
-async function renderFavoritos() {
-  renderSkeletons(4);
-  document.getElementById('sectionLabel').innerText = 'Mis favoritos';
-  document.getElementById('backToFeedBtn').classList.add('show');
-  const favs = await api.favoritos();
-  renderProductosGrid(favs, false);
-  document.getElementById('loadMoreBtn').style.display = 'none';
-}
-
-async function renderConversaciones() {
-  renderSkeletons(4);
-  document.getElementById('sectionLabel').innerText = 'Conversaciones';
-  document.getElementById('backToFeedBtn').classList.add('show');
-  const convs = await api.conversaciones();
-  const grid = document.getElementById('feedGrid');
-  if (!convs.length) {
-    grid.innerHTML = `<div class="empty-state">💬 No hay conversaciones</div>`;
-    return;
-  }
-  grid.innerHTML = convs.map(c => `
-    <div class="product-card" data-conv='${JSON.stringify(c)}' style="padding: 1rem; display: flex; gap: 1rem; align-items: center;">
-      <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--surface2); overflow: hidden;">
-        ${c.otroAvatar ? `<img src="${esc(c.otroAvatar)}" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fas fa-user" style="display:flex;align-items:center;justify-content:center;height:100%;"></i>'}
-      </div>
-      <div style="flex:1;">
-        <div style="font-weight:600;">${esc(c.titulo)}</div>
-        <div style="font-size:0.7rem; color: var(--text-muted);">con ${esc(c.otroUsuario)}</div>
-        <div style="font-size:0.65rem; color: var(--text-dim);">${c.ultimoMensaje?.substring(0, 50) || ''}</div>
-      </div>
-      <div style="font-size:0.6rem; color: var(--text-dim);">${new Date(c.ultimaFecha).toLocaleDateString()}</div>
-    </div>
-  `).join('');
-  document.getElementById('loadMoreBtn').style.display = 'none';
-}
-
-function switchToView(view) {
-  currentView = view;
-  visibleItems = 8;
-  if (view === 'todos') renderTodos();
-  else if (view === 'misobjetos') renderMisObjetos();
-  else if (view === 'favoritos') renderFavoritos();
-  else if (view === 'chats') renderConversaciones();
-}
-
-async function verPerfilPublico(username) {
-  if (!username) return;
-  perfilPublicoActual = username;
-  valoracionSeleccionada = 0;
-  document.getElementById('perfilPublicoPanel').classList.add('open');
-  try {
-    const p = await api.perfilPublico(username);
-    document.getElementById('ppName').innerText = p.display_name || username;
-    document.getElementById('ppUsername').innerText = `@${p.username}`;
-    document.getElementById('ppBio').innerText = p.bio || '';
-    const avatar = document.getElementById('ppAvatar');
-    avatar.innerHTML = p.avatar_url ? `<img src="${esc(p.avatar_url)}">` : '<i class="fas fa-user"></i>';
-    document.getElementById('ppStars').innerHTML = p.total_valoraciones > 0 ? `⭐ ${p.promedio_valoracion?.toFixed(1)} (${p.total_valoraciones})` : '⭐ Sin valoraciones';
-    const grid = document.getElementById('ppGrid');
-    if (!p.objetos?.length) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;">Sin publicaciones</div>';
-    } else {
-      grid.innerHTML = p.objetos.slice(0, 6).map(o => `
-        <div class="perfil-obj-card" data-id="${o.id}">
-          <div class="perfil-obj-img"><img src="${esc(o.url)}" onerror="this.src='https://placehold.co/150x150/222/444?text=!'"></div>
-          <div class="perfil-obj-title">${esc(o.titulo)}</div>
-        </div>
-      `).join('');
+    function attachCardEvents() {
+        document.querySelectorAll('.favorito-fb').forEach(el => {
+            el.removeEventListener('click', favHandler);
+            el.addEventListener('click', favHandler);
+        });
+        document.querySelectorAll('.intercambiar-trigger').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); iniciarChat(id); }));
+        document.querySelectorAll('.eliminar-trigger').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); eliminarObjeto(id); }));
+        document.querySelectorAll('.reportar-trigger').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); alert("Reporte enviado al moderador."); }));
+        document.querySelectorAll('.miniatura-fb').forEach(img => img.addEventListener('click', (e) => { e.stopPropagation(); const src = img.dataset.img || img.src; document.getElementById('fotoModalImgFB').src = src; document.getElementById('fotoModalFB').style.display='flex'; }));
+        document.querySelectorAll('.objeto-fb-card').forEach(card => card.addEventListener('click', (e) => { if(e.target.classList.contains('favorito-fb') || e.target.closest('.intercambiar-trigger') || e.target.closest('.eliminar-trigger') || e.target.closest('.reportar-trigger')) return; const objData = JSON.parse(card.dataset.objeto); mostrarDetalleRapido(objData); }));
     }
-    document.getElementById('valorarSection').style.display = (currentUserPerfil?.username === username) ? 'none' : 'block';
-  } catch(e) {
-    showToast('Error al cargar perfil');
-  }
-}
 
-async function cargarMensajes() {
-  if (!chatObjetoId || !chatConUsuario) return;
-  const msgs = await api.mensajes(chatObjetoId, chatConUsuario);
-  const container = document.getElementById('chatMessages');
-  if (!msgs.length) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text-dim);">Escribe un mensaje para iniciar la conversación</div>';
-    return;
-  }
-  container.innerHTML = msgs.map(m => `
-    <div class="message ${m.direccion === 'yo' ? 'sent' : 'received'}">
-      ${m.mensaje ? esc(m.mensaje) : ''}
-      ${m.archivo_url ? `<div><a href="${esc(m.archivo_url)}" target="_blank" style="color:inherit;">📎 ${esc(m.archivo_filename || 'Archivo')}</a></div>` : ''}
-      <div style="font-size:0.55rem; opacity:0.6;">${new Date(m.fecha).toLocaleTimeString()}</div>
-    </div>
-  `).join('');
-  container.scrollTop = container.scrollHeight;
-}
+    function favHandler(e) { e.stopPropagation(); const id = parseInt(this.dataset.id); if(favoritos.includes(id)) favoritos = favoritos.filter(f => f !== id); else favoritos.push(id); renderFeed(); renderFavoritos(); renderMisObjetos(); }
+    function eliminarObjeto(id) { if(confirm("¿Eliminar este objeto?")) { objetos = objetos.filter(o => o.id !== id); renderFeed(); renderFavoritos(); renderMisObjetos(); } }
 
-async function enviarMensajeChat() {
-  const input = document.getElementById('chatInput');
-  const texto = input.value.trim();
-  const fileInput = document.getElementById('chatFileInput');
-  const archivo = fileInput.files[0];
-  if (!texto && !archivo) return;
-  input.value = '';
-  try {
-    if (archivo) {
-      const form = new FormData();
-      form.append('id_objeto', chatObjetoId);
-      form.append('receptor', chatConUsuario);
-      if (texto) form.append('mensaje', texto);
-      form.append('archivo', archivo);
-      await apiFetch('/mensaje', { method: 'POST', body: form });
-      fileInput.value = '';
-    } else {
-      await apiFetch('/mensaje', {
-        method: 'POST',
-        body: JSON.stringify({ id_objeto: chatObjetoId, receptor: chatConUsuario, mensaje: texto })
-      });
+    function iniciarChat(objetoId) { if(!currentUser) return; const obj = objetos.find(o => o.id === objetoId); if(!obj) return; let chat = chats.find(c => (c.objetoId === objetoId && ((c.user1 === currentUser.uid && c.user2 === obj.userId) || (c.user2 === currentUser.uid && c.user1 === obj.userId)))); if(!chat) { chat = { id: Date.now(), objetoId, user1: currentUser.uid, user2: obj.userId, mensajes: [], intercambioCompletado: false }; chats.push(chat); } abrirChat(chat.id); }
+    
+    function abrirChat(chatId) { const chat = chats.find(c => c.id === chatId); if(!chat) return; const objeto = objetos.find(o => o.id === chat.objetoId); document.getElementById("chatDetalleFB").style.display = "block"; document.getElementById("listaChatsFB").innerHTML = `<div class="conv-item">Chat sobre: ${objeto.titulo}</div>`; const chatDiv = document.getElementById("chatDetalleFB"); chatDiv.innerHTML = `<div class="card-fb" style="padding:20px;"><h4>${objeto.titulo}</h4><div id="chatMensajesFB" class="chat-container-fb"></div><div class="chat-input" style="display:flex; gap:8px; margin-top:12px;"><input type="text" id="mensajeInputFB" placeholder="Escribe..." style="flex:1; padding:10px; border-radius:40px; border:1px solid #cbd5e1;"><button id="enviarMsgFB" class="btn-fb-primary" style="width:auto; padding:10px 20px;">Enviar</button></div></div>`; function renderMsgs() { const msgsDiv = document.getElementById("chatMensajesFB"); if(!msgsDiv) return; msgsDiv.innerHTML = chat.mensajes.map(m => `<div class="mensaje-fb ${m.uid === currentUser.uid ? 'emisor' : 'receptor'}">${m.texto}</div>`).join(''); msgsDiv.scrollTop = msgsDiv.scrollHeight; } renderMsgs(); document.getElementById("enviarMsgFB").onclick = () => { const input = document.getElementById("mensajeInputFB"); if(input.value.trim()){ chat.mensajes.push({uid: currentUser.uid, texto: input.value, fecha: new Date()}); input.value = ""; renderMsgs(); } }; }
+
+    function mostrarDetalleRapido(obj){ alert(`${obj.titulo}\n${obj.descripcion}\n📍 ${obj.ubicacionTexto}\nUsuario: ${obj.userNombre}`); }
+
+    // Publicar lógica
+    document.getElementById("uploadPrincipalFB")?.addEventListener("click",()=>document.getElementById("fotoPrincipalInputFB").click());
+    document.getElementById("fotoPrincipalInputFB")?.addEventListener("change",(e)=>{ if(e.target.files[0]) { const reader = new FileReader(); reader.onload = ev => { fotoPrincipalData = ev.target.result; document.getElementById("previewPrincipalFB").innerHTML = `<img src="${fotoPrincipalData}" style="width:100px; border-radius:12px;">`; }; reader.readAsDataURL(e.target.files[0]); } });
+    document.getElementById("uploadExtraFB")?.addEventListener("click",()=>document.getElementById("fotosExtraInputFB").click());
+    document.getElementById("fotosExtraInputFB")?.addEventListener("change",(e)=>{ fotosExtraSeleccionadas = Array.from(e.target.files).slice(0,4); const preview = document.getElementById("previewExtraFB"); preview.innerHTML = fotosExtraSeleccionadas.map((f,i)=>`<img src="${URL.createObjectURL(f)}" style="width:60px;height:60px;border-radius:12px;">`).join(''); });
+    document.getElementById("ubicarBtnFB")?.addEventListener("click",()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos=>{ document.getElementById("latFB").value = pos.coords.latitude; document.getElementById("lngFB").value = pos.coords.longitude; const mapDiv = document.getElementById("mapaFB"); mapDiv.style.display = "block"; if(mapInstance) mapInstance.remove(); mapInstance = L.map('mapaFB').setView([pos.coords.latitude, pos.coords.longitude], 14); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapInstance); L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(mapInstance).bindPopup("Tu ubicación").openPopup(); }); else alert("Geolocalización no soportada"); });
+    document.getElementById("previewBtnFB")?.addEventListener("click",()=>{ if(!fotoPrincipalData){ alert("Selecciona foto principal"); return; } const titulo = document.getElementById("tituloFB").value; const categoria = document.getElementById("categoriaFB").value; const desc = document.getElementById("descripcionFB").value; const direccion = document.getElementById("direccionInputFB").value; document.getElementById("previewImgFB").src = fotoPrincipalData; document.getElementById("previewTextFB").innerHTML = `<strong>${titulo}</strong><br>${categoria}<br>${desc}<br><i class="fas fa-map-marker-alt"></i> ${direccion || "Ubicación aproximada"}`; document.getElementById("previewModalFB").style.display="flex"; document.getElementById("confirmPublicarFB").onclick = () => { const nuevasFotos = [fotoPrincipalData, ...fotosExtraSeleccionadas.map(f=> URL.createObjectURL(f))]; const nuevoObj = { id: nextId++, titulo, categoria, descripcion: desc, fotos: nuevasFotos.slice(1,5), fotoPrincipal: nuevasFotos[0], userId: currentUser.uid, userNombre: currentUser.displayName, ubicacionTexto: direccion || "Sin dirección", lat: parseFloat(document.getElementById("latFB").value)||null, lng: parseFloat(document.getElementById("lngFB").value)||null, intercambiado: false, fecha: new Date() }; objetos.unshift(nuevoObj); document.getElementById("previewModalFB").style.display="none"; renderFeed(); alert("¡Publicado exitosamente!"); limpiarFormulario(); }; });
+    function limpiarFormulario(){ document.getElementById("tituloFB").value=""; document.getElementById("descripcionFB").value=""; fotoPrincipalData=null; document.getElementById("previewPrincipalFB").innerHTML=""; fotosExtraSeleccionadas=[]; document.getElementById("previewExtraFB").innerHTML=""; document.getElementById("latFB").value=""; document.getElementById("lngFB").value=""; document.getElementById("direccionInputFB").value=""; if(mapInstance){ mapInstance.remove(); mapInstance=null; document.getElementById("mapaFB").style.display="none"; } }
+    function renderPerfil(){ const perfilDiv = document.getElementById("perfilContentFB"); if(currentUser) perfilDiv.innerHTML = `<img src="${currentUser.photoURL || 'https://via.placeholder.com/80'}" style="width:80px; border-radius:50%;"><h3>${currentUser.displayName}</h3><p>${currentUser.email}</p><p>⭐ Valoración: 4.8 (demo)</p><button class="btn-fb-secondary" id="editarPerfilMock">Editar perfil</button>`; document.getElementById("editarPerfilMock")?.addEventListener("click",()=>alert("Función en desarrollo")); }
+
+    // Data inicial
+    function initMockData(){
+        objetos = [
+            { id:1, titulo:"iPhone 8", categoria:"Electrónica", descripcion:"Batería nueva, 64gb", fotos:[], fotoPrincipal:"https://picsum.photos/id/0/300/200", userId:"user1", userNombre:"Carlos G.", ubicacionTexto:"Viña del Mar", intercambiado:false },
+            { id:2, titulo:"Novelas García Márquez", categoria:"Libros", descripcion:"Lote de 3 libros en buen estado", fotos:[], fotoPrincipal:"https://picsum.photos/id/20/300/200", userId:"user2", userNombre:"Ana M.", ubicacionTexto:"Valparaíso", intercambiado:false },
+            { id:3, titulo:"Pelota de fútbol", categoria:"Deportes", descripcion:"Semi nueva, ideal para cancha", fotos:[], fotoPrincipal:"https://picsum.photos/id/40/300/200", userId:"user1", userNombre:"Carlos G.", ubicacionTexto:"Quilpué", intercambiado:false },
+            { id:4, titulo:"Lámpara de pie", categoria:"Hogar", descripcion:"Madera vintage", fotos:[], fotoPrincipal:"https://picsum.photos/id/26/300/200", userId:"user3", userNombre:"Laura", ubicacionTexto:"Concón", intercambiado:false }
+        ];
+        favoritos = [];
+        chats = [];
     }
-    await cargarMensajes();
-  } catch(e) { showToast('Error: ' + e.message); input.value = texto; }
-}
 
-async function abrirChat(objetoId, username, titulo) {
-  if (!username) { showToast('Usuario no disponible'); return; }
-  chatObjetoId = objetoId;
-  chatConUsuario = username;
-  document.getElementById('chatWithName').innerText = username;
-  document.getElementById('chatObjetoName').innerText = titulo;
-  document.getElementById('chatSidebar').classList.add('open');
-  await cargarMensajes();
-  if (mensajesPolling) clearInterval(mensajesPolling);
-  mensajesPolling = setInterval(cargarMensajes, 4000);
-}
-
-function cerrarChat() {
-  if (mensajesPolling) clearInterval(mensajesPolling);
-  chatObjetoId = null;
-  chatConUsuario = null;
-  document.getElementById('chatSidebar').classList.remove('open');
-}
-
-document.getElementById('feedGrid').addEventListener('click', (e) => {
-  const card = e.target.closest('.product-card');
-  if (!card) return;
-
-  if (e.target.classList.contains('card-img') || e.target.tagName === 'IMG' && e.target.closest('.card-img')) {
-    const fotos = JSON.parse(card.dataset.fotos || '[]');
-    if (fotos.length) openPhotoGallery(fotos, 0);
-    return;
-  }
-
-  if (e.target.classList.contains('miniatura')) {
-    const idx = parseInt(e.target.dataset.idx);
-    const fotos = JSON.parse(card.dataset.fotos || '[]');
-    if (fotos[idx]) {
-      card.querySelector('.card-img img').src = fotos[idx];
-      card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
-      e.target.classList.add('activa');
-      openPhotoGallery(fotos, idx);
-    }
-    return;
-  }
-
-  const favBtn = e.target.closest('.fav-btn');
-  if (favBtn) {
-    const id = parseInt(card.dataset.id);
-    toggleFavorito(id, favBtn);
-    return;
-  }
-
-  const deleteBtn = e.target.closest('[data-deleteid]');
-  if (deleteBtn && confirm('¿Eliminar publicación?')) {
-    api.eliminarObjeto(parseInt(deleteBtn.dataset.deleteid)).then(() => {
-      showToast('Eliminado');
-      renderMisObjetos();
+    // Login mock google
+    document.getElementById("googleLoginBtnFB")?.addEventListener("click",()=>{
+        currentUser = { uid:"user_"+Date.now(), displayName:"Usuario Demo", email:"demo@intercambia.com", photoURL:"https://randomuser.me/api/portraits/lego/1.jpg" };
+        document.getElementById("loginSectionFB").style.display = "none";
+        document.getElementById("appSectionsFB").style.display = "block";
+        document.getElementById("userInfoFB").style.display = "flex";
+        document.getElementById("userInfoFB").innerHTML = `<img src="${currentUser.photoURL}" style="width:32px; height:32px; border-radius:50%;"><span>${currentUser.displayName}</span>`;
+        document.getElementById("logoutBtnFB").style.display = "block";
+        renderFeed(); renderFavoritos(); renderMisObjetos(); renderPerfil();
+        loadCategories();
     });
-    return;
-  }
+    document.getElementById("logoutBtnFB")?.addEventListener("click",()=>{ currentUser = null; location.reload(); });
 
-  const chatBtn = e.target.closest('[data-chatid]');
-  if (chatBtn) {
-    abrirChat(parseInt(chatBtn.dataset.chatid), chatBtn.dataset.chatusername, chatBtn.dataset.chattitulo);
-    return;
-  }
-
-  const intercambiadoBtn = e.target.closest('[data-intercambiadoid]');
-  if (intercambiadoBtn && confirm('¿Marcar como intercambiado?')) {
-    api.marcarIntercambiado(parseInt(intercambiadoBtn.dataset.intercambiadoid)).then(() => renderMisObjetos());
-    return;
-  }
-
-  const moreBtn = e.target.closest('[data-moreid]');
-  if (moreBtn) {
-    const id = moreBtn.dataset.moreid;
-    const menu = document.getElementById(`more-${id}`);
-    document.querySelectorAll('.more-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
-    menu.classList.toggle('show');
-    e.stopPropagation();
-    return;
-  }
-
-  const viewProfile = e.target.closest('[data-viewprofile]');
-  if (viewProfile) {
-    verPerfilPublico(viewProfile.dataset.viewprofile);
-    return;
-  }
-
-  const reportBtn = e.target.closest('[data-reportid]');
-  if (reportBtn) {
-    const motivo = prompt('Motivo del reporte:');
-    if (motivo) api.reporte(parseInt(reportBtn.dataset.reportid), motivo).then(() => showToast('Reporte enviado'));
-    return;
-  }
-
-  const userCard = e.target.closest('[data-username]');
-  if (userCard && userCard.dataset.username) {
-    verPerfilPublico(userCard.dataset.username);
-    return;
-  }
-
-  const convCard = e.target.closest('[data-conv]');
-  if (convCard) {
-    const conv = JSON.parse(convCard.dataset.conv);
-    abrirChat(conv.id_objeto, conv.otroUsername || conv.otroUsuario, conv.titulo);
-    return;
-  }
-});
-
-document.addEventListener('click', () => {
-  document.querySelectorAll('.more-menu').forEach(m => m.classList.remove('show'));
-  const dropdown = document.getElementById('profileDropdown');
-  if (dropdown) dropdown.style.display = 'none';
-});
-
-document.getElementById('backToFeedBtn').addEventListener('click', () => switchToView('todos'));
-document.getElementById('loadMoreBtn').addEventListener('click', () => { visibleItems += 8; renderTodos(); });
-document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value; visibleItems = 8; renderTodos(); });
-
-document.querySelectorAll('.cat-pill').forEach(pill => {
-  pill.addEventListener('click', () => {
-    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    currentCategory = pill.dataset.cat;
-    visibleItems = 8;
-    renderTodos();
-  });
-});
-
-document.getElementById('hdrAvatarWrap').addEventListener('click', (e) => {
-  e.stopPropagation();
-  const dropdown = document.getElementById('profileDropdown');
-  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-});
-
-document.querySelectorAll('.dropdown-item').forEach(item => {
-  item.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const action = item.dataset.action;
-    document.getElementById('profileDropdown').style.display = 'none';
-    if (action === 'logout') logout();
-    else if (action === 'miPerfil' && currentUserPerfil?.username) verPerfilPublico(currentUserPerfil.username);
-    else if (action === 'editarPerfil') document.getElementById('perfilScreen').classList.remove('hidden');
-    else if (action === 'misobjetos') switchToView('misobjetos');
-    else if (action === 'favoritos') switchToView('favoritos');
-    else if (action === 'chats') switchToView('chats');
-  });
-});
-
-document.getElementById('avatarCircle').onclick = () => document.getElementById('avatarFileInput').click();
-document.getElementById('avatarFileInput').onchange = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  avatarFileSeleccionado = file;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    document.getElementById('avatarPreview').src = ev.target.result;
-    document.getElementById('avatarPreview').style.display = 'block';
-    document.getElementById('avatarIcon').style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-};
-
-document.getElementById('guardarPerfilBtn').onclick = async () => {
-  const nombre = document.getElementById('pfNombre').value.trim();
-  if (!nombre) { showToast('Nombre requerido'); return; }
-  await api.completarPerfil({
-    display_name: nombre,
-    bio: document.getElementById('pfBio').value.trim(),
-    ciudad: document.getElementById('pfCiudad').value.trim(),
-    edad: document.getElementById('pfEdad').value || null
-  });
-  if (avatarFileSeleccionado) {
-    const form = new FormData();
-    form.append('avatar', avatarFileSeleccionado);
-    await apiFetch('/perfil/avatar', { method: 'POST', body: form });
-  }
-  showToast('Perfil guardado');
-  document.getElementById('perfilScreen').classList.add('hidden');
-  localStorage.removeItem('perfil_saltado');
-  currentUserPerfil = await api.miPerfil();
-  actualizarHeader();
-};
-
-document.getElementById('saltarPerfilBtn').onclick = () => {
-  localStorage.setItem('perfil_saltado', '1');
-  document.getElementById('perfilScreen').classList.add('hidden');
-};
-
-function actualizarHeader() {
-  if (currentUserPerfil?.avatar_url) {
-    document.getElementById('hdrAvatarWrap').innerHTML = `<img src="${esc(currentUserPerfil.avatar_url)}">`;
-  }
-}
-
-document.getElementById('starPicker').addEventListener('click', (e) => {
-  const star = e.target.closest('.star-pick');
-  if (star) {
-    valoracionSeleccionada = parseInt(star.dataset.v);
-    document.querySelectorAll('.star-pick').forEach((s, i) => {
-      s.classList.toggle('selected', i < valoracionSeleccionada);
-    });
-  }
-});
-
-document.getElementById('enviarValoracionBtn').onclick = async () => {
-  if (!valoracionSeleccionada) { showToast('Selecciona una puntuación'); return; }
-  await api.valorar({
-    calificado_username: perfilPublicoActual,
-    puntuacion: valoracionSeleccionada,
-    comentario: document.getElementById('valorarComentario').value.trim()
-  });
-  showToast('Valoración enviada');
-  document.getElementById('valorarComentario').value = '';
-  valoracionSeleccionada = 0;
-  document.querySelectorAll('.star-pick').forEach(s => s.classList.remove('selected'));
-  verPerfilPublico(perfilPublicoActual);
-};
-
-document.getElementById('closePerfilPublicoBtn').onclick = () => document.getElementById('perfilPublicoPanel').classList.remove('open');
-document.getElementById('closeChatBtn').onclick = cerrarChat;
-document.getElementById('sendChatBtn').onclick = enviarMensajeChat;
-document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') enviarMensajeChat(); });
-document.getElementById('attachBtn').onclick = () => document.getElementById('chatFileInput').click();
-
-document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
-document.getElementById('fileInput').onchange = (e) => {
-  selectedFiles = [...selectedFiles, ...Array.from(e.target.files)].slice(0, 5);
-  actualizarPreviews();
-};
-function actualizarPreviews() {
-  const container = document.getElementById('fotosPreview');
-  container.innerHTML = '';
-  selectedFiles.forEach((f, i) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const div = document.createElement('div');
-      div.className = 'foto-preview';
-      div.innerHTML = `<img src="${e.target.result}"><div class="remove-foto" data-idx="${i}">✕</div>`;
-      container.appendChild(div);
-    };
-    reader.readAsDataURL(f);
-  });
-  document.querySelectorAll('.remove-foto').forEach(btn => {
-    btn.onclick = (e) => {
-      const idx = parseInt(btn.dataset.idx);
-      selectedFiles.splice(idx, 1);
-      actualizarPreviews();
-    };
-  });
-}
-document.getElementById('openUploadPanelBtn').onclick = () => document.getElementById('uploadPanelOverlay').classList.add('active');
-document.getElementById('cancelUploadBtn').onclick = () => document.getElementById('uploadPanelOverlay').classList.remove('active');
-document.getElementById('uploadPanelOverlay').onclick = (e) => { if (e.target === document.getElementById('uploadPanelOverlay')) document.getElementById('uploadPanelOverlay').classList.remove('active'); };
-document.getElementById('publishArticleBtn').onclick = async () => {
-  const titulo = document.getElementById('uploadTitle').value.trim();
-  const categoria = document.getElementById('uploadCategory').value;
-  const desc = document.getElementById('uploadDesc').value.trim();
-  if (!titulo || !desc || !selectedFiles.length) { showToast('Completa todos los campos y sube al menos una foto'); return; }
-  const form = new FormData();
-  form.append('titulo', titulo);
-  form.append('descripcion', `${categoria} | ${desc} | ${document.getElementById('uploadLocation').value.trim() || ''}`);
-  form.append('direccion', document.getElementById('uploadLocation').value.trim());
-  selectedFiles.forEach((f, i) => form.append(`foto_${i}`, f));
-  await apiFetch('/objeto', { method: 'POST', body: form });
-  showToast('Publicado');
-  document.getElementById('uploadPanelOverlay').classList.remove('active');
-  document.getElementById('uploadTitle').value = '';
-  document.getElementById('uploadDesc').value = '';
-  document.getElementById('uploadLocation').value = '';
-  selectedFiles = [];
-  actualizarPreviews();
-  todosProductos = await api.objetos();
-  renderTodos();
-};
-
-document.getElementById('modalPrevBtn').onclick = prevPhoto;
-document.getElementById('modalNextBtn').onclick = nextPhoto;
-document.getElementById('fotoModalClose').onclick = () => document.getElementById('fotoModalOverlay').classList.remove('open');
-document.getElementById('fotoModalOverlay').onclick = (e) => { if (e.target === document.getElementById('fotoModalOverlay')) document.getElementById('fotoModalOverlay').classList.remove('open'); };
-document.addEventListener('keydown', (e) => {
-  if (!document.getElementById('fotoModalOverlay').classList.contains('open')) return;
-  if (e.key === 'ArrowLeft') prevPhoto();
-  else if (e.key === 'ArrowRight') nextPhoto();
-  else if (e.key === 'Escape') document.getElementById('fotoModalOverlay').classList.remove('open');
-});
-
-async function init() {
-  const token = getTokenFromURL();
-  if (token) {
-    authToken = token;
-    currentUser = await verifyToken(token);
-    if (!currentUser) { localStorage.removeItem('auth_token'); authToken = null; }
-  }
-  if (currentUser) {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('appContainer').classList.add('active');
-    currentUserPerfil = await api.miPerfil();
-    actualizarHeader();
-    const saltado = localStorage.getItem('perfil_saltado');
-    if (!currentUserPerfil?.perfil_completo && !saltado) {
-      document.getElementById('perfilScreen').classList.remove('hidden');
+    function loadCategories() {
+        const container = document.getElementById("categoriesContainerFB");
+        if(container) container.innerHTML = `<button class="cat-fb active" data-cat="all">Todos</button>` + categoriasLista.map(c => `<button class="cat-fb" data-cat="${c}">${c}</button>`).join('');
+        const selectCat = document.getElementById("categoriaFB");
+        if(selectCat) selectCat.innerHTML = categoriasLista.map(c => `<option value="${c}">${c}</option>`).join('');
+        document.querySelectorAll('.cat-fb').forEach(btn => btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.cat-fb').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderFeed();
+        }));
     }
-    renderSkeletons();
-    const [favs, objetos] = await Promise.all([api.favoritos(), api.objetos()]);
-    favoritosIds = new Set(favs.map(f => f.id));
-    todosProductos = objetos;
-    renderTodos();
-  } else {
-    document.getElementById('loginScreen').classList.remove('hidden');
-  }
-}
 
-document.getElementById('googleLoginBtn').onclick = loginWithGoogle;
-init();
+    // Navegación tabs
+    document.querySelectorAll(".nav-fb-btn").forEach(btn => btn.addEventListener("click",()=>{
+        document.querySelectorAll(".nav-fb-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.dataset.tab;
+        document.getElementById("tab-feed-fb").style.display = tab === "feed" ? "block" : "none";
+        document.getElementById("tab-favoritos-fb").style.display = tab === "favoritos" ? "block" : "none";
+        document.getElementById("tab-publicar-fb").style.display = tab === "publicar" ? "block" : "none";
+        document.getElementById("tab-misobjetos-fb").style.display = tab === "misobjetos" ? "block" : "none";
+        document.getElementById("tab-chats-fb").style.display = tab === "chats" ? "block" : "none";
+        document.getElementById("tab-perfil-fb").style.display = tab === "perfil" ? "block" : "none";
+        if(tab === "favoritos") renderFavoritos();
+        if(tab === "misobjetos") renderMisObjetos();
+        if(tab === "chats") document.getElementById("listaChatsFB").innerHTML = "Inicia un intercambio desde cualquier objeto para chatear";
+        if(tab === "perfil") renderPerfil();
+    }));
+
+    initMockData();
+    document.getElementById("searchInputFB")?.addEventListener("input",()=>renderFeed());
 </script>
 </body>
 </html>
