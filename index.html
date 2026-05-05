@@ -1,1561 +1,1654 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Intercambia - Trueque de objetos</title>
-    <!-- Leaflet (mapa gratuito) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-        .main-header {
-            background: white;
-            border-radius: 32px;
-            padding: 20px 28px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(5, 150, 105, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-        .logo-area h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #059669, #10b981);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        .logo-area p {
-            font-size: 0.85rem;
-            color: #475569;
-        }
-        .search-section {
-            background: white;
-            border-radius: 28px;
-            padding: 20px 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        }
-        .search-bar {
-            background: #f1f5f9;
-            border-radius: 60px;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .search-bar input {
-            border: none;
-            background: transparent;
-            font-size: 1rem;
-            width: 100%;
-            outline: none;
-        }
-        .categories {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .cat-btn {
-            background: #f1f5f9;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #334155;
-        }
-        .cat-btn.active {
-            background: #059669;
-            color: white;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 24px;
-            margin-top: 8px;
-        }
-        .objeto-card {
-            background: white;
-            border-radius: 28px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            border: 1px solid #eef2ff;
-            position: relative;
-        }
-        .objeto-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
-        }
-        .imagen-principal {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            background: #f1f5f9;
-            cursor: pointer;
-        }
-        .miniaturas {
-            display: flex;
-            gap: 4px;
-            padding: 8px;
-            background: white;
-            border-top: 1px solid #eef2ff;
-            overflow-x: auto;
-        }
-        .miniatura {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 12px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: 0.2s;
-        }
-        .miniatura:hover {
-            border-color: #059669;
-            transform: scale(1.05);
-        }
-        .miniatura.activa {
-            border-color: #059669;
-        }
-        .objeto-info {
-            padding: 16px;
-        }
-        .categoria-badge {
-            background: #dcfce7;
-            color: #166534;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 4px 12px;
-            border-radius: 30px;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-        .badge {
-            background: #059669;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 12px;
-            display: inline-block;
-            margin: 8px 8px 8px 0;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .badge:hover {
-            transform: scale(1.02);
-        }
-        .badge-ubicacion {
-            background: #e0e7ff;
-            color: #1e40af;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 4px 4px 4px 0;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .badge-ubicacion:hover {
-            background: #c7d2fe;
-            transform: scale(1.02);
-        }
-        .badge-intercambiado {
-            background: #6b7280;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 4px 0;
-        }
-        .badge-expiracion {
-            background: #e67e22;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 4px 0;
-        }
-        .badge-sospechoso {
-            background: #f59e0b;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 60px;
-            font-size: 11px;
-            display: inline-block;
-            margin: 4px 0;
-        }
-        .favorito-btn {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(255,255,255,0.9);
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
-        .favorito-btn:hover {
-            transform: scale(1.1);
-        }
-        .favorito-btn.activo {
-            color: #eab308;
-        }
-        .btn-primary {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn-primary:hover {
-            background: #047857;
-            transform: scale(1.02);
-        }
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .google-btn {
-            background: #4285f4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 100%;
-            max-width: 320px;
-            margin: 0 auto;
-            padding: 12px 24px;
-            border-radius: 40px;
-            color: white;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-        }
-        .intercambiar-btn {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 12px;
-            width: 100%;
-            font-weight: 500;
-        }
-        .reportar-btn {
-            background: #f59e0b;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 8px;
-            width: 100%;
-            font-size: 13px;
-        }
-        .eliminar-btn {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 12px;
-            width: 100%;
-            font-weight: 500;
-        }
-        .intercambiado-btn {
-            background: #6b7280;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 12px;
-            width: 100%;
-            font-weight: 500;
-        }
-        .btn-como-llegar {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-top: 8px;
-            width: 100%;
-            font-size: 13px;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-como-llegar:hover {
-            background: #2563eb;
-            transform: scale(1.02);
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 32px;
-            max-width: 500px;
-            width: 90%;
-            padding: 24px;
-            text-align: center;
-        }
-        .modal-content img {
-            width: 100%;
-            border-radius: 20px;
-            margin: 16px 0;
-        }
-        .modal-foto {
-            max-width: 90vw;
-            max-height: 80vh;
-        }
-        .modal-foto img {
-            width: auto;
-            max-height: 70vh;
-        }
-        .foto-preview {
-            display: inline-block;
-            position: relative;
-            margin: 8px;
-        }
-        .foto-preview img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 12px;
-        }
-        .foto-preview button {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #dc2626;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .chat-container {
-            background: #f8fafc;
-            border-radius: 24px;
-            padding: 16px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .mensaje {
-            background: white;
-            border-radius: 20px;
-            padding: 10px 16px;
-            margin-bottom: 12px;
-            max-width: 80%;
-        }
-        .mensaje.emisor {
-            background: #059669;
-            color: white;
-            margin-left: auto;
-        }
-        .mensaje.receptor {
-            background: #e2e8f0;
-        }
-        .chat-input {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-        }
-        .chat-input input {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 40px;
-            outline: none;
-        }
-        .login-card {
-            text-align: center;
-            background: white;
-            border-radius: 32px;
-            padding: 32px;
-            margin-bottom: 24px;
-        }
-        .user-info {
-            background: #eef2ff;
-            padding: 12px 20px;
-            border-radius: 60px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-        }
-        .logout-btn {
-            background: #64748b;
-            padding: 8px 20px;
-            border-radius: 40px;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-        .nav-buttons {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 12px;
-        }
-        .nav-btn {
-            background: none;
-            border: none;
-            padding: 8px 24px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 40px;
-            transition: 0.2s;
-            color: #475569;
-        }
-        .nav-btn.active {
-            background: #059669;
-            color: white;
-        }
-        .upload-area {
-            border: 3px dashed #cbd5e1;
-            border-radius: 24px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            background: #f8fafc;
-            transition: 0.2s;
-        }
-        .upload-area:hover {
-            border-color: #059669;
-            background: #f0fdf4;
-        }
-        .fotos-extra-area {
-            margin-top: 16px;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 20px;
-        }
-        .fotos-preview-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 12px;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 16px;
-            margin: 10px 0;
-            border: 1px solid #cbd5e1;
-            border-radius: 60px;
-            font-size: 1rem;
-            outline: none;
-        }
-        textarea {
-            border-radius: 20px;
-            resize: vertical;
-        }
-        .progress-container {
-            background: #e2e8f0;
-            border-radius: 40px;
-            margin: 16px 0;
-            overflow: hidden;
-        }
-        .progress-bar {
-            width: 0%;
-            height: 8px;
-            background: #059669;
-            transition: width 0.2s;
-        }
-        .conv-item {
-            padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
-            cursor: pointer;
-            transition: 0.2s;
-            border-radius: 16px;
-        }
-        .conv-item:hover {
-            background: #f1f5f9;
-        }
-        .status-success, .status-error, .status-info {
-            padding: 12px;
-            border-radius: 60px;
-            margin-top: 12px;
-            text-align: center;
-        }
-        .status-success { background: #bbf7d0; color: #166534; }
-        .status-error { background: #fee2e2; color: #991b1b; }
-        .status-info { background: #dbeafe; color: #1e3a8a; }
-        .ubicacion-section {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 16px;
-            margin: 16px 0;
-        }
-        #mapa {
-            height: 250px;
-            width: 100%;
-            border-radius: 20px;
-            z-index: 1;
-        }
-        .leaflet-control-attribution {
-            font-size: 9px;
-        }
-        .rating {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin: 16px 0;
-        }
-        .star {
-            font-size: 32px;
-            cursor: pointer;
-            color: #cbd5e1;
-            transition: 0.2s;
-        }
-        .star.selected {
-            color: #eab308;
-        }
-        .perfil-card {
-            background: white;
-            border-radius: 28px;
-            padding: 24px;
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .perfil-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 16px;
-        }
-        @media (max-width: 700px) {
-            .grid { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Intercambia – Trueque de objetos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #131313;
+      --surface2: #1c1c1c;
+      --surface3: #242424;
+      --surface4: #2e2e2e;
+      --border: rgba(255,255,255,0.055);
+      --border-hover: rgba(255,255,255,0.13);
+      --accent: #d4f53c;
+      --accent-dark: #b8d930;
+      --accent-muted: rgba(212,245,60,0.08);
+      --text: #efefef;
+      --text-muted: #777;
+      --text-dim: #3a3a3a;
+      --red: #f04444;
+      --gold: #f5c842;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface4); border-radius: 3px; }
+
+    .toast {
+      position: fixed; bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--surface3);
+      border: 1px solid var(--border-hover);
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.22s;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast .dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.35s, visibility 0.35s;
+    }
+    .screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    #loginScreen { background: var(--bg); }
+
+    .login-card {
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    .login-logo {
+      display: inline-flex;
+      width: 64px;
+      height: 64px;
+      background: var(--accent);
+      border-radius: 18px;
+      margin-bottom: 2rem;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(-8deg);
+    }
+    .login-logo i { font-size: 1.6rem; color: #0a0a0a; }
+    .login-card h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -2px;
+      margin-bottom: 0.7rem;
+    }
+    .login-card h1 span { color: var(--accent); }
+    .login-card p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 2rem;
+    }
+    .btn-google {
+      background: var(--surface2);
+      border: 1px solid var(--border-hover);
+      border-radius: 100px;
+      padding: 0.9rem;
+      width: 100%;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-google:hover {
+      background: var(--surface3);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    #perfilScreen {
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(24px);
+      z-index: 1001;
+    }
+    .perfil-card {
+      background: var(--surface);
+      border: 1px solid var(--border-hover);
+      border-radius: 28px;
+      width: 92%;
+      max-width: 440px;
+      padding: 2rem 1.5rem;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+    .perfil-card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 0.3rem;
+    }
+    .perfil-card h2 span { color: var(--accent); }
+    .avatar-circle {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 2px dashed var(--border-hover);
+      margin: 0 auto 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-circle i { font-size: 1.8rem; color: var(--text-dim); }
+    .field-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-family: inherit;
+      color: var(--text);
+      margin-bottom: 0.7rem;
+    }
+    .field-input:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0a0a;
+      border: none;
+      border-radius: 100px;
+      padding: 0.85rem;
+      width: 100%;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.85rem;
+      width: 100%;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .btn-secondary:hover { background: var(--surface2); color: var(--text); }
+
+    .app-container {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s;
+    }
+    .app-container.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .market-header {
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      padding: 0.8rem 1rem;
+      z-index: 90;
+    }
+    .header-row1 {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.7rem;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .logo-icon {
+      width: 30px;
+      height: 30px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(-8deg);
+    }
+    .logo-icon i { font-size: 0.75rem; color: #0a0a0a; }
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .search-bar { flex: 1; }
+    .search-wrapper {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.4rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .search-wrapper input {
+      background: transparent;
+      border: none;
+      width: 100%;
+      font-size: 0.8rem;
+      color: var(--text);
+      outline: none;
+    }
+    .publish-btn {
+      background: var(--accent);
+      color: #0a0a0a;
+      border: none;
+      border-radius: 100px;
+      padding: 0.4rem 1rem;
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .hdr-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface2);
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hdr-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .categories-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+    .cat-pill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .cat-pill.active {
+      background: var(--accent);
+      color: #0a0a0a;
+      font-weight: 700;
+    }
+
+    .feed-section {
+      padding: 1rem;
+    }
+    .section-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .back-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 3px 10px;
+      font-size: 0.65rem;
+      cursor: pointer;
+      display: none;
+    }
+    .back-btn.show { display: flex; }
+    .listings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .product-card:hover { transform: translateY(-4px); border-color: var(--border-hover); }
+    .card-img {
+      aspect-ratio: 1/1;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .fav-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 3;
+      font-size: 0.8rem;
+    }
+    .fav-btn.active { color: var(--gold); }
+    .delete-btn {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 26px;
+      height: 26px;
+      background: rgba(240,68,68,0.85);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.65rem;
+      color: white;
+    }
+    .miniaturas {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      gap: 4px;
+      padding: 8px;
+      overflow-x: auto;
+      z-index: 2;
+    }
+    .miniatura {
+      width: 32px;
+      height: 32px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+    }
+    .miniatura.activa { border-color: var(--accent); }
+    .card-info { padding: 0.7rem; }
+    .card-user {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    .card-user-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--surface3);
+      overflow: hidden;
+    }
+    .card-user-name {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .btn-chat {
+      flex: 1;
+      background: var(--accent-muted);
+      border: 1px solid rgba(212,245,60,0.15);
+      border-radius: 100px;
+      padding: 5px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--accent);
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-chat:hover {
+      background: rgba(212,245,60,0.15);
+    }
+    .btn-more {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      width: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .more-menu {
+      position: absolute;
+      bottom: 100%;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border-hover);
+      border-radius: 12px;
+      overflow: hidden;
+      display: none;
+      min-width: 130px;
+    }
+    .more-menu.show { display: block; }
+    .more-menu-item {
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .more-menu-item:hover { background: var(--surface2); }
+    .more-menu-item.danger { color: var(--red); }
+    .owner-actions { margin-top: 6px; }
+    .btn-intercambiado {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .btn-intercambiado:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .side-panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 100%;
+      max-width: 380px;
+      height: 100%;
+      background: var(--surface);
+      z-index: 500;
+      transition: right 0.3s;
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+    }
+    .side-panel.open { right: 0; }
+    .side-panel-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+    }
+    .back-circle-btn {
+      width: 32px;
+      height: 32px;
+      background: var(--surface2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .perfil-banner {
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .perfil-avatar-big {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--surface2);
+      margin: 0 auto 0.8rem;
+      overflow: hidden;
+    }
+    .perfil-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
+    .perfil-display-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .perfil-username {
+      font-size: 0.7rem;
+      color: var(--accent);
+    }
+    .perfil-bio {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+    .perfil-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 0 1rem;
+    }
+    .perfil-obj-card {
+      background: var(--surface2);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .perfil-obj-img { aspect-ratio: 1/1; }
+    .perfil-obj-img img { width: 100%; height: 100%; object-fit: cover; }
+    .perfil-obj-title {
+      font-size: 0.7rem;
+      padding: 6px;
+    }
+    .valorar-section {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
+    }
+    .star-picker {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 0.8rem;
+    }
+    .star-pick {
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-dim);
+    }
+    .star-pick.selected { color: var(--gold); }
+
+    .chat-sidebar {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 100%;
+      max-width: 380px;
+      height: 100%;
+      background: var(--surface);
+      z-index: 600;
+      transition: right 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-sidebar.open { right: 0; }
+    .chat-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .message {
+      max-width: 80%;
+      padding: 8px 12px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+    }
+    .message.sent {
+      background: var(--accent);
+      color: #0a0a0a;
+      align-self: flex-end;
+    }
+    .message.received {
+      background: var(--surface2);
+      align-self: flex-start;
+    }
+    .chat-input-wrap {
+      padding: 0.8rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+    .chat-input-wrap input {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      color: var(--text);
+    }
+    .send-btn {
+      background: var(--accent);
+      border: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .upload-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(16px);
+      z-index: 400;
+      display: flex;
+      align-items: flex-end;
+      visibility: hidden;
+      opacity: 0;
+    }
+    .upload-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+    .upload-panel {
+      background: var(--surface);
+      border-radius: 28px 28px 0 0;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .upload-field {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      margin-bottom: 0.7rem;
+    }
+    .upload-area {
+      border: 1.5px dashed var(--surface4);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 0.7rem;
+    }
+    .fotos-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 0.7rem;
+    }
+    .foto-preview {
+      width: 60px;
+      height: 60px;
+      position: relative;
+    }
+    .foto-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .remove-foto {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 18px;
+      height: 18px;
+      background: var(--red);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      cursor: pointer;
+    }
+
+    .foto-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .foto-modal-overlay.open { display: flex; }
+    .foto-modal-main {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .foto-modal-main img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 16px;
+    }
+    .modal-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+    .modal-nav-btn.prev { left: -50px; }
+    .modal-nav-btn.next { right: -50px; }
+    .foto-counter {
+      text-align: center;
+      margin-top: 1rem;
+      color: var(--text-muted);
+    }
+    .foto-modal-close {
+      background: var(--surface2);
+      border: none;
+      color: var(--text);
+      padding: 8px 24px;
+      border-radius: 100px;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+
+    .load-more { text-align: center; padding: 1rem; }
+    .load-more-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.5rem 2rem;
+      cursor: pointer;
+    }
+    .skeleton {
+      background: var(--surface);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .skeleton-img {
+      aspect-ratio: 1/1;
+      background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+      grid-column: 1/-1;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-    <div class="main-header">
-        <div class="logo-area">
-            <h1>🔄 Intercambia</h1>
-            <p>Trueque de objetos - Encuentra lo que buscas</p>
-        </div>
-        <div id="userInfo" class="user-info" style="display:none;"></div>
-    </div>
 
-    <!-- Login con Google -->
-    <div class="login-card" id="loginSection">
-        <h2>🔐 Bienvenido a Intercambia</h2>
-        <p style="margin: 16px 0; color: #475569;">Inicia sesión para publicar objetos, intercambiar y chatear</p>
-        <button id="googleLoginBtn" class="google-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24">
-                <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Iniciar sesión con Google
-        </button>
-        <button id="logoutBtn" style="display:none;" class="logout-btn">Cerrar sesión</button>
-    </div>
+<div id="toast" class="toast"><div class="dot"></div><span id="toastMsg"></span></div>
 
-    <!-- App principal (oculta hasta login) -->
-    <div id="appSections" style="display:none;">
-        <!-- Búsqueda -->
-        <div class="search-section">
-            <div class="search-bar">
-                <span>🔍</span>
-                <input type="text" id="searchInput" placeholder="Buscar por título o usuario...">
-            </div>
-            <div class="categories">
-                <button class="cat-btn active" data-cat="all">Todos</button>
-                <button class="cat-btn" data-cat="Electrónica">📱 Electrónica</button>
-                <button class="cat-btn" data-cat="Ropa">👕 Ropa</button>
-                <button class="cat-btn" data-cat="Libros">📚 Libros</button>
-                <button class="cat-btn" data-cat="Mascotas">🐾 Mascotas</button>
-                <button class="cat-btn" data-cat="Hogar">🏠 Hogar</button>
-                <button class="cat-btn" data-cat="Deportes">⚽ Deportes</button>
-            </div>
-        </div>
-
-        <!-- Navegación -->
-        <div class="nav-buttons">
-            <button class="nav-btn active" data-tab="feed">📦 Objetos disponibles</button>
-            <button class="nav-btn" data-tab="favoritos">⭐ Favoritos</button>
-            <button class="nav-btn" data-tab="publicar">➕ Publicar objeto</button>
-            <button class="nav-btn" data-tab="misobjetos">📋 Mis objetos</button>
-            <button class="nav-btn" data-tab="chats">💬 Mis conversaciones</button>
-            <button class="nav-btn" data-tab="perfil">👤 Mi perfil</button>
-        </div>
-
-        <!-- Feed -->
-        <div id="tab-feed">
-            <div id="feedGrid" class="grid">Cargando objetos...</div>
-        </div>
-
-        <!-- Favoritos -->
-        <div id="tab-favoritos" style="display:none;">
-            <div id="favoritosGrid" class="grid">Cargando favoritos...</div>
-        </div>
-
-        <!-- Publicar -->
-        <div id="tab-publicar" style="display:none;">
-            <div style="background: white; border-radius: 28px; padding: 24px;">
-                <h3>📸 Publicar un objeto</h3>
-                <input type="text" id="titulo" placeholder="Título del objeto">
-                <select id="categoria">
-                    <option value="Electrónica">📱 Electrónica</option>
-                    <option value="Ropa">👕 Ropa</option>
-                    <option value="Libros">📚 Libros</option>
-                    <option value="Mascotas">🐾 Mascotas</option>
-                    <option value="Hogar">🏠 Hogar</option>
-                    <option value="Deportes">⚽ Deportes</option>
-                </select>
-                <textarea id="descripcion" rows="3" placeholder="Descripción (estado, qué buscas a cambio...)"></textarea>
-                
-                <!-- Sección de fotos múltiples -->
-                <div class="ubicacion-section">
-                    <label>📸 Fotos del objeto (máximo 5)</label>
-                    <div class="upload-area" id="uploadAreaPrincipal">
-                        <div>📁 Haz clic para seleccionar la foto principal</div>
-                        <input type="file" id="fotoPrincipal" accept="image/*" style="display:none;">
-                    </div>
-                    <div id="fotoPrincipalPreview" style="margin-top: 12px; display:none;">
-                        <div class="foto-preview">
-                            <img id="principalPreviewImg" src="">
-                            <button id="eliminarPrincipal" style="position: absolute; top: -8px; right: -8px; background: #dc2626; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">✕</button>
-                        </div>
-                    </div>
-                    
-                    <div class="fotos-extra-area">
-                        <label>📸 Fotos adicionales (opcional, hasta 4 más)</label>
-                        <div class="upload-area" id="uploadAreaExtra" style="padding: 20px; margin-top: 8px;">
-                            <div>📁 Haz clic para agregar más fotos</div>
-                            <input type="file" id="fotosExtra" accept="image/*" multiple style="display:none;">
-                        </div>
-                        <div id="fotosExtraPreview" class="fotos-preview-container"></div>
-                    </div>
-                </div>
-                
-                <!-- Sección de ubicación -->
-                <div class="ubicacion-section">
-                    <label>📍 Ubicación del objeto</label>
-                    <div style="display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap;">
-                        <button type="button" id="ubicarBtn" style="background:#3b82f6; padding: 10px 16px; width: auto;">📍 Usar mi ubicación</button>
-                        <input type="text" id="direccionInput" placeholder="Ej: Av. Los Paltos 321, Quilpué" style="flex:1;">
-                    </div>
-                    <div id="mapaContainer" style="display:none; margin-top: 10px;">
-                        <div id="mapa"></div>
-                        <p style="font-size: 12px; color: #64748b; margin-top: 8px;">🖱️ Haz clic en el mapa para seleccionar la ubicación exacta</p>
-                    </div>
-                    <input type="hidden" id="latitud" value="">
-                    <input type="hidden" id="longitud" value="">
-                </div>
-                
-                <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
-                <button id="previewBtn" class="btn-primary">📸 Vista previa</button>
-                <div id="pubStatus"></div>
-            </div>
-        </div>
-
-        <!-- Mis objetos -->
-        <div id="tab-misobjetos" style="display:none;">
-            <div id="misObjetosGrid" class="grid">Cargando...</div>
-        </div>
-
-        <!-- Chats -->
-        <div id="tab-chats" style="display:none;">
-            <div id="listaChats"></div>
-            <div id="chatDetalle" style="margin-top:24px; display:none;">
-                <div style="background: white; border-radius: 28px; padding: 20px;">
-                    <h4 id="chatTitulo"></h4>
-                    <div id="chatMensajes" class="chat-container"></div>
-                    <div id="valorarSection" style="display:none; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-                        <h4>⭐ Calificar este intercambio</h4>
-                        <div class="rating" id="ratingStars">
-                            <span class="star" data-value="1">☆</span>
-                            <span class="star" data-value="2">☆</span>
-                            <span class="star" data-value="3">☆</span>
-                            <span class="star" data-value="4">☆</span>
-                            <span class="star" data-value="5">☆</span>
-                        </div>
-                        <textarea id="comentarioValoracion" rows="2" placeholder="Comentario (opcional)" style="border-radius: 20px;"></textarea>
-                        <button id="enviarValoracionBtn" class="btn-primary" style="margin-top: 12px;">Enviar valoración</button>
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" id="nuevoMensaje" placeholder="Escribe un mensaje...">
-                        <button id="enviarMensajeBtn" style="background: #059669;">Enviar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mi perfil -->
-        <div id="tab-perfil" style="display:none;">
-            <div id="perfilContent"></div>
-        </div>
-    </div>
+<div id="loginScreen" class="screen">
+  <div class="login-card">
+    <div class="login-logo"><i class="fas fa-exchange-alt"></i></div>
+    <h1>Inter<span>cambia</span></h1>
+    <p>Dale una segunda vida a tus objetos.<br>Publica, conecta e intercambia.</p>
+    <button id="googleLoginBtn" class="btn-google">
+      <svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuar con Google
+    </button>
+  </div>
 </div>
 
-<!-- Modal de vista previa -->
-<div id="previewModal" class="modal">
-    <div class="modal-content">
-        <h3>📋 ¿Publicar este objeto?</h3>
-        <img id="previewImg" src="" alt="Vista previa">
-        <p><strong id="previewTitulo"></strong></p>
-        <p id="previewDesc" style="color:#475569;"></p>
-        <p><span class="categoria-badge" id="previewCategoria"></span></p>
-        <p id="previewUbicacion" style="font-size:12px; color:#64748b;"></p>
-        <div id="previewFotosExtra" style="display:flex; gap:8px; flex-wrap:wrap; margin:16px 0;"></div>
-        <button id="confirmarPublicarBtn" class="btn-primary">✅ Sí, publicar</button>
-        <button id="cancelarPublicarBtn" style="margin-top: 12px; background:#e2e8f0; color:#1e293b; border:none; padding:10px; border-radius:40px; width:100%;">Cancelar</button>
+<div id="perfilScreen" class="screen hidden">
+  <div class="perfil-card">
+    <h2>Tu <span>perfil</span></h2>
+    <p>Completa tus datos para generar confianza</p>
+    <div class="avatar-circle" id="avatarCircle">
+      <i class="fas fa-camera" id="avatarIcon"></i>
+      <img id="avatarPreview" src="" style="display:none">
     </div>
+    <input type="file" id="avatarFileInput" accept="image/*" style="display:none">
+    <input type="text" id="pfNombre" class="field-input" placeholder="Nombre público *" maxlength="40">
+    <textarea id="pfBio" class="field-input" rows="2" placeholder="Bio" maxlength="120"></textarea>
+    <input type="text" id="pfCiudad" class="field-input" placeholder="Ciudad">
+    <input type="number" id="pfEdad" class="field-input" placeholder="Edad">
+    <button id="guardarPerfilBtn" class="btn-primary">Guardar perfil</button>
+    <button id="saltarPerfilBtn" class="btn-secondary">Completar después</button>
+  </div>
 </div>
 
-<!-- Modal de foto ampliada -->
-<div id="fotoModal" class="modal">
-    <div class="modal-content modal-foto" style="max-width: 90vw; background: transparent;">
-        <img id="fotoModalImg" src="" style="max-width: 100%; max-height: 70vh; border-radius: 20px;">
-        <button onclick="document.getElementById('fotoModal').style.display='none'" style="margin-top: 16px; background: white; padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer;">Cerrar</button>
+<div id="appContainer" class="app-container">
+  <header class="market-header">
+    <div class="header-row1">
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fas fa-exchange-alt"></i></div>
+        <span class="logo-text">Intercambia</span>
+      </div>
+      <div class="search-bar">
+        <div class="search-wrapper">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Buscar...">
+        </div>
+      </div>
+      <div id="hdrAvatarWrap" class="hdr-avatar"><i class="fas fa-user"></i></div>
+      <button id="openUploadPanelBtn" class="publish-btn"><i class="fas fa-plus"></i> Publicar</button>
     </div>
+    <div class="categories-row">
+      <div class="cat-pill active" data-cat="all">✦ Todo</div>
+      <div class="cat-pill" data-cat="Electrónica">📱 Electrónica</div>
+      <div class="cat-pill" data-cat="Ropa">👕 Ropa</div>
+      <div class="cat-pill" data-cat="Libros">📚 Libros</div>
+      <div class="cat-pill" data-cat="Mascotas">🐾 Mascotas</div>
+      <div class="cat-pill" data-cat="Hogar">🏠 Hogar</div>
+      <div class="cat-pill" data-cat="Deportes">⚽ Deportes</div>
+      <div class="cat-pill" data-cat="Otros">🎁 Otros</div>
+    </div>
+    <div id="profileDropdown" class="side-panel" style="right: auto; left: auto; width: 200px; display: none; position: absolute; top: 60px; right: 10px;">
+      <div class="dropdown-item" data-action="miPerfil">👤 Mi perfil</div>
+      <div class="dropdown-item" data-action="misobjetos">📦 Mis objetos</div>
+      <div class="dropdown-item" data-action="favoritos">⭐ Favoritos</div>
+      <div class="dropdown-item" data-action="chats">💬 Chats</div>
+      <div class="dropdown-item" data-action="editarPerfil">✏️ Editar perfil</div>
+      <div class="dropdown-item" data-action="logout">🚪 Cerrar sesión</div>
+    </div>
+  </header>
+
+  <div class="feed-section">
+    <div class="section-label">
+      <span id="sectionLabel">Publicaciones recientes</span>
+      <button class="back-btn" id="backToFeedBtn"><i class="fas fa-arrow-left"></i> Volver</button>
+    </div>
+    <div id="feedGrid" class="listings-grid"></div>
+  </div>
+  <div class="load-more"><button id="loadMoreBtn" class="load-more-btn">Cargar más</button></div>
 </div>
 
-<!-- OneSignal SDK -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<div id="perfilPublicoPanel" class="side-panel">
+  <div class="side-panel-header">
+    <div class="back-circle-btn" id="closePerfilPublicoBtn"><i class="fas fa-arrow-left"></i></div>
+    <span>Perfil</span>
+  </div>
+  <div class="perfil-banner">
+    <div class="perfil-avatar-big" id="ppAvatar"><i class="fas fa-user"></i></div>
+    <div class="perfil-display-name" id="ppName">—</div>
+    <div class="perfil-username" id="ppUsername"></div>
+    <div class="perfil-bio" id="ppBio"></div>
+    <div class="perfil-stars" id="ppStars"></div>
+  </div>
+  <div class="perfil-objetos">
+    <h4 style="padding: 0 1rem 0.5rem;">Objetos publicados</h4>
+    <div class="perfil-grid" id="ppGrid"></div>
+  </div>
+  <div class="valorar-section" id="valorarSection">
+    <h4>Dejar valoración</h4>
+    <div class="star-picker" id="starPicker">
+      <span class="star-pick" data-v="1">★</span>
+      <span class="star-pick" data-v="2">★</span>
+      <span class="star-pick" data-v="3">★</span>
+      <span class="star-pick" data-v="4">★</span>
+      <span class="star-pick" data-v="5">★</span>
+    </div>
+    <textarea id="valorarComentario" class="field-input" rows="2" placeholder="Comentario..."></textarea>
+    <button id="enviarValoracionBtn" class="btn-primary">Enviar valoración</button>
+  </div>
+</div>
+
+<div id="chatSidebar" class="chat-sidebar">
+  <div class="chat-header">
+    <div class="back-circle-btn" id="closeChatBtn"><i class="fas fa-arrow-left"></i></div>
+    <div>
+      <div id="chatWithName" style="font-weight: 600;">Chat</div>
+      <div id="chatObjetoName" style="font-size: 0.7rem; color: var(--text-muted);"></div>
+    </div>
+  </div>
+  <div id="chatMessages" class="chat-messages"></div>
+  <div class="chat-input-wrap">
+    <input type="file" id="chatFileInput" style="display:none">
+    <div class="attach-btn" id="attachBtn" style="background: var(--surface2); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">📎</div>
+    <input type="text" id="chatInput" placeholder="Mensaje...">
+    <button id="sendChatBtn" class="send-btn">📤</button>
+  </div>
+</div>
+
+<div id="uploadPanelOverlay" class="upload-overlay">
+  <div class="upload-panel">
+    <h3 style="margin-bottom: 1rem;">✦ Publicar objeto</h3>
+    <input type="text" id="uploadTitle" class="upload-field" placeholder="Título *">
+    <select id="uploadCategory" class="upload-field">
+      <option value="Electrónica">Electrónica</option>
+      <option value="Ropa">Ropa</option>
+      <option value="Libros">Libros</option>
+      <option value="Mascotas">Mascotas</option>
+      <option value="Hogar">Hogar</option>
+      <option value="Deportes">Deportes</option>
+      <option value="Otros">Otros</option>
+    </select>
+    <textarea id="uploadDesc" class="upload-field" rows="2" placeholder="Descripción *"></textarea>
+    <input type="text" id="uploadLocation" class="upload-field" placeholder="Ubicación">
+    <div id="uploadArea" class="upload-area">
+      <div>📸 Haz clic para subir fotos</div>
+      <small>Máximo 5 imágenes</small>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+    <div id="fotosPreview" class="fotos-preview"></div>
+    <div style="display: flex; gap: 10px;">
+      <button id="cancelUploadBtn" class="btn-secondary" style="flex:1;">Cancelar</button>
+      <button id="publishArticleBtn" class="btn-primary" style="flex:2;">Publicar</button>
+    </div>
+  </div>
+</div>
+
+<div id="fotoModalOverlay" class="foto-modal-overlay">
+  <div class="foto-modal-main">
+    <button class="modal-nav-btn prev" id="modalPrevBtn">◀</button>
+    <img id="fotoModalImg" src="" alt="">
+    <button class="modal-nav-btn next" id="modalNextBtn">▶</button>
+  </div>
+  <div class="foto-counter" id="fotoCounter"></div>
+  <button class="foto-modal-close" id="fotoModalClose">Cerrar</button>
+</div>
+
 <script>
-    // ========== CONFIGURACIÓN ==========
-    const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
-    const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
-    
-    let currentUser = null;
-    let authToken = null;
-    let chatActual = { objetoId: null, otroUsuario: null, titulo: null, objetoIntercambiado: false };
-    let pendingPublication = null;
-    let map = null;
-    let marker = null;
-    let mapaVisible = false;
-    let favoritos = new Set();
-    let fotosSeleccionadas = []; // [fotoPrincipal, ...fotosExtra]
-    let valoracionPendiente = { id_objeto: null, calificado: null };
+const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
 
-    // ========== ONESIGNAL ==========
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-            appId: "68491021-9c85-423d-9e50-ddcffa0c2d63",
-            notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' },
-        });
+let authToken = null;
+let currentUser = null;
+let currentUserPerfil = null;
+let favoritosIds = new Set();
+let todosProductos = [];
+let currentView = "todos";
+let currentCategory = "all";
+let searchQuery = "";
+let visibleItems = 8;
+let selectedFiles = [];
+let chatObjetoId = null;
+let chatConUsuario = null;
+let mensajesPolling = null;
+let perfilPublicoActual = null;
+let valoracionSeleccionada = 0;
+let avatarFileSeleccionado = null;
+let currentModalPhotos = [];
+let currentModalIndex = 0;
+
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  document.getElementById("toastMsg").innerText = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2500);
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+}
+
+function getTokenFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if (token) {
+    localStorage.setItem('auth_token', token);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return token;
+  }
+  return localStorage.getItem('auth_token');
+}
+
+async function verifyToken(token) {
+  try {
+    const res = await fetch(`${WORKER_URL}/auth/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (!res.ok) return null;
+    return (await res.json()).user;
+  } catch(e) { return null; }
+}
 
-    async function guardarOneSignalId(email) {
-        try {
-            const OneSignal = window.OneSignal;
-            const userId = await OneSignal.User.getPushSubscriptionId();
-            if (userId) {
-                await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                    body: JSON.stringify({ onesignal_id: userId })
-                });
-            }
-        } catch(e) { console.error('Error guardando OneSignal ID:', e); }
-    }
+function loginWithGoogle() {
+  window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`;
+}
 
-    // ========== FUNCIONES DE UBICACIÓN ==========
-    function initMapa(lat = -33.4489, lng = -70.6693) {
-        if (map) map.remove();
-        map = L.map('mapa').setView([lat, lng], 15);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-        marker.on('dragend', function() {
-            const pos = marker.getLatLng();
-            document.getElementById('latitud').value = pos.lat;
-            document.getElementById('longitud').value = pos.lng;
-            obtenerDireccionDesdeCoordenadas(pos.lat, pos.lng);
-        });
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            document.getElementById('latitud').value = e.latlng.lat;
-            document.getElementById('longitud').value = e.latlng.lng;
-            obtenerDireccionDesdeCoordenadas(e.latlng.lat, e.latlng.lng);
-        });
-    }
+function logout() {
+  localStorage.removeItem('auth_token');
+  localStorage.removeItem('perfil_saltado');
+  location.reload();
+}
 
-    async function obtenerDireccionDesdeCoordenadas(lat, lng) {
-        try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=es`);
-            const data = await response.json();
-            if (data.address) {
-                const partes = [];
-                if (data.address.road) partes.push(data.address.road);
-                if (data.address.house_number) partes.push(data.address.house_number);
-                if (data.address.suburb) partes.push(data.address.suburb);
-                if (data.address.city || data.address.town) partes.push(data.address.city || data.address.town);
-                let direccionLegible = partes.join(', ');
-                if (direccionLegible) document.getElementById('direccionInput').value = direccionLegible;
-                else if (data.display_name) document.getElementById('direccionInput').value = data.display_name.split(',')[0];
-            }
-        } catch(e) { console.error('Error geocoding:', e); }
-    }
+async function apiFetch(path, options = {}) {
+  const headers = options.headers || {};
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
+  if (!res.ok) {
+    if (res.status === 401) logout();
+    throw new Error(await res.text());
+  }
+  return res.json();
+}
 
-    async function obtenerCoordenadasDesdeDireccion(direccion) {
-        if (!direccion || direccion.length < 5) return null;
-        try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}&limit=1&accept-language=es`);
-            const data = await response.json();
-            if (data.length > 0) {
-                const lat = parseFloat(data[0].lat);
-                const lng = parseFloat(data[0].lon);
-                document.getElementById('latitud').value = lat;
-                document.getElementById('longitud').value = lng;
-                if (mapaVisible && map) {
-                    marker.setLatLng([lat, lng]);
-                    map.setView([lat, lng], 15);
-                }
-                return { lat, lng };
-            }
-        } catch(e) { console.error('Error geocoding:', e); }
-        return null;
-    }
+const api = {
+  objetos: () => apiFetch('/objetos'),
+  misObjetos: () => apiFetch('/mis-objetos'),
+  favoritos: () => apiFetch('/favoritos').catch(() => []),
+  agregarFav: (id) => apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }),
+  quitarFav: (id) => apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }),
+  eliminarObjeto: (id) => apiFetch(`/objeto/${id}`, { method: 'DELETE' }),
+  marcarIntercambiado: (id) => apiFetch(`/objeto/${id}`, { method: 'PATCH' }),
+  mensajes: (oId, otroEmail) => apiFetch(`/mensajes?id_objeto=${oId}&otro=${encodeURIComponent(otroEmail)}`),
+  conversaciones: () => apiFetch('/mis-conversaciones'),
+  perfilPublico: (username) => apiFetch(`/usuario/buscar?username=${encodeURIComponent(username)}`),
+  miPerfil: () => apiFetch('/perfil'),
+  completarPerfil: (data) => apiFetch('/perfil/completar', { method: 'POST', body: JSON.stringify(data) }),
+  valorar: (data) => apiFetch('/valorar', { method: 'POST', body: JSON.stringify(data) }),
+  reporte: (id, motivo) => apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }),
+};
 
-    function usarMiUbicacion() {
-        if (!navigator.geolocation) {
-            alert('Tu navegador no soporta geolocalización');
-            return;
-        }
-        document.getElementById('ubicarBtn').textContent = '📍 Obteniendo...';
-        document.getElementById('ubicarBtn').disabled = true;
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                document.getElementById('latitud').value = lat;
-                document.getElementById('longitud').value = lng;
-                if (!mapaVisible) {
-                    document.getElementById('mapaContainer').style.display = 'block';
-                    mapaVisible = true;
-                    setTimeout(() => initMapa(lat, lng), 100);
-                } else if (map) {
-                    marker.setLatLng([lat, lng]);
-                    map.setView([lat, lng], 15);
-                }
-                obtenerDireccionDesdeCoordenadas(lat, lng);
-                document.getElementById('ubicarBtn').textContent = '📍 Usar mi ubicación';
-                document.getElementById('ubicarBtn').disabled = false;
-            },
-            (error) => {
-                alert('No se pudo obtener tu ubicación. Actívala en tu navegador.');
-                document.getElementById('ubicarBtn').textContent = '📍 Usar mi ubicación';
-                document.getElementById('ubicarBtn').disabled = false;
-            }
-        );
-    }
+function openPhotoGallery(photos, startIndex) {
+  if (!photos.length) return;
+  currentModalPhotos = photos;
+  currentModalIndex = startIndex;
+  document.getElementById('fotoModalImg').src = photos[currentModalIndex];
+  document.getElementById('fotoCounter').innerText = `${currentModalIndex + 1} / ${photos.length}`;
+  document.getElementById('fotoModalOverlay').classList.add('open');
+}
 
-    function abrirGoogleMaps(lat, lng, direccion, titulo) {
-        const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        let query = direccion && direccion.length > 5 ? encodeURIComponent(direccion) : `${lat},${lng}`;
-        if (esMovil) window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}&travelmode=driving`, '_blank');
-        else window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
-    }
+function nextPhoto() {
+  if (currentModalPhotos.length === 0) return;
+  currentModalIndex = (currentModalIndex + 1) % currentModalPhotos.length;
+  document.getElementById('fotoModalImg').src = currentModalPhotos[currentModalIndex];
+  document.getElementById('fotoCounter').innerText = `${currentModalIndex + 1} / ${currentModalPhotos.length}`;
+}
 
-    // ========== AUTENTICACIÓN ==========
-    function getTokenFromURL() {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
-        if (token) {
-            localStorage.setItem('auth_token', token);
-            window.history.replaceState({}, document.title, window.location.pathname);
-            return token;
-        }
-        return localStorage.getItem('auth_token');
-    }
+function prevPhoto() {
+  if (currentModalPhotos.length === 0) return;
+  currentModalIndex = (currentModalIndex - 1 + currentModalPhotos.length) % currentModalPhotos.length;
+  document.getElementById('fotoModalImg').src = currentModalPhotos[currentModalIndex];
+  document.getElementById('fotoCounter').innerText = `${currentModalIndex + 1} / ${currentModalPhotos.length}`;
+}
 
-    async function verifyToken(token) {
-        try {
-            const response = await fetch(`${WORKER_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) return null;
-            const data = await response.json();
-            return data.user;
-        } catch (e) { return null; }
-    }
+function renderSkeletons(n = 8) {
+  const grid = document.getElementById('feedGrid');
+  grid.innerHTML = Array.from({ length: n }, () => `
+    <div class="skeleton">
+      <div class="skeleton-img"></div>
+      <div style="padding: 10px;">
+        <div style="height: 10px; background: var(--surface2); border-radius: 5px; margin-bottom: 6px;"></div>
+        <div style="height: 8px; background: var(--surface2); border-radius: 5px; width: 60%;"></div>
+      </div>
+    </div>
+  `).join('');
+}
 
-    function loginWithGoogle() { window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.href)}`; }
-    function logout() { localStorage.removeItem('auth_token'); currentUser = null; authToken = null; updateUIForUser(); }
+function renderProductosGrid(productos, esMioView = false) {
+  const grid = document.getElementById('feedGrid');
+  if (!productos?.length) {
+    grid.innerHTML = `<div class="empty-state">📦 No hay objetos para mostrar</div>`;
+    return;
+  }
 
-    // ========== API ==========
-    async function apiFetch(path, options = {}) {
-        const headers = options.headers || {};
-        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-        const response = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
-        if (!response.ok) {
-            if (response.status === 401) { logout(); throw new Error('Sesión expirada'); }
-            throw new Error(await response.text());
-        }
-        return response.json();
-    }
+  grid.innerHTML = productos.map(p => {
+    const todasFotos = [p.url, ...(p.fotos_extra || []).map(f => f.url)];
+    const esMio = esMioView || (currentUserPerfil?.username && p.username === currentUserPerfil?.username);
+    const esFav = favoritosIds.has(p.id);
+    const displayName = p.display_name || p.username || 'Usuario';
+    const username = p.username || '';
 
-    async function publicarObjeto(titulo, descripcion, categoria, fotos) {
-        const form = new FormData();
-        form.append('titulo', titulo);
-        form.append('descripcion', `${categoria} | ${descripcion}`);
-        form.append('latitud', document.getElementById('latitud').value || '');
-        form.append('longitud', document.getElementById('longitud').value || '');
-        form.append('direccion', document.getElementById('direccionInput').value || '');
-        
-        // Agregar fotos (máximo 5)
-        for (let i = 0; i < Math.min(fotos.length, 5); i++) {
-            form.append(`foto_${i}`, fotos[i]);
-        }
-        
-        return await apiFetch('/objeto', { method: 'POST', body: form });
-    }
-
-    async function obtenerObjetos(propios = false) { return propios ? await apiFetch('/mis-objetos') : await apiFetch('/objetos'); }
-    async function eliminarObjeto(id) { return await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); }
-    async function marcarIntercambiado(id) { return await apiFetch(`/objeto/${id}`, { method: 'PATCH' }); }
-    async function reportarObjeto(idObjeto, motivo) { return await apiFetch('/reporte', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: idObjeto, motivo }) }); }
-    async function enviarMensaje(objetoId, receptor, mensaje) { return await apiFetch('/mensaje', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) }); }
-    async function obtenerMensajes(objetoId, otroUsuario) { return await apiFetch(`/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`); }
-    async function obtenerMisConversaciones() { return await apiFetch('/mis-conversaciones'); }
-    async function obtenerFavoritos() { return await apiFetch('/favoritos'); }
-    async function agregarFavorito(id_objeto) { return await apiFetch('/favoritos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto }) }); }
-    async function quitarFavorito(id_objeto) { return await apiFetch('/favoritos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto }) }); }
-    async function obtenerPerfil() { return await apiFetch('/perfil'); }
-    async function obtenerPerfilUsuario(email) { return await apiFetch(`/usuario?email=${encodeURIComponent(email)}`); }
-    async function valorarUsuario(id_objeto, calificado, puntuacion, comentario) { return await apiFetch('/valorar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id_objeto, calificado, puntuacion, comentario }) }); }
-
-    // ========== FUNCIONES DE MÚLTIPLES FOTOS ==========
-    function actualizarPrevisualizaciones() {
-        // Foto principal
-        if (fotosSeleccionadas.length > 0) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('principalPreviewImg').src = e.target.result;
-                document.getElementById('fotoPrincipalPreview').style.display = 'block';
-            };
-            reader.readAsDataURL(fotosSeleccionadas[0]);
-        } else {
-            document.getElementById('fotoPrincipalPreview').style.display = 'none';
-        }
-        
-        // Fotos extra
-        const container = document.getElementById('fotosExtraPreview');
-        container.innerHTML = '';
-        for (let i = 1; i < fotosSeleccionadas.length; i++) {
-            const file = fotosSeleccionadas[i];
-            const reader = new FileReader();
-            reader.onload = (function(idx, f) {
-                return function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'foto-preview';
-                    div.innerHTML = `
-                        <img src="${e.target.result}" style="width:80px; height:80px; object-fit:cover; border-radius:12px;">
-                        <button onclick="eliminarFotoExtra(${idx})">✕</button>
-                    `;
-                    container.appendChild(div);
-                };
-            })(i, file);
-            reader.readAsDataURL(file);
-        }
-    }
-
-    window.eliminarFotoExtra = function(index) {
-        fotosSeleccionadas.splice(index, 1);
-        actualizarPrevisualizaciones();
-    };
-
-    // Manejo de selección de fotos
-    document.getElementById('fotoPrincipal').addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            if (fotosSeleccionadas.length > 0) fotosSeleccionadas[0] = e.target.files[0];
-            else fotosSeleccionadas.push(e.target.files[0]);
-            actualizarPrevisualizaciones();
-        }
-    });
-    
-    document.getElementById('fotosExtra').addEventListener('change', (e) => {
-        const archivos = Array.from(e.target.files);
-        for (const file of archivos) {
-            if (fotosSeleccionadas.length < 5) {
-                fotosSeleccionadas.push(file);
-            } else {
-                alert('Máximo 5 fotos por objeto');
-                break;
-            }
-        }
-        actualizarPrevisualizaciones();
-        e.target.value = '';
-    });
-    
-    document.getElementById('eliminarPrincipal').onclick = () => {
-        if (fotosSeleccionadas.length > 0) fotosSeleccionadas.splice(0, 1);
-        actualizarPrevisualizaciones();
-    };
-
-    // ========== UI ==========
-    function updateUIForUser() {
-        const loginSection = document.getElementById('loginSection');
-        const appSections = document.getElementById('appSections');
-        const userInfoDiv = document.getElementById('userInfo');
-        const googleBtn = document.getElementById('googleLoginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        if (currentUser) {
-            loginSection.style.display = 'none';
-            googleBtn.style.display = 'none';
-            logoutBtn.style.display = 'inline-block';
-            userInfoDiv.style.display = 'flex';
-            userInfoDiv.innerHTML = `<img src="${currentUser.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name)}" class="user-avatar" onclick="verMiPerfil()"><span onclick="verMiPerfil()" style="cursor:pointer;">👤 ${currentUser.name || currentUser.email}</span>`;
-            appSections.style.display = 'block';
-            cargarFeed(); cargarMisObjetos(); cargarFavoritos();
-            guardarOneSignalId(currentUser.email);
-        } else {
-            loginSection.style.display = 'block';
-            googleBtn.style.display = 'flex';
-            logoutBtn.style.display = 'none';
-            userInfoDiv.style.display = 'none';
-            appSections.style.display = 'none';
-        }
-    }
-
-    function verMiPerfil() {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector('[data-tab="perfil"]').classList.add('active');
-        document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
-        document.getElementById('tab-perfil').style.display = 'block';
-        cargarMiPerfil();
-    }
-
-    async function cargarMiPerfil() {
-        const perfil = await obtenerPerfil();
-        const html = `
-            <div class="perfil-card">
-                <img src="${currentUser.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name)}" class="perfil-avatar">
-                <h2>${escapeHtml(currentUser.name || currentUser.email)}</h2>
-                <p>${currentUser.email}</p>
-                <div class="rating" style="justify-content:center; margin: 16px 0;">
-                    ${[1,2,3,4,5].map(i => `<span class="star ${perfil.promedio_valoracion >= i ? 'selected' : ''}" style="font-size:24px;">★</span>`).join('')}
+    return `
+      <div class="product-card" data-id="${p.id}" data-fotos='${JSON.stringify(todasFotos)}'>
+        <div class="card-img">
+          <img src="${esc(p.url)}" loading="lazy" onerror="this.src='https://placehold.co/300x300/1c1c1c/3a3a3a?text=?'">
+          <div class="fav-btn ${esFav ? 'active' : ''}">${esFav ? '♥' : '♡'}</div>
+          ${esMio ? `<div class="delete-btn" data-deleteid="${p.id}">🗑️</div>` : ''}
+          ${todasFotos.length > 1 ? `
+            <div class="miniaturas">
+              ${todasFotos.map((url, i) => `
+                <img class="miniatura ${i === 0 ? 'activa' : ''}" data-idx="${i}" src="${esc(url)}" onerror="this.style.display='none'">
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+        <div class="card-info">
+          <div class="card-user" data-username="${esc(username)}">
+            <div class="card-user-avatar">${p.avatar_url ? `<img src="${esc(p.avatar_url)}">` : '<i class="fas fa-user"></i>'}</div>
+            <span class="card-user-name">${esc(displayName)}</span>
+          </div>
+          <div class="card-title">${esc(p.titulo)}</div>
+          ${esMio ? `
+            <div class="owner-actions">
+              <button class="btn-intercambiado" data-intercambiadoid="${p.id}">✓ Marcar intercambiado</button>
+            </div>
+          ` : `
+            <div class="card-actions">
+              <button class="btn-chat" data-chatid="${p.id}" data-chatusername="${esc(username)}" data-chattitulo="${esc(p.titulo)}">💬 Intercambiar</button>
+              <div class="btn-more" data-moreid="${p.id}">
+                <i class="fas fa-ellipsis-h"></i>
+                <div class="more-menu" id="more-${p.id}">
+                  ${username ? `<div class="more-menu-item" data-viewprofile="${esc(username)}"><i class="fas fa-user"></i> Ver perfil</div>` : ''}
+                  <div class="more-menu-item danger" data-reportid="${p.id}"><i class="fas fa-flag"></i> Reportar</div>
                 </div>
-                <p>⭐ ${perfil.promedio_valoracion.toFixed(1)} (${perfil.total_valoraciones} valoraciones)</p>
+              </div>
             </div>
-            <div class="card" style="background:white; border-radius:28px; padding:24px; margin-bottom:24px;">
-                <h3>📦 Mis objetos publicados (${perfil.objetos.length})</h3>
-                <div class="grid">${perfil.objetos.map(obj => `
-                    <div class="objeto-card">
-                        <img src="${obj.url}">
-                        <div class="objeto-info"><strong>${escapeHtml(obj.titulo)}</strong><p>${escapeHtml(obj.descripcion?.substring(0,80))}</p></div>
-                    </div>
-                `).join('') || '<p>No has publicado nada aún.</p>'}</div>
-            </div>
-            <div class="card" style="background:white; border-radius:28px; padding:24px;">
-                <h3>⭐ Mis valoraciones recibidas</h3>
-                ${perfil.valoraciones.map(v => `
-                    <div style="padding:12px; border-bottom:1px solid #e2e8f0;">
-                        <div class="rating">${[1,2,3,4,5].map(i => `<span class="star ${v.puntuacion >= i ? 'selected' : ''}" style="font-size:16px;">★</span>`).join('')}</div>
-                        <p>${escapeHtml(v.comentario || 'Sin comentario')}</p>
-                        <small>por ${escapeHtml(v.calificador)}</small>
-                    </div>
-                `).join('') || '<p>Aún no tienes valoraciones.</p>'}
-            </div>
-        `;
-        document.getElementById('perfilContent').innerHTML = html;
+          `}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function toggleFavorito(id, btn) {
+  try {
+    if (favoritosIds.has(id)) {
+      await api.quitarFav(id);
+      favoritosIds.delete(id);
+      btn.classList.remove('active');
+      btn.innerText = '♡';
+    } else {
+      await api.agregarFav(id);
+      favoritosIds.add(id);
+      btn.classList.add('active');
+      btn.innerText = '♥';
     }
+    if (currentView === 'favoritos') renderFavoritos();
+  } catch(e) { showToast('Error: ' + e.message); }
+}
 
-    window.verPerfilUsuario = async function(email) {
-        const perfil = await obtenerPerfilUsuario(email);
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.style.display = 'flex';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(email)}" style="width:80px; border-radius:50%; margin:0 auto;">
-                <h3>${escapeHtml(email)}</h3>
-                <div class="rating" style="justify-content:center;">${[1,2,3,4,5].map(i => `<span class="star ${perfil.promedio_valoracion >= i ? 'selected' : ''}" style="font-size:24px;">★</span>`).join('')}</div>
-                <p>⭐ ${perfil.promedio_valoracion.toFixed(1)} (${perfil.total_valoraciones} valoraciones)</p>
-                <button onclick="this.parentElement.parentElement.remove()" class="btn-primary" style="margin-top:16px;">Cerrar</button>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-    };
+function renderTodos() {
+  document.getElementById('sectionLabel').innerText = 'Publicaciones recientes';
+  document.getElementById('backToFeedBtn').classList.remove('show');
+  let filtered = [...todosProductos];
+  if (currentCategory !== 'all') {
+    filtered = filtered.filter(p => (p.descripcion?.split('|')[0]?.trim()) === currentCategory);
+  }
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(p =>
+      p.titulo?.toLowerCase().includes(q) ||
+      p.display_name?.toLowerCase().includes(q)
+    );
+  }
+  filtered.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  renderProductosGrid(filtered.slice(0, visibleItems), false);
+  document.getElementById('loadMoreBtn').style.display = filtered.length > visibleItems ? 'block' : 'none';
+}
 
-    function mostrarFotoAmpliada(url) {
-        document.getElementById('fotoModalImg').src = url;
-        document.getElementById('fotoModal').style.display = 'flex';
+async function renderMisObjetos() {
+  renderSkeletons(4);
+  document.getElementById('sectionLabel').innerText = 'Mis publicaciones';
+  document.getElementById('backToFeedBtn').classList.add('show');
+  const datos = await api.misObjetos();
+  renderProductosGrid(datos, true);
+  document.getElementById('loadMoreBtn').style.display = 'none';
+}
+
+async function renderFavoritos() {
+  renderSkeletons(4);
+  document.getElementById('sectionLabel').innerText = 'Mis favoritos';
+  document.getElementById('backToFeedBtn').classList.add('show');
+  const favs = await api.favoritos();
+  renderProductosGrid(favs, false);
+  document.getElementById('loadMoreBtn').style.display = 'none';
+}
+
+async function renderConversaciones() {
+  renderSkeletons(4);
+  document.getElementById('sectionLabel').innerText = 'Conversaciones';
+  document.getElementById('backToFeedBtn').classList.add('show');
+  const convs = await api.conversaciones();
+  const grid = document.getElementById('feedGrid');
+  if (!convs.length) {
+    grid.innerHTML = `<div class="empty-state">💬 No hay conversaciones</div>`;
+    return;
+  }
+  grid.innerHTML = convs.map(c => `
+    <div class="product-card" data-conv='${JSON.stringify(c)}' style="padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+      <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--surface2); overflow: hidden;">
+        ${c.otroAvatar ? `<img src="${esc(c.otroAvatar)}" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fas fa-user" style="display:flex;align-items:center;justify-content:center;height:100%;"></i>'}
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:600;">${esc(c.titulo)}</div>
+        <div style="font-size:0.7rem; color: var(--text-muted);">con ${esc(c.otroUsuario)}</div>
+        <div style="font-size:0.65rem; color: var(--text-dim);">${c.ultimoMensaje?.substring(0, 50) || ''}</div>
+      </div>
+      <div style="font-size:0.6rem; color: var(--text-dim);">${new Date(c.ultimaFecha).toLocaleDateString()}</div>
+    </div>
+  `).join('');
+  document.getElementById('loadMoreBtn').style.display = 'none';
+}
+
+function switchToView(view) {
+  currentView = view;
+  visibleItems = 8;
+  if (view === 'todos') renderTodos();
+  else if (view === 'misobjetos') renderMisObjetos();
+  else if (view === 'favoritos') renderFavoritos();
+  else if (view === 'chats') renderConversaciones();
+}
+
+async function verPerfilPublico(username) {
+  if (!username) return;
+  perfilPublicoActual = username;
+  valoracionSeleccionada = 0;
+  document.getElementById('perfilPublicoPanel').classList.add('open');
+  try {
+    const p = await api.perfilPublico(username);
+    document.getElementById('ppName').innerText = p.display_name || username;
+    document.getElementById('ppUsername').innerText = `@${p.username}`;
+    document.getElementById('ppBio').innerText = p.bio || '';
+    const avatar = document.getElementById('ppAvatar');
+    avatar.innerHTML = p.avatar_url ? `<img src="${esc(p.avatar_url)}">` : '<i class="fas fa-user"></i>';
+    document.getElementById('ppStars').innerHTML = p.total_valoraciones > 0 ? `⭐ ${p.promedio_valoracion?.toFixed(1)} (${p.total_valoraciones})` : '⭐ Sin valoraciones';
+    const grid = document.getElementById('ppGrid');
+    if (!p.objetos?.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;">Sin publicaciones</div>';
+    } else {
+      grid.innerHTML = p.objetos.slice(0, 6).map(o => `
+        <div class="perfil-obj-card" data-id="${o.id}">
+          <div class="perfil-obj-img"><img src="${esc(o.url)}" onerror="this.src='https://placehold.co/150x150/222/444?text=!'"></div>
+          <div class="perfil-obj-title">${esc(o.titulo)}</div>
+        </div>
+      `).join('');
     }
+    document.getElementById('valorarSection').style.display = (currentUserPerfil?.username === username) ? 'none' : 'block';
+  } catch(e) {
+    showToast('Error al cargar perfil');
+  }
+}
 
-    function crearMiniaturas(objeto, card) {
-        const todasLasFotos = [];
-        todasLasFotos.push(objeto.url);
-        if (objeto.fotos_extra) {
-            for (const foto of objeto.fotos_extra) {
-                todasLasFotos.push(foto.url);
-            }
-        }
-        
-        if (todasLasFotos.length <= 1) return;
-        
-        const miniaturasDiv = document.createElement('div');
-        miniaturasDiv.className = 'miniaturas';
-        
-        for (let i = 0; i < todasLasFotos.length; i++) {
-            const miniatura = document.createElement('img');
-            miniatura.src = todasLasFotos[i];
-            miniatura.className = 'miniatura';
-            if (i === 0) miniatura.classList.add('activa');
-            miniatura.onclick = (function(idx) {
-                return function() {
-                    const imgPrincipal = card.querySelector('.imagen-principal');
-                    imgPrincipal.src = todasLasFotos[idx];
-                    card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
-                    this.classList.add('activa');
-                };
-            })(i);
-            miniaturasDiv.appendChild(miniatura);
-        }
-        
-        const imgPrincipal = card.querySelector('.imagen-principal');
-        if (imgPrincipal) {
-            imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
-        }
-        
-        card.insertBefore(miniaturasDiv, card.querySelector('.objeto-info'));
+async function cargarMensajes() {
+  if (!chatObjetoId || !chatConUsuario) return;
+  const msgs = await api.mensajes(chatObjetoId, chatConUsuario);
+  const container = document.getElementById('chatMessages');
+  if (!msgs.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-dim);">Escribe un mensaje para iniciar la conversación</div>';
+    return;
+  }
+  container.innerHTML = msgs.map(m => `
+    <div class="message ${m.direccion === 'yo' ? 'sent' : 'received'}">
+      ${m.mensaje ? esc(m.mensaje) : ''}
+      ${m.archivo_url ? `<div><a href="${esc(m.archivo_url)}" target="_blank" style="color:inherit;">📎 ${esc(m.archivo_filename || 'Archivo')}</a></div>` : ''}
+      <div style="font-size:0.55rem; opacity:0.6;">${new Date(m.fecha).toLocaleTimeString()}</div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+async function enviarMensajeChat() {
+  const input = document.getElementById('chatInput');
+  const texto = input.value.trim();
+  const fileInput = document.getElementById('chatFileInput');
+  const archivo = fileInput.files[0];
+  if (!texto && !archivo) return;
+  input.value = '';
+  try {
+    if (archivo) {
+      const form = new FormData();
+      form.append('id_objeto', chatObjetoId);
+      form.append('receptor', chatConUsuario);
+      if (texto) form.append('mensaje', texto);
+      form.append('archivo', archivo);
+      await apiFetch('/mensaje', { method: 'POST', body: form });
+      fileInput.value = '';
+    } else {
+      await apiFetch('/mensaje', {
+        method: 'POST',
+        body: JSON.stringify({ id_objeto: chatObjetoId, receptor: chatConUsuario, mensaje: texto })
+      });
     }
+    await cargarMensajes();
+  } catch(e) { showToast('Error: ' + e.message); input.value = texto; }
+}
 
-    function filtrarObjetos() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const activeCat = document.querySelector('.cat-btn.active').dataset.cat;
-        const cards = document.querySelectorAll('.objeto-card');
-        cards.forEach(card => {
-            const titulo = card.querySelector('.objeto-info strong')?.innerText.toLowerCase() || '';
-            const usuario = card.querySelector('.badge')?.innerText.toLowerCase() || '';
-            const categoria = card.dataset.cat || '';
-            const matchesSearch = titulo.includes(searchTerm) || usuario.includes(searchTerm);
-            const matchesCat = activeCat === 'all' || categoria === activeCat;
-            card.style.display = matchesSearch && matchesCat ? 'block' : 'none';
-        });
+async function abrirChat(objetoId, username, titulo) {
+  if (!username) { showToast('Usuario no disponible'); return; }
+  chatObjetoId = objetoId;
+  chatConUsuario = username;
+  document.getElementById('chatWithName').innerText = username;
+  document.getElementById('chatObjetoName').innerText = titulo;
+  document.getElementById('chatSidebar').classList.add('open');
+  await cargarMensajes();
+  if (mensajesPolling) clearInterval(mensajesPolling);
+  mensajesPolling = setInterval(cargarMensajes, 4000);
+}
+
+function cerrarChat() {
+  if (mensajesPolling) clearInterval(mensajesPolling);
+  chatObjetoId = null;
+  chatConUsuario = null;
+  document.getElementById('chatSidebar').classList.remove('open');
+}
+
+document.getElementById('feedGrid').addEventListener('click', (e) => {
+  const card = e.target.closest('.product-card');
+  if (!card) return;
+
+  if (e.target.classList.contains('card-img') || e.target.tagName === 'IMG' && e.target.closest('.card-img')) {
+    const fotos = JSON.parse(card.dataset.fotos || '[]');
+    if (fotos.length) openPhotoGallery(fotos, 0);
+    return;
+  }
+
+  if (e.target.classList.contains('miniatura')) {
+    const idx = parseInt(e.target.dataset.idx);
+    const fotos = JSON.parse(card.dataset.fotos || '[]');
+    if (fotos[idx]) {
+      card.querySelector('.card-img img').src = fotos[idx];
+      card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
+      e.target.classList.add('activa');
+      openPhotoGallery(fotos, idx);
     }
+    return;
+  }
 
-    async function cargarFavoritos() {
-        try {
-            const favoritosList = await obtenerFavoritos();
-            const grid = document.getElementById('favoritosGrid');
-            if (!favoritosList.length) { grid.innerHTML = '<div style="text-align:center; padding:40px;">⭐ No tienes favoritos aún.</div>'; return; }
-            grid.innerHTML = favoritosList.map(obj => `
-                <div class="objeto-card" data-cat="${obj.descripcion?.split('|')[0]?.trim() || 'General'}">
-                    <img class="imagen-principal" src="${obj.url}" onclick="mostrarFotoAmpliada('${obj.url}')">
-                    <div class="objeto-info">
-                        <strong>${escapeHtml(obj.titulo)}</strong>
-                        <p style="margin-top:8px;">${escapeHtml((obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '').substring(0,80))}</p>
-                        <span class="badge" onclick="verPerfilUsuario('${escapeHtml(obj.usuario)}')">👤 ${escapeHtml(obj.usuario)}</span>
-                        <button class="intercambiar-btn" onclick="abrirChatConObjeto(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')">💬 Intercambiar</button>
-                    </div>
-                </div>
-            `).join('');
-            for (const obj of favoritosList) {
-                const card = document.querySelector(`.objeto-card img[src="${obj.url}"]`).parentElement;
-                if (obj.fotos_extra && obj.fotos_extra.length) {
-                    const todasFotos = [obj.url, ...obj.fotos_extra.map(f => f.url)];
-                    crearMiniaturasConUrls(card, todasFotos);
-                }
-            }
-        } catch(e) { console.error(e); }
-    }
+  const favBtn = e.target.closest('.fav-btn');
+  if (favBtn) {
+    const id = parseInt(card.dataset.id);
+    toggleFavorito(id, favBtn);
+    return;
+  }
 
-    function crearMiniaturasConUrls(card, urls) {
-        if (urls.length <= 1) return;
-        const miniaturasDiv = document.createElement('div');
-        miniaturasDiv.className = 'miniaturas';
-        for (let i = 0; i < urls.length; i++) {
-            const miniatura = document.createElement('img');
-            miniatura.src = urls[i];
-            miniatura.className = 'miniatura';
-            if (i === 0) miniatura.classList.add('activa');
-            miniatura.onclick = (function(idx) {
-                return function() {
-                    const imgPrincipal = card.querySelector('.imagen-principal');
-                    imgPrincipal.src = urls[idx];
-                    card.querySelectorAll('.miniatura').forEach(m => m.classList.remove('activa'));
-                    this.classList.add('activa');
-                };
-            })(i);
-            miniaturasDiv.appendChild(miniatura);
-        }
-        card.insertBefore(miniaturasDiv, card.querySelector('.objeto-info'));
-    }
-
-    async function cargarFeed() {
-        try {
-            const objetos = await obtenerObjetos(false);
-            const feedDiv = document.getElementById('feedGrid');
-            if (!objetos.length) { feedDiv.innerHTML = '<div style="text-align:center; padding:40px;">📭 No hay objetos publicados aún. ¡Sé el primero!</div>'; return; }
-            feedDiv.innerHTML = objetos.map(obj => {
-                const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
-                const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
-                const esFavorito = favoritos.has(obj.id);
-                return `
-                    <div class="objeto-card" data-cat="${categoria}">
-                        <button class="favorito-btn ${esFavorito ? 'activo' : ''}" data-id="${obj.id}" onclick="toggleFavorito(${obj.id}, this)">${esFavorito ? '★' : '☆'}</button>
-                        <img class="imagen-principal" src="${obj.url}" onclick="mostrarFotoAmpliada('${obj.url}')">
-                        <div class="objeto-info">
-                            <span class="categoria-badge">${escapeHtml(categoria)}</span>
-                            <strong>${escapeHtml(obj.titulo)}</strong>
-                            <p style="margin-top:8px; color:#475569;">${escapeHtml(descripcion.substring(0, 80))}</p>
-                            <span class="badge" onclick="verPerfilUsuario('${escapeHtml(obj.usuario)}')">👤 ${escapeHtml(obj.usuario)}</span>
-                            ${obj.direccion ? `<span class="badge-ubicacion" onclick="abrirGoogleMaps(${obj.latitud}, ${obj.longitud}, '${escapeHtml(obj.direccion)}', '${escapeHtml(obj.titulo)}')">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
-                            ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión</span>' : ''}
-                            ${obj.usuario !== currentUser?.email ? `
-                                <button class="intercambiar-btn" onclick="abrirChatConObjeto(${obj.id}, '${escapeHtml(obj.usuario)}', '${escapeHtml(obj.titulo)}')">💬 Intercambiar</button>
-                                <button class="reportar-btn" onclick="reportarObjetoPrompt(${obj.id})">⚠️ Reportar</button>
-                                ${obj.latitud && obj.longitud ? `<button class="btn-como-llegar" onclick="abrirGoogleMaps(${obj.latitud}, ${obj.longitud}, '${escapeHtml(obj.direccion || '')}', '${escapeHtml(obj.titulo)}')">🗺️ Cómo llegar</button>` : ''}
-                            ` : '<span style="font-size:12px; color:#64748b;">(tu objeto)</span>'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            for (const obj of objetos) {
-                const card = document.querySelector(`.objeto-card .imagen-principal[src="${obj.url}"]`).parentElement;
-                if (obj.fotos_extra && obj.fotos_extra.length) {
-                    const todasFotos = [obj.url, ...obj.fotos_extra.map(f => f.url)];
-                    crearMiniaturasConUrls(card, todasFotos);
-                } else {
-                    const imgPrincipal = card.querySelector('.imagen-principal');
-                    if (imgPrincipal) imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
-                }
-            }
-            filtrarObjetos();
-        } catch(e) { document.getElementById('feedGrid').innerHTML = '<div style="text-align:center; padding:40px;">❌ Error al cargar objetos</div>'; }
-    }
-
-    async function cargarMisObjetos() {
-        try {
-            const objetos = await obtenerObjetos(true);
-            const div = document.getElementById('misObjetosGrid');
-            if (!objetos.length) { div.innerHTML = '<div style="text-align:center; padding:40px;">📭 No has publicado nada aún.</div>'; return; }
-            div.innerHTML = objetos.map(obj => {
-                const categoria = obj.descripcion?.split('|')[0]?.trim() || 'General';
-                const descripcion = obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '';
-                return `
-                    <div class="objeto-card">
-                        <img class="imagen-principal" src="${obj.url}" onclick="mostrarFotoAmpliada('${obj.url}')">
-                        <div class="objeto-info">
-                            <strong>${escapeHtml(obj.titulo)}</strong>
-                            <p style="margin:8px 0;">${escapeHtml(descripcion.substring(0, 80))}</p>
-                            ${obj.direccion ? `<span class="badge-ubicacion">📍 ${escapeHtml(obj.direccion)}</span>` : ''}
-                            ${obj.intercambiado === 1 ? '<span class="badge-intercambiado">✅ Ya intercambiado</span>' : '<span class="badge-expiracion">⏰ Expira: ' + new Date(obj.expira).toLocaleDateString() + '</span>'}
-                            ${obj.sospechoso === 1 ? '<span class="badge-sospechoso">⚠️ En revisión por IA</span>' : ''}
-                            ${obj.intercambiado !== 1 ? `<button class="intercambiado-btn" onclick="marcarIntercambiadoPrompt(${obj.id})">✅ Marcar como intercambiado</button>` : ''}
-                            <button class="eliminar-btn" onclick="eliminarObjetoPrompt(${obj.id})">🗑️ Eliminar publicación</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            for (const obj of objetos) {
-                const card = document.querySelector(`.objeto-card .imagen-principal[src="${obj.url}"]`).parentElement;
-                if (obj.fotos_extra && obj.fotos_extra.length) {
-                    const todasFotos = [obj.url, ...obj.fotos_extra.map(f => f.url)];
-                    crearMiniaturasConUrls(card, todasFotos);
-                } else {
-                    const imgPrincipal = card.querySelector('.imagen-principal');
-                    if (imgPrincipal) imgPrincipal.onclick = () => mostrarFotoAmpliada(imgPrincipal.src);
-                }
-            }
-        } catch(e) { console.error(e); }
-    }
-
-    async function toggleFavorito(id, btn) {
-        const esFavorito = favoritos.has(id);
-        if (esFavorito) { await quitarFavorito(id); favoritos.delete(id); btn.classList.remove('activo'); btn.innerHTML = '☆'; }
-        else { await agregarFavorito(id); favoritos.add(id); btn.classList.add('activo'); btn.innerHTML = '★'; }
-    }
-
-    async function marcarIntercambiadoPrompt(id) { if (confirm('¿Marcar este objeto como intercambiado? Dejará de aparecer en el feed.')) { await marcarIntercambiado(id); cargarMisObjetos(); cargarFeed(); alert('✅ Marcado como intercambiado'); } }
-    async function eliminarObjetoPrompt(id) { if (confirm('¿Eliminar esta publicación?')) { await eliminarObjeto(id); cargarMisObjetos(); cargarFeed(); alert('✅ Eliminado'); } }
-    async function reportarObjetoPrompt(id) { const motivo = prompt('¿Por qué reportas este objeto?'); if (motivo) { await reportarObjeto(id, motivo); alert('✅ Reporte enviado'); } }
-
-    window.abrirChatConObjeto = async function(objetoId, otroUsuario, titulo) {
-        chatActual = { objetoId, otroUsuario, titulo, objetoIntercambiado: false };
-        document.getElementById('chatTitulo').innerHTML = `💬 ${escapeHtml(titulo)}<br><small>Conversando con <span style="cursor:pointer; color:#3b82f6;" onclick="verPerfilUsuario('${escapeHtml(otroUsuario)}')">${escapeHtml(otroUsuario)}</span></small>`;
-        document.getElementById('chatDetalle').style.display = 'block';
-        document.getElementById('valorarSection').style.display = 'none';
-        await cargarMensajes();
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector('[data-tab="chats"]').classList.add('active');
-        document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
-        document.getElementById('tab-chats').style.display = 'block';
-        cargarListaConversaciones();
-    };
-
-    async function cargarMensajes() {
-        if (!chatActual.objetoId) return;
-        const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
-        const cont = document.getElementById('chatMensajes');
-        if (!msgs.length) { cont.innerHTML = '<p style="text-align:center;">✨ No hay mensajes aún. Envía uno para empezar.</p>'; return; }
-        cont.innerHTML = msgs.map(m => `<div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}"><strong>${m.emisor === currentUser?.email ? 'Tú' : escapeHtml(m.emisor)}</strong>: ${escapeHtml(m.mensaje)}<small>${new Date(m.fecha).toLocaleString()}</small></div>`).join('');
-        cont.scrollTop = cont.scrollHeight;
-        
-        const objeto = (await obtenerObjetos()).find(o => o.id === chatActual.objetoId);
-        if (objeto && objeto.intercambiado === 1 && objeto.usuario !== currentUser?.email) {
-            document.getElementById('valorarSection').style.display = 'block';
-            valoracionPendiente = { id_objeto: chatActual.objetoId, calificado: chatActual.otroUsuario };
-            setupRatingStars('ratingStars');
-        } else {
-            document.getElementById('valorarSection').style.display = 'none';
-        }
-    }
-
-    function setupRatingStars(containerId) {
-        const stars = document.querySelectorAll(`#${containerId} .star`);
-        let selectedValue = 0;
-        stars.forEach(star => {
-            star.onclick = () => {
-                selectedValue = parseInt(star.dataset.value);
-                stars.forEach((s, i) => {
-                    if (i < selectedValue) s.innerHTML = '★', s.classList.add('selected');
-                    else s.innerHTML = '☆', s.classList.remove('selected');
-                });
-            };
-        });
-        return () => selectedValue;
-    }
-
-    document.getElementById('enviarValoracionBtn').onclick = async () => {
-        const stars = document.querySelectorAll('#ratingStars .star');
-        let puntuacion = 0;
-        stars.forEach((s, i) => { if (s.innerHTML === '★') puntuacion = i + 1; });
-        const comentario = document.getElementById('comentarioValoracion').value;
-        if (puntuacion === 0) { alert('Selecciona una puntuación'); return; }
-        await valorarUsuario(valoracionPendiente.id_objeto, valoracionPendiente.calificado, puntuacion, comentario);
-        alert('✅ Valoración enviada');
-        document.getElementById('valorarSection').style.display = 'none';
-        document.getElementById('comentarioValoracion').value = '';
-        stars.forEach(s => { s.innerHTML = '☆'; s.classList.remove('selected'); });
-    };
-
-    async function enviarMensajeChat() {
-        const input = document.getElementById('nuevoMensaje');
-        const texto = input.value.trim();
-        if (!texto || !chatActual.objetoId) return;
-        await enviarMensaje(chatActual.objetoId, chatActual.otroUsuario, texto);
-        input.value = '';
-        await cargarMensajes();
-    }
-
-    async function cargarListaConversaciones() {
-        try {
-            const convs = await obtenerMisConversaciones();
-            const listaDiv = document.getElementById('listaChats');
-            if (!convs.length) { listaDiv.innerHTML = '<p style="text-align:center; padding:20px;">💬 No hay conversaciones activas aún.</p>'; return; }
-            listaDiv.innerHTML = convs.map(c => `<div class="conv-item" onclick="abrirChatConObjeto(${c.id_objeto}, '${escapeHtml(c.otroUsuario)}', '${escapeHtml(c.titulo)}')"><strong>📦 ${escapeHtml(c.titulo)}</strong><br>💬 con ${escapeHtml(c.otroUsuario)}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small></div>`).join('');
-        } catch(e) { console.error(e); }
-    }
-
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-    function showStatus(msg, type, elementId = 'pubStatus') { const div = document.getElementById(elementId); if (!div) return; div.className = `status-${type}`; div.innerText = msg; setTimeout(() => { div.className = ''; div.innerText = ''; }, 3000); }
-
-    // ========== VISTA PREVIA Y PUBLICACIÓN ==========
-    document.getElementById('previewBtn').onclick = () => {
-        const titulo = document.getElementById('titulo').value;
-        const categoria = document.getElementById('categoria').value;
-        const descripcion = document.getElementById('descripcion').value;
-        const direccion = document.getElementById('direccionInput').value;
-        if (fotosSeleccionadas.length === 0) { showStatus('❌ Selecciona al menos una foto', 'error', 'pubStatus'); return; }
-        if (!titulo || !descripcion) { showStatus('❌ Completa título y descripción', 'error', 'pubStatus'); return; }
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('previewImg').src = e.target.result;
-            document.getElementById('previewTitulo').innerText = titulo;
-            document.getElementById('previewDesc').innerText = descripcion;
-            document.getElementById('previewCategoria').innerText = categoria;
-            document.getElementById('previewUbicacion').innerHTML = direccion ? `📍 ${escapeHtml(direccion)}` : '📍 Sin ubicación especificada';
-            
-            // Previsualizar fotos extra
-            const previewFotos = document.getElementById('previewFotosExtra');
-            previewFotos.innerHTML = '';
-            for (let i = 1; i < Math.min(fotosSeleccionadas.length, 5); i++) {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(fotosSeleccionadas[i]);
-                img.style.width = '60px';
-                img.style.height = '60px';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '12px';
-                previewFotos.appendChild(img);
-            }
-            
-            pendingPublication = { titulo, categoria, descripcion, fotos: [...fotosSeleccionadas] };
-            document.getElementById('previewModal').style.display = 'flex';
-        };
-        reader.readAsDataURL(fotosSeleccionadas[0]);
-    };
-
-    document.getElementById('confirmarPublicarBtn').onclick = async () => {
-        if (!pendingPublication) return;
-        const { titulo, categoria, descripcion, fotos } = pendingPublication;
-        const progressBar = document.getElementById('progressBar');
-        try {
-            let progress = 0, interval = setInterval(() => { progress = Math.min(progress + 10, 90); progressBar.style.width = `${progress}%`; }, 200);
-            const result = await publicarObjeto(titulo, descripcion, categoria, fotos);
-            clearInterval(interval); progressBar.style.width = '100%';
-            showStatus(result.sospechoso ? '⚠️ Publicación en revisión' : '✅ Objeto publicado', result.sospechoso ? 'info' : 'success', 'pubStatus');
-            setTimeout(() => { progressBar.style.width = '0%'; }, 2000);
-            document.getElementById('titulo').value = '';
-            document.getElementById('descripcion').value = '';
-            document.getElementById('direccionInput').value = '';
-            document.getElementById('latitud').value = '';
-            document.getElementById('longitud').value = '';
-            document.getElementById('fotoPrincipalPreview').style.display = 'none';
-            document.getElementById('fotosExtraPreview').innerHTML = '';
-            document.getElementById('mapaContainer').style.display = 'none';
-            mapaVisible = false;
-            fotosSeleccionadas = [];
-            document.getElementById('previewModal').style.display = 'none';
-            pendingPublication = null;
-            cargarMisObjetos(); cargarFeed();
-        } catch(e) { showStatus('❌ Error: ' + e.message, 'error', 'pubStatus'); progressBar.style.width = '0%'; }
-    };
-
-    document.getElementById('cancelarPublicarBtn').onclick = () => { document.getElementById('previewModal').style.display = 'none'; pendingPublication = null; };
-
-    // ========== EVENTOS ==========
-    window.mostrarFotoAmpliada = mostrarFotoAmpliada;
-    window.toggleFavorito = toggleFavorito;
-    window.marcarIntercambiadoPrompt = marcarIntercambiadoPrompt;
-    window.eliminarObjetoPrompt = eliminarObjetoPrompt;
-    window.reportarObjetoPrompt = reportarObjetoPrompt;
-    window.abrirGoogleMaps = abrirGoogleMaps;
-    window.verMiPerfil = verMiPerfil;
-
-    document.getElementById('googleLoginBtn').onclick = () => loginWithGoogle();
-    document.getElementById('logoutBtn').onclick = () => logout();
-    document.getElementById('enviarMensajeBtn').onclick = () => enviarMensajeChat();
-    document.getElementById('nuevoMensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensajeChat(); });
-    document.getElementById('searchInput').addEventListener('input', filtrarObjetos);
-    document.querySelectorAll('.cat-btn').forEach(btn => btn.addEventListener('click', () => {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        filtrarObjetos();
-    }));
-    
-    document.getElementById('ubicarBtn').onclick = usarMiUbicacion;
-    
-    // Áreas de subida de fotos
-    document.getElementById('uploadAreaPrincipal').onclick = () => document.getElementById('fotoPrincipal').click();
-    document.getElementById('uploadAreaExtra').onclick = () => document.getElementById('fotosExtra').click();
-    
-    let timeoutBusqueda;
-    document.getElementById('direccionInput').addEventListener('input', (e) => {
-        clearTimeout(timeoutBusqueda);
-        const direccion = e.target.value;
-        if (direccion.length > 5) {
-            timeoutBusqueda = setTimeout(() => {
-                obtenerCoordenadasDesdeDireccion(direccion);
-                if (!mapaVisible) {
-                    document.getElementById('mapaContainer').style.display = 'block';
-                    mapaVisible = true;
-                    setTimeout(() => initMapa(), 100);
-                }
-            }, 800);
-        }
+  const deleteBtn = e.target.closest('[data-deleteid]');
+  if (deleteBtn && confirm('¿Eliminar publicación?')) {
+    api.eliminarObjeto(parseInt(deleteBtn.dataset.deleteid)).then(() => {
+      showToast('Eliminado');
+      renderMisObjetos();
     });
+    return;
+  }
 
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', async () => {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active'); const tab = btn.dataset.tab;
-        document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
-        document.getElementById(`tab-${tab}`).style.display = 'block';
-        if (tab === 'feed') cargarFeed();
-        if (tab === 'favoritos') cargarFavoritos();
-        if (tab === 'misobjetos') cargarMisObjetos();
-        if (tab === 'chats') cargarListaConversaciones();
-        if (tab === 'perfil') cargarMiPerfil();
-    }));
+  const chatBtn = e.target.closest('[data-chatid]');
+  if (chatBtn) {
+    abrirChat(parseInt(chatBtn.dataset.chatid), chatBtn.dataset.chatusername, chatBtn.dataset.chattitulo);
+    return;
+  }
 
-    // ========== INICIALIZACIÓN ==========
-    async function init() {
-        const token = getTokenFromURL();
-        if (token) { authToken = token; const user = await verifyToken(token); if (user) currentUser = user; else { localStorage.removeItem('auth_token'); authToken = null; } }
-        updateUIForUser();
-        if (currentUser) {
-            const favs = await obtenerFavoritos();
-            favoritos = new Set(favs.map(f => f.id));
-        }
+  const intercambiadoBtn = e.target.closest('[data-intercambiadoid]');
+  if (intercambiadoBtn && confirm('¿Marcar como intercambiado?')) {
+    api.marcarIntercambiado(parseInt(intercambiadoBtn.dataset.intercambiadoid)).then(() => renderMisObjetos());
+    return;
+  }
+
+  const moreBtn = e.target.closest('[data-moreid]');
+  if (moreBtn) {
+    const id = moreBtn.dataset.moreid;
+    const menu = document.getElementById(`more-${id}`);
+    document.querySelectorAll('.more-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+    menu.classList.toggle('show');
+    e.stopPropagation();
+    return;
+  }
+
+  const viewProfile = e.target.closest('[data-viewprofile]');
+  if (viewProfile) {
+    verPerfilPublico(viewProfile.dataset.viewprofile);
+    return;
+  }
+
+  const reportBtn = e.target.closest('[data-reportid]');
+  if (reportBtn) {
+    const motivo = prompt('Motivo del reporte:');
+    if (motivo) api.reporte(parseInt(reportBtn.dataset.reportid), motivo).then(() => showToast('Reporte enviado'));
+    return;
+  }
+
+  const userCard = e.target.closest('[data-username]');
+  if (userCard && userCard.dataset.username) {
+    verPerfilPublico(userCard.dataset.username);
+    return;
+  }
+
+  const convCard = e.target.closest('[data-conv]');
+  if (convCard) {
+    const conv = JSON.parse(convCard.dataset.conv);
+    abrirChat(conv.id_objeto, conv.otroUsername || conv.otroUsuario, conv.titulo);
+    return;
+  }
+});
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.more-menu').forEach(m => m.classList.remove('show'));
+  const dropdown = document.getElementById('profileDropdown');
+  if (dropdown) dropdown.style.display = 'none';
+});
+
+document.getElementById('backToFeedBtn').addEventListener('click', () => switchToView('todos'));
+document.getElementById('loadMoreBtn').addEventListener('click', () => { visibleItems += 8; renderTodos(); });
+document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value; visibleItems = 8; renderTodos(); });
+
+document.querySelectorAll('.cat-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    currentCategory = pill.dataset.cat;
+    visibleItems = 8;
+    renderTodos();
+  });
+});
+
+document.getElementById('hdrAvatarWrap').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const dropdown = document.getElementById('profileDropdown');
+  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+});
+
+document.querySelectorAll('.dropdown-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const action = item.dataset.action;
+    document.getElementById('profileDropdown').style.display = 'none';
+    if (action === 'logout') logout();
+    else if (action === 'miPerfil' && currentUserPerfil?.username) verPerfilPublico(currentUserPerfil.username);
+    else if (action === 'editarPerfil') document.getElementById('perfilScreen').classList.remove('hidden');
+    else if (action === 'misobjetos') switchToView('misobjetos');
+    else if (action === 'favoritos') switchToView('favoritos');
+    else if (action === 'chats') switchToView('chats');
+  });
+});
+
+document.getElementById('avatarCircle').onclick = () => document.getElementById('avatarFileInput').click();
+document.getElementById('avatarFileInput').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  avatarFileSeleccionado = file;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('avatarPreview').src = ev.target.result;
+    document.getElementById('avatarPreview').style.display = 'block';
+    document.getElementById('avatarIcon').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+};
+
+document.getElementById('guardarPerfilBtn').onclick = async () => {
+  const nombre = document.getElementById('pfNombre').value.trim();
+  if (!nombre) { showToast('Nombre requerido'); return; }
+  await api.completarPerfil({
+    display_name: nombre,
+    bio: document.getElementById('pfBio').value.trim(),
+    ciudad: document.getElementById('pfCiudad').value.trim(),
+    edad: document.getElementById('pfEdad').value || null
+  });
+  if (avatarFileSeleccionado) {
+    const form = new FormData();
+    form.append('avatar', avatarFileSeleccionado);
+    await apiFetch('/perfil/avatar', { method: 'POST', body: form });
+  }
+  showToast('Perfil guardado');
+  document.getElementById('perfilScreen').classList.add('hidden');
+  localStorage.removeItem('perfil_saltado');
+  currentUserPerfil = await api.miPerfil();
+  actualizarHeader();
+};
+
+document.getElementById('saltarPerfilBtn').onclick = () => {
+  localStorage.setItem('perfil_saltado', '1');
+  document.getElementById('perfilScreen').classList.add('hidden');
+};
+
+function actualizarHeader() {
+  if (currentUserPerfil?.avatar_url) {
+    document.getElementById('hdrAvatarWrap').innerHTML = `<img src="${esc(currentUserPerfil.avatar_url)}">`;
+  }
+}
+
+document.getElementById('starPicker').addEventListener('click', (e) => {
+  const star = e.target.closest('.star-pick');
+  if (star) {
+    valoracionSeleccionada = parseInt(star.dataset.v);
+    document.querySelectorAll('.star-pick').forEach((s, i) => {
+      s.classList.toggle('selected', i < valoracionSeleccionada);
+    });
+  }
+});
+
+document.getElementById('enviarValoracionBtn').onclick = async () => {
+  if (!valoracionSeleccionada) { showToast('Selecciona una puntuación'); return; }
+  await api.valorar({
+    calificado_username: perfilPublicoActual,
+    puntuacion: valoracionSeleccionada,
+    comentario: document.getElementById('valorarComentario').value.trim()
+  });
+  showToast('Valoración enviada');
+  document.getElementById('valorarComentario').value = '';
+  valoracionSeleccionada = 0;
+  document.querySelectorAll('.star-pick').forEach(s => s.classList.remove('selected'));
+  verPerfilPublico(perfilPublicoActual);
+};
+
+document.getElementById('closePerfilPublicoBtn').onclick = () => document.getElementById('perfilPublicoPanel').classList.remove('open');
+document.getElementById('closeChatBtn').onclick = cerrarChat;
+document.getElementById('sendChatBtn').onclick = enviarMensajeChat;
+document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') enviarMensajeChat(); });
+document.getElementById('attachBtn').onclick = () => document.getElementById('chatFileInput').click();
+
+document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange = (e) => {
+  selectedFiles = [...selectedFiles, ...Array.from(e.target.files)].slice(0, 5);
+  actualizarPreviews();
+};
+function actualizarPreviews() {
+  const container = document.getElementById('fotosPreview');
+  container.innerHTML = '';
+  selectedFiles.forEach((f, i) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const div = document.createElement('div');
+      div.className = 'foto-preview';
+      div.innerHTML = `<img src="${e.target.result}"><div class="remove-foto" data-idx="${i}">✕</div>`;
+      container.appendChild(div);
+    };
+    reader.readAsDataURL(f);
+  });
+  document.querySelectorAll('.remove-foto').forEach(btn => {
+    btn.onclick = (e) => {
+      const idx = parseInt(btn.dataset.idx);
+      selectedFiles.splice(idx, 1);
+      actualizarPreviews();
+    };
+  });
+}
+document.getElementById('openUploadPanelBtn').onclick = () => document.getElementById('uploadPanelOverlay').classList.add('active');
+document.getElementById('cancelUploadBtn').onclick = () => document.getElementById('uploadPanelOverlay').classList.remove('active');
+document.getElementById('uploadPanelOverlay').onclick = (e) => { if (e.target === document.getElementById('uploadPanelOverlay')) document.getElementById('uploadPanelOverlay').classList.remove('active'); };
+document.getElementById('publishArticleBtn').onclick = async () => {
+  const titulo = document.getElementById('uploadTitle').value.trim();
+  const categoria = document.getElementById('uploadCategory').value;
+  const desc = document.getElementById('uploadDesc').value.trim();
+  if (!titulo || !desc || !selectedFiles.length) { showToast('Completa todos los campos y sube al menos una foto'); return; }
+  const form = new FormData();
+  form.append('titulo', titulo);
+  form.append('descripcion', `${categoria} | ${desc} | ${document.getElementById('uploadLocation').value.trim() || ''}`);
+  form.append('direccion', document.getElementById('uploadLocation').value.trim());
+  selectedFiles.forEach((f, i) => form.append(`foto_${i}`, f));
+  await apiFetch('/objeto', { method: 'POST', body: form });
+  showToast('Publicado');
+  document.getElementById('uploadPanelOverlay').classList.remove('active');
+  document.getElementById('uploadTitle').value = '';
+  document.getElementById('uploadDesc').value = '';
+  document.getElementById('uploadLocation').value = '';
+  selectedFiles = [];
+  actualizarPreviews();
+  todosProductos = await api.objetos();
+  renderTodos();
+};
+
+document.getElementById('modalPrevBtn').onclick = prevPhoto;
+document.getElementById('modalNextBtn').onclick = nextPhoto;
+document.getElementById('fotoModalClose').onclick = () => document.getElementById('fotoModalOverlay').classList.remove('open');
+document.getElementById('fotoModalOverlay').onclick = (e) => { if (e.target === document.getElementById('fotoModalOverlay')) document.getElementById('fotoModalOverlay').classList.remove('open'); };
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('fotoModalOverlay').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') prevPhoto();
+  else if (e.key === 'ArrowRight') nextPhoto();
+  else if (e.key === 'Escape') document.getElementById('fotoModalOverlay').classList.remove('open');
+});
+
+async function init() {
+  const token = getTokenFromURL();
+  if (token) {
+    authToken = token;
+    currentUser = await verifyToken(token);
+    if (!currentUser) { localStorage.removeItem('auth_token'); authToken = null; }
+  }
+  if (currentUser) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appContainer').classList.add('active');
+    currentUserPerfil = await api.miPerfil();
+    actualizarHeader();
+    const saltado = localStorage.getItem('perfil_saltado');
+    if (!currentUserPerfil?.perfil_completo && !saltado) {
+      document.getElementById('perfilScreen').classList.remove('hidden');
     }
-    init();
+    renderSkeletons();
+    const [favs, objetos] = await Promise.all([api.favoritos(), api.objetos()]);
+    favoritosIds = new Set(favs.map(f => f.id));
+    todosProductos = objetos;
+    renderTodos();
+  } else {
+    document.getElementById('loginScreen').classList.remove('hidden');
+  }
+}
+
+document.getElementById('googleLoginBtn').onclick = loginWithGoogle;
+init();
 </script>
 </body>
 </html>
