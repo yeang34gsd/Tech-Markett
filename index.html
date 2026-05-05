@@ -61,23 +61,15 @@
         .btn-modal { flex: 1; padding: 14px; border-radius: 40px; font-weight: 600; border: none; cursor: pointer; }
         .btn-modal-primary { background: #059669; color: white; }
         .btn-modal-secondary { background: #eef2ef; color: #2c4b35; }
-        .modal-modern { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); justify-content: center; align-items: center; z-index: 1100; }
+        .modal-modern { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); justify-content: center; align-items: center; z-index: 1100; }
         .modal-content { background: white; border-radius: 28px; max-width: 90%; width: 400px; padding: 24px; max-height: 85vh; overflow-y: auto; }
         .form-mobile input, .form-mobile textarea, .form-mobile select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dde6e0; border-radius: 24px; font-size: 0.9rem; }
         .upload-zone { background: #fafdfa; border: 2px dashed #cbdcd2; border-radius: 20px; padding: 16px; text-align: center; cursor: pointer; margin: 12px 0; }
         .btn-modern { background: #059669; color: white; border: none; padding: 12px; border-radius: 40px; font-weight: 600; width: 100%; cursor: pointer; }
         .btn-modern:disabled { background: #9ac9b0; cursor: not-allowed; }
-        .chat-container { background: #f8faf8; border-radius: 20px; padding: 12px; max-height: 400px; overflow-y: auto; }
-        .mensaje { background: white; border-radius: 18px; padding: 8px 12px; margin-bottom: 8px; max-width: 80%; font-size: 0.8rem; }
-        .mensaje.emisor { background: #059669; color: white; margin-left: auto; }
-        .mensaje-imagen { max-width: 150px; border-radius: 12px; margin-top: 6px; cursor: pointer; }
         .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 20px; text-align: center; }
         .google-btn { background: #4285f4; color: white; border: none; padding: 14px 28px; border-radius: 40px; font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; margin-top: 20px; }
-        .chat-input-area { display: flex; gap: 8px; margin-top: 16px; }
-        .chat-input-area input { flex: 1; border-radius: 40px; padding: 10px 16px; border: 1px solid #dde6e0; outline: none; }
-        .chat-input-area button { background: #059669; color: white; border: none; border-radius: 40px; padding: 0 20px; cursor: pointer; }
-        .chat-adjuntar { background: #8aa59a; color: white; border: none; border-radius: 40px; padding: 0 16px; cursor: pointer; }
-        .conv-item { padding: 16px; border-bottom: 1px solid #eef2ef; cursor: pointer; transition: 0.2s; }
+        .conv-item { padding: 16px; border-bottom: 1px solid #eef2ef; cursor: pointer; transition: 0.2s; border-radius: 16px; }
         .conv-item:hover { background: #f8faf8; }
         @media (max-width: 700px) { .grid-pinterest { gap: 8px; } }
     </style>
@@ -149,7 +141,6 @@
     <div id="misCosasView" style="display:none;"><div id="misCosasGrid" class="grid-pinterest"></div></div>
     <div id="mensajesView" style="display:none;">
         <div id="listaChatsMobile" style="background:white; margin:12px; border-radius:24px; padding:16px;"></div>
-        <div id="chatDetalleMobile" style="margin:12px; display:none;"></div>
     </div>
 
     <div class="bottom-nav">
@@ -181,6 +172,7 @@
 <div id="previewModal" class="modal-modern"><div class="modal-content"><h3>Confirmar publicación</h3><img id="previewImgModal" style="width:100%; border-radius: 16px;"><p id="previewTextModal" style="margin:12px 0;"></p><button id="confirmarPublicarBtn" class="btn-modern">Publicar</button><button id="cancelPreviewBtn" style="background:#ccc; margin-top:12px;" class="btn-modern">Cancelar</button></div></div>
 <div id="fotoModal" class="modal-modern"><div class="modal-content"><img id="fotoAmpliada" style="width:100%; border-radius: 16px;"><button onclick="document.getElementById('fotoModal').style.display='none'" style="margin-top:12px;" class="btn-modern">Cerrar</button></div></div>
 
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
     
@@ -191,11 +183,6 @@
     let fotoPrincipalData = null;
     let fotosExtraSeleccionadas = [];
     let mapaTemp = null;
-    
-    // Chat global
-    let chatPollingInterval = null;
-    let chatActual = { id_objeto: null, otroUsuario: null, titulo: null };
-    let ultimoMensajeId = 0;
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -324,49 +311,12 @@
         alert('Objeto eliminado');
     }
 
-    // FUNCIÓN ENVIAR MENSAJE CORREGIDA
-    async function enviarMensaje(objetoId, receptor, mensaje, archivo = null) {
-        console.log(`📤 Enviando mensaje: objeto=${objetoId}, receptor=${receptor}, texto=${mensaje}`);
-        
-        if (archivo) {
-            const form = new FormData();
-            form.append('id_objeto', objetoId);
-            form.append('receptor', receptor);
-            form.append('mensaje', mensaje);
-            form.append('archivo', archivo);
-            const response = await fetch(`${WORKER_URL}/mensaje`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${authToken}` },
-                body: form
-            });
-            if (!response.ok) throw new Error(await response.text());
-            return response.json();
-        }
-        
-        return await apiFetch('/mensaje', { 
-            method: 'POST', 
-            body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) 
-        });
-    }
-
-    // FUNCIÓN OBTENER MENSAJES CORREGIDA (con parámetro otroUsuario)
-    async function obtenerMensajes(objetoId, otroUsuario) {
-        try {
-            const id = parseInt(objetoId);
-            const response = await apiFetch(`/mensajes?id_objeto=${id}&otro=${encodeURIComponent(otroUsuario)}`);
-            return response || [];
-        } catch(e) {
-            console.error('Error en obtenerMensajes:', e);
-            return [];
-        }
-    }
-
     async function obtenerMisConversaciones() {
         try {
             const response = await apiFetch('/mis-conversaciones');
             return response || [];
         } catch(e) {
-            console.error('Error en obtenerMisConversaciones:', e);
+            console.error('Error:', e);
             return [];
         }
     }
@@ -414,7 +364,7 @@
                         <div class="ubicacion-user"><span><i class="fas fa-map-marker-alt"></i> ${obj.ubicacionTexto}</span><div><i class="fas fa-user"></i> ${obj.userNombre}</div></div>
                         <div class="acciones-botones">
                             <button class="btn-guardar ${esFav ? '' : 'outline'}" data-id="${obj.id}"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
-                            ${obj.userId !== currentUser?.email ? `<button class="btn-intercambiar" data-id="${obj.id}"><i class="fas fa-handshake"></i> Intercambiar</button>` : ''}
+                            ${obj.userId !== currentUser?.email ? `<button class="btn-intercambiar" data-id="${obj.id}" data-usuario="${obj.userId}" data-titulo="${obj.titulo}"><i class="fas fa-handshake"></i> Intercambiar</button>` : ''}
                         </div>
                         ${obj.userId !== currentUser?.email ? `<button class="btn-reportar" data-id="${obj.id}"><i class="fas fa-flag"></i> Reportar</button>` : `<button class="btn-eliminar" data-id="${obj.id}"><i class="fas fa-trash"></i> Eliminar</button>`}
                     </div>
@@ -428,7 +378,14 @@
         });
         async function favHandler(e) { e.stopPropagation(); const id = parseInt(this.dataset.id); if(favoritosIds.has(id)) await quitarFavorito(id); else await agregarFavorito(id); renderFeed(); renderFavoritos(); }
         
-        document.querySelectorAll('.btn-intercambiar').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); abrirChatConObjeto(id, btn.dataset.objUsuario); switchTab('mensajes'); }));
+        document.querySelectorAll('.btn-intercambiar').forEach(btn => btn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            const id = parseInt(btn.dataset.id);
+            const otroUsuario = btn.dataset.usuario;
+            const titulo = btn.dataset.titulo;
+            // Abrir chat en nueva página con estilo Messenger
+            window.location.href = `chat-messenger.html?objetoId=${id}&otro=${encodeURIComponent(otroUsuario)}&titulo=${encodeURIComponent(titulo)}`;
+        }));
         
         document.querySelectorAll('.btn-reportar').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); const motivo = prompt('Motivo?'); if(motivo) await reportarObjeto(id, motivo); }));
         
@@ -481,134 +438,12 @@
             ${obj.userId !== currentUser?.email ? `<button id="modalIntercambiarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-handshake"></i> Intercambiar</button>` : `<button id="modalEliminarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-trash"></i> Eliminar</button>`}
         `;
         document.getElementById("modalGuardarBtn")?.addEventListener("click", async () => { if(favoritosIds.has(obj.id)) await quitarFavorito(obj.id); else await agregarFavorito(obj.id); document.getElementById("detailModal").style.display = "none"; renderFeed(); renderFavoritos(); });
-        document.getElementById("modalIntercambiarBtn")?.addEventListener("click", () => { abrirChatConObjeto(obj.id, obj.userId); document.getElementById("detailModal").style.display = "none"; switchTab('mensajes'); });
+        document.getElementById("modalIntercambiarBtn")?.addEventListener("click", () => { 
+            window.location.href = `chat-messenger.html?objetoId=${obj.id}&otro=${encodeURIComponent(obj.userId)}&titulo=${encodeURIComponent(obj.titulo)}`;
+        });
         document.getElementById("modalEliminarBtn")?.addEventListener("click", async () => { if(confirm("Eliminar?")){ await eliminarObjeto(obj.id); document.getElementById("detailModal").style.display = "none"; } });
         
         document.getElementById("detailModal").style.display = "block";
-    }
-
-    // ========== CHAT (CORREGIDO) ==========
-    function detenerPollingChat() {
-        if (chatPollingInterval) {
-            clearInterval(chatPollingInterval);
-            chatPollingInterval = null;
-        }
-    }
-
-    function iniciarPollingChat() {
-        detenerPollingChat();
-        chatPollingInterval = setInterval(async () => {
-            if (chatActual.id_objeto && chatActual.otroUsuario && document.getElementById('chatDetalleMobile')?.style.display === 'block') {
-                await cargarMensajesChat();
-            }
-        }, 5000);
-    }
-
-    async function cargarMensajesChat() {
-        if (!chatActual.id_objeto || !chatActual.otroUsuario) return;
-        try {
-            const msgs = await obtenerMensajes(chatActual.id_objeto, chatActual.otroUsuario);
-            const cont = document.getElementById('chatMsgsBox');
-            if (!cont) return;
-            
-            if (!msgs || msgs.length === 0) {
-                cont.innerHTML = '<div style="text-align:center; padding:20px;">✨ No hay mensajes aún.</div>';
-                ultimoMensajeId = 0;
-                return;
-            }
-            
-            const hayNuevos = ultimoMensajeId === 0 || msgs[msgs.length-1]?.id > ultimoMensajeId;
-            if (hayNuevos) {
-                cont.innerHTML = msgs.map(m => {
-                    const esEmisor = m.emisor === currentUser?.email;
-                    const nombre = esEmisor ? 'Tú' : (m.emisor?.split('@')[0] || m.emisor);
-                    return `<div class="mensaje ${esEmisor ? 'emisor' : 'receptor'}">
-                        <strong>${nombre}</strong>: ${m.mensaje || '📎 Archivo'}
-                        ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
-                        <small>${new Date(m.fecha).toLocaleTimeString()}</small>
-                    </div>`;
-                }).join('');
-                cont.scrollTop = cont.scrollHeight;
-                if (msgs.length > 0) ultimoMensajeId = msgs[msgs.length-1].id;
-            }
-        } catch(e) { console.error('Error cargando mensajes:', e); }
-    }
-
-    async function abrirChatConObjeto(objetoId, otroUsuario) {
-        detenerPollingChat();
-        const obj = objetos.find(o => o.id === parseInt(objetoId));
-        if(!obj) return;
-        
-        const idObjetoNum = parseInt(objetoId);
-        chatActual = { id_objeto: idObjetoNum, otroUsuario: otroUsuario, titulo: obj.titulo };
-        ultimoMensajeId = 0;
-        
-        // Cargar mensajes iniciales
-        let msgs = [];
-        try {
-            msgs = await obtenerMensajes(idObjetoNum, otroUsuario);
-        } catch(e) { console.error('Error cargando mensajes iniciales:', e); }
-        
-        const contenedor = document.getElementById("chatDetalleMobile");
-        contenedor.style.display = "block";
-        contenedor.innerHTML = `
-            <div style="background:white; border-radius:24px; padding:16px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                    <h4>💬 ${obj.titulo}</h4>
-                    <button onclick="document.getElementById('chatDetalleMobile').style.display='none'" style="background:none; border:none; font-size:20px;">✕</button>
-                </div>
-                <small>Conversando con ${obj.userNombre}</small>
-                <div id="chatMsgsBox" class="chat-container" style="margin-top:12px; height:350px; overflow-y:auto;">
-                    ${msgs.length === 0 ? '<div style="text-align:center; padding:20px;">✨ No hay mensajes aún.</div>' : 
-                        msgs.map(m => {
-                            const esEmisor = m.emisor === currentUser?.email;
-                            const nombre = esEmisor ? 'Tú' : (m.emisor?.split('@')[0] || m.emisor);
-                            return `<div class="mensaje ${esEmisor ? 'emisor' : 'receptor'}">
-                                <strong>${nombre}</strong>: ${m.mensaje || '📎 Archivo'}
-                                ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
-                                <small>${new Date(m.fecha).toLocaleTimeString()}</small>
-                            </div>`;
-                        }).join('')
-                    }
-                </div>
-                <div class="chat-input-area" style="margin-top:16px;">
-                    <button class="chat-adjuntar" id="adjuntarArchivoBtn"><i class="fas fa-paperclip"></i></button>
-                    <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje...">
-                    <button id="sendMsgMobileBtn">Enviar</button>
-                </div>
-                <input type="file" id="archivoAdjunto" style="display:none;">
-            </div>
-        `;
-        
-        if (msgs.length > 0) {
-            const chatBox = document.getElementById('chatMsgsBox');
-            if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-            ultimoMensajeId = msgs[msgs.length-1].id;
-        }
-        
-        iniciarPollingChat();
-        
-        document.getElementById("sendMsgMobileBtn").onclick = async () => {
-            const input = document.getElementById("msgInputMobile");
-            const texto = input.value.trim();
-            if(texto){
-                await enviarMensaje(idObjetoNum, otroUsuario, texto);
-                input.value = "";
-                await cargarMensajesChat();
-            }
-        };
-        document.getElementById("msgInputMobile").addEventListener("keypress", (e) => {
-            if (e.key === 'Enter') document.getElementById("sendMsgMobileBtn").click();
-        });
-        document.getElementById("adjuntarArchivoBtn").onclick = () => document.getElementById("archivoAdjunto").click();
-        document.getElementById("archivoAdjunto").onchange = async (e) => {
-            const archivo = e.target.files[0];
-            if (archivo) {
-                await enviarMensaje(idObjetoNum, otroUsuario, "📎 Archivo", archivo);
-                e.target.value = '';
-                await cargarMensajesChat();
-            }
-        };
     }
 
     async function cargarConversaciones() {
@@ -620,7 +455,6 @@
                 return; 
             }
             
-            // Eliminar duplicados
             const unicos = [];
             const vistos = new Set();
             for (const c of convs) {
@@ -631,7 +465,7 @@
             }
             
             listaDiv.innerHTML = unicos.map(c => `
-                <div class="conv-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}" style="padding:16px; border-bottom:1px solid #eef2ef; cursor:pointer;">
+                <div class="conv-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}" data-titulo="${c.titulo}" style="padding:16px; border-bottom:1px solid #eef2ef; cursor:pointer;">
                     <strong>📦 ${c.titulo || 'Objeto'}</strong><br>
                     💬 con ${c.otroUsuario?.split('@')[0] || c.otroUsuario}<br>
                     <small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
@@ -640,9 +474,10 @@
             
             document.querySelectorAll('.conv-item').forEach(el => {
                 el.addEventListener('click', () => {
-                    const idObjeto = parseInt(el.dataset.id);
-                    const otroUsuario = el.dataset.otro;
-                    abrirChatConObjeto(idObjeto, otroUsuario);
+                    const id = parseInt(el.dataset.id);
+                    const otro = el.dataset.otro;
+                    const titulo = el.dataset.titulo;
+                    window.location.href = `chat-messenger.html?objetoId=${id}&otro=${encodeURIComponent(otro)}&titulo=${encodeURIComponent(titulo)}`;
                 });
             });
         } catch(e) { console.error(e); }
@@ -733,17 +568,12 @@
         document.getElementById("mensajesView").style.display = tabId==="mensajes" ? "block" : "none";
         if(tabId==="favoritos") renderFavoritos();
         if(tabId==="misCosas") renderMisCosas();
-        if(tabId==="mensajes") { detenerPollingChat(); cargarConversaciones(); }
+        if(tabId==="mensajes") { cargarConversaciones(); }
     }
 
     function mostrarPerfil() {
         alert(`👤 ${currentUser.name || currentUser.email}\n📧 ${currentUser.email}`);
     }
-
-    window.verFotoAmpliada = function(url) {
-        document.getElementById("fotoAmpliada").src = url;
-        document.getElementById("fotoModal").style.display = "flex";
-    };
 
     // ========== INICIALIZACIÓN ==========
     async function init() {
