@@ -79,7 +79,6 @@
         .chat-adjuntar { background: #8aa59a; color: white; border: none; border-radius: 40px; padding: 0 16px; cursor: pointer; }
         .conv-item { padding: 16px; border-bottom: 1px solid #eef2ef; cursor: pointer; transition: 0.2s; }
         .conv-item:hover { background: #f8faf8; }
-        .mensaje-nuevo { background: #ef4444; color: white; padding: 2px 6px; border-radius: 20px; font-size: 10px; margin-left: 8px; }
         .publicando { opacity: 0.6; pointer-events: none; }
         @media (max-width: 700px) { .grid-pinterest { gap: 8px; } }
     </style>
@@ -185,7 +184,6 @@
 
 <script>
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
-    const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
     
     let currentUser = null;
     let authToken = null;
@@ -197,7 +195,7 @@
     
     // Chat global
     let chatPollingInterval = null;
-    let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
+    let chatActual = { id_objeto: null, otroUsuario: null, titulo: null };
     let ultimoMensajeId = 0;
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
@@ -317,17 +315,19 @@
 
     async function reportarObjeto(id, motivo) {
         await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
-        alert('Reporte enviado. Gracias por ayudar a mantener la comunidad segura.');
+        alert('Reporte enviado. Gracias.');
     }
 
     async function eliminarObjeto(id) {
         await apiFetch(`/objeto/${id}`, { method: 'DELETE' });
         objetos = objetos.filter(o => o.id !== id);
         renderFeed(); renderFavoritos(); renderMisCosas();
-        alert('Objeto eliminado correctamente');
+        alert('Objeto eliminado');
     }
 
     async function enviarMensaje(objetoId, receptor, mensaje, archivo = null) {
+        console.log(`📤 Enviando mensaje a ${receptor}: ${mensaje}`);
+        
         if (archivo) {
             const form = new FormData();
             form.append('id_objeto', objetoId);
@@ -342,7 +342,11 @@
             if (!response.ok) throw new Error(await response.text());
             return response.json();
         }
-        return await apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
+        
+        return await apiFetch('/mensaje', { 
+            method: 'POST', 
+            body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) 
+        });
     }
 
     async function obtenerMensajes(objetoId, otroUsuario) {
@@ -469,7 +473,7 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== CHAT CON POLLING CORREGIDO ==========
+    // ========== CHAT CON POLLING ==========
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -480,16 +484,16 @@
     function iniciarPollingChat() {
         detenerPollingChat();
         chatPollingInterval = setInterval(async () => {
-            if (chatActual.objetoId && chatActual.otroUsuario && document.getElementById('chatDetalleMobile')?.style.display === 'block') {
+            if (chatActual.id_objeto && chatActual.otroUsuario && document.getElementById('chatDetalleMobile')?.style.display === 'block') {
                 await cargarMensajesChat();
             }
         }, 5000);
     }
 
     async function cargarMensajesChat() {
-        if (!chatActual.objetoId || !chatActual.otroUsuario) return;
+        if (!chatActual.id_objeto || !chatActual.otroUsuario) return;
         try {
-            const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
+            const msgs = await obtenerMensajes(chatActual.id_objeto, chatActual.otroUsuario);
             const cont = document.getElementById('chatMsgsBox');
             if (!cont) return;
             
@@ -514,11 +518,14 @@
         const obj = objetos.find(o => o.id === objetoId);
         if(!obj) return;
         
-        chatActual = { objetoId, otroUsuario: obj.userId, titulo: obj.titulo };
+        chatActual = { id_objeto: objetoId, otroUsuario: obj.userId, titulo: obj.titulo };
         ultimoMensajeId = 0;
+        
+        console.log(`Abriendo chat con: ${obj.userId} para objeto: ${objetoId}`);
         
         // Cargar mensajes iniciales
         const msgs = await obtenerMensajes(objetoId, obj.userId);
+        console.log(`Mensajes cargados: ${msgs.length}`);
         
         const contenedor = document.getElementById("chatDetalleMobile");
         contenedor.style.display = "block";
@@ -552,12 +559,15 @@
         
         document.getElementById("sendMsgMobileBtn").onclick = async () => {
             const input = document.getElementById("msgInputMobile");
-            if(input.value.trim()){
-                await enviarMensaje(objetoId, obj.userId, input.value);
+            const texto = input.value.trim();
+            if(texto){
+                console.log(`Enviando mensaje: objeto=${objetoId}, receptor=${obj.userId}, texto=${texto}`);
+                await enviarMensaje(objetoId, obj.userId, texto);
                 input.value = "";
                 await cargarMensajesChat();
             }
         };
+        
         document.getElementById("msgInputMobile").addEventListener("keypress", (e) => {
             if (e.key === 'Enter') document.getElementById("sendMsgMobileBtn").click();
         });
@@ -581,7 +591,7 @@
             listaDiv.innerHTML = convs.map(c => `
                 <div class="conv-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}">
                     <strong>📦 ${c.titulo}</strong><br>
-                    💬 con ${c.otroUsuario.split('@')[0]}<br>
+                    💬 con ${c.otroUsuario?.split('@')[0] || c.otroUsuario}<br>
                     <small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
                 </div>
             `).join('');
@@ -594,7 +604,7 @@
         } catch(e) { console.error(e); }
     }
 
-    // ========== PUBLICAR OBJETO (con evita doble publicación) ==========
+    // ========== PUBLICAR OBJETO ==========
     let publicando = false;
 
     async function publicarObjeto(titulo, descripcion, categoria, fotos, lat, lng, direccion) {
