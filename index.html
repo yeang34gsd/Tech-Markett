@@ -4,485 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Intercambia - Trueque de objetos | Marketplace</title>
-    <!-- Leaflet y Font Awesome -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- OneSignal Notificaciones -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #ffffff;
-            color: #111111;
-            padding-bottom: 70px;
-        }
-
-        /* HEADER */
-        .mobile-header {
-            position: sticky;
-            top: 0;
-            background: white;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eef2f0;
-            z-index: 100;
-        }
-
-        .logo-area-mobile {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .logo-area-mobile i {
-            font-size: 28px;
-            color: #059669;
-            background: #e8f5e9;
-            padding: 6px;
-            border-radius: 16px;
-        }
-        .logo-area-mobile h1 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #059669, #10b981);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        .profile-top {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f0f2f0;
-            padding: 4px 12px 4px 6px;
-            border-radius: 40px;
-        }
-        .profile-top img {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .profile-top span {
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: #2c3e2f;
-        }
-
-        /* Búsqueda */
-        .search-bar {
-            background: #f0f2f0;
-            border-radius: 32px;
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 16px;
-            transition: 0.2s;
-        }
-        .search-bar:focus-within {
-            background: white;
-            border: 1px solid #059669;
-            box-shadow: 0 0 0 2px rgba(5,150,105,0.1);
-        }
-        .search-bar i {
-            color: #5e8a6f;
-        }
-        .search-bar input {
-            border: none;
-            background: transparent;
-            width: 100%;
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        /* Categorías */
-        .categories-scroll {
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 0 16px 12px 16px;
-            margin-bottom: 8px;
-            scrollbar-width: thin;
-        }
-        .categories-flex {
-            display: flex;
-            gap: 10px;
-        }
-        .cat-mobile {
-            background: #f0f2f0;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #2c4b35;
-        }
-        .cat-mobile.active {
-            background: #059669;
-            color: white;
-        }
-
-        /* GALERÍA 2 COLUMNAS */
-        .grid-pinterest {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            padding: 0 12px;
-        }
-        .pin-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid #eef2ef;
-            cursor: pointer;
-        }
-        .pin-card:active {
-            transform: scale(0.98);
-        }
-        .pin-img {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-            background: #f9faf9;
-        }
-        .pin-info {
-            padding: 12px;
-        }
-        .pin-category {
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #059669;
-            letter-spacing: 0.3px;
-            margin-bottom: 6px;
-        }
-        .pin-title {
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 6px;
-            line-height: 1.3;
-        }
-        .pin-desc {
-            font-size: 0.75rem;
-            color: #5e6e64;
-            line-height: 1.3;
-            margin-bottom: 8px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .ubicacion-user {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.65rem;
-            color: #6b8a73;
-            margin: 8px 0;
-        }
-        .acciones-botones {
-            display: flex;
-            gap: 8px;
-            margin: 12px 0 6px;
-        }
-        .btn-guardar, .btn-intercambiar {
-            flex: 1;
-            padding: 8px 0;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            cursor: pointer;
-            transition: 0.2s;
-            border: none;
-        }
-        .btn-guardar {
-            background: #059669;
-            color: white;
-        }
-        .btn-guardar.outline {
-            background: #eef2ef;
-            color: #2c4b35;
-        }
-        .btn-intercambiar {
-            background: #2c553d;
-            color: white;
-        }
-        .btn-reportar, .btn-eliminar {
-            background: transparent;
-            border: none;
-            color: #8aa59a;
-            font-size: 0.65rem;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 5px 0;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        /* BOTTOM NAV VERDE */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(255,255,255,0.96);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid #e0ece4;
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 12px 12px;
-            z-index: 200;
-        }
-        .nav-bottom-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            background: none;
-            border: none;
-            font-size: 0.7rem;
-            color: #8ba894;
-            cursor: pointer;
-            transition: 0.2s;
-            padding: 4px 12px;
-            border-radius: 30px;
-        }
-        .nav-bottom-item i {
-            font-size: 1.5rem;
-        }
-        .nav-bottom-item.active {
-            color: #059669;
-            font-weight: 500;
-        }
-
-        /* MODAL DETALLE (Marketplace) */
-        .modal-marketplace {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 1000;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-        .modal-header {
-            position: sticky;
-            top: 0;
-            background: white;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid #eef2ef;
-        }
-        .close-modal {
-            background: #eef2ef;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-        .modal-img-principal {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-        }
-        .miniaturas-modal {
-            display: flex;
-            gap: 8px;
-            padding: 12px;
-            overflow-x: auto;
-            background: #fafdfa;
-        }
-        .miniatura-modal {
-            width: 70px;
-            height: 70px;
-            border-radius: 12px;
-            object-fit: cover;
-            border: 2px solid transparent;
-            cursor: pointer;
-        }
-        .miniatura-modal.active {
-            border-color: #059669;
-        }
-        .modal-info {
-            padding: 20px;
-        }
-        .modal-titulo {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .modal-categoria {
-            color: #059669;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-        .modal-desc {
-            color: #4a5b52;
-            line-height: 1.4;
-            margin-bottom: 16px;
-        }
-        .modal-ubicacion, .modal-usuario {
-            font-size: 0.85rem;
-            color: #6b8a73;
-            margin: 8px 0;
-        }
-        .modal-acciones {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-            margin-bottom: 20px;
-        }
-        .btn-modal {
-            flex: 1;
-            padding: 14px;
-            border-radius: 40px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-        }
-        .btn-modal-primary {
-            background: #059669;
-            color: white;
-        }
-        .btn-modal-secondary {
-            background: #eef2ef;
-            color: #2c4b35;
-        }
-
-        /* Modales formulario */
-        .modal-modern {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            justify-content: center;
-            align-items: center;
-            z-index: 1100;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 28px;
-            max-width: 90%;
-            width: 400px;
-            padding: 24px;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-        .form-mobile input, .form-mobile textarea, .form-mobile select {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #dde6e0;
-            border-radius: 24px;
-            font-size: 0.9rem;
-        }
-        .upload-zone {
-            background: #fafdfa;
-            border: 2px dashed #cbdcd2;
-            border-radius: 20px;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            margin: 12px 0;
-        }
-        .btn-modern {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 40px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-        }
-        .chat-container {
-            background: #f8faf8;
-            border-radius: 20px;
-            padding: 12px;
-            max-height: 260px;
-            overflow-y: auto;
-        }
-        .mensaje {
-            background: white;
-            border-radius: 18px;
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            max-width: 80%;
-            font-size: 0.8rem;
-        }
-        .mensaje.emisor {
-            background: #059669;
-            color: white;
-            margin-left: auto;
-        }
-        .puntos-badge {
-            background: #f59e0b;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 10px;
-            margin-left: 8px;
-        }
-        .login-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-            padding: 20px;
-            text-align: center;
-        }
-        .google-btn {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 40px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 20px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #ffffff; color: #111111; padding-bottom: 70px; }
+        .mobile-header { position: sticky; top: 0; background: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eef2f0; z-index: 100; }
+        .logo-area-mobile { display: flex; align-items: center; gap: 8px; }
+        .logo-area-mobile i { font-size: 28px; color: #059669; background: #e8f5e9; padding: 6px; border-radius: 16px; }
+        .logo-area-mobile h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, #059669, #10b981); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .profile-top { cursor: pointer; display: flex; align-items: center; gap: 8px; background: #f0f2f0; padding: 4px 12px 4px 6px; border-radius: 40px; }
+        .profile-top img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .profile-top span { font-weight: 500; font-size: 0.85rem; color: #2c3e2f; }
+        .search-bar { background: #f0f2f0; border-radius: 32px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; margin: 16px; transition: 0.2s; }
+        .search-bar:focus-within { background: white; border: 1px solid #059669; box-shadow: 0 0 0 2px rgba(5,150,105,0.1); }
+        .search-bar input { border: none; background: transparent; width: 100%; font-size: 0.95rem; outline: none; }
+        .categories-scroll { overflow-x: auto; white-space: nowrap; padding: 0 16px 12px 16px; margin-bottom: 8px; scrollbar-width: thin; }
+        .categories-flex { display: flex; gap: 10px; }
+        .cat-mobile { background: #f0f2f0; border: none; padding: 8px 18px; border-radius: 40px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: 0.2s; color: #2c4b35; }
+        .cat-mobile.active { background: #059669; color: white; }
+        .grid-pinterest { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px; }
+        .pin-card { background: white; border-radius: 20px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eef2ef; cursor: pointer; }
+        .pin-card:active { transform: scale(0.98); }
+        .pin-img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background: #f9faf9; }
+        .pin-info { padding: 12px; }
+        .pin-category { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #059669; letter-spacing: 0.3px; margin-bottom: 6px; }
+        .pin-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; line-height: 1.3; }
+        .pin-desc { font-size: 0.75rem; color: #5e6e64; line-height: 1.3; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .ubicacion-user { display: flex; justify-content: space-between; font-size: 0.65rem; color: #6b8a73; margin: 8px 0; }
+        .acciones-botones { display: flex; gap: 8px; margin: 12px 0 6px; }
+        .btn-guardar, .btn-intercambiar { flex: 1; padding: 8px 0; border-radius: 40px; font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: 0.2s; border: none; }
+        .btn-guardar { background: #059669; color: white; }
+        .btn-guardar.outline { background: #eef2ef; color: #2c4b35; }
+        .btn-intercambiar { background: #2c553d; color: white; }
+        .btn-reportar, .btn-eliminar { background: transparent; border: none; color: #8aa59a; font-size: 0.65rem; display: flex; align-items: center; gap: 4px; padding: 5px 0; width: 100%; cursor: pointer; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.96); backdrop-filter: blur(10px); border-top: 1px solid #e0ece4; display: flex; justify-content: space-around; padding: 8px 12px 12px; z-index: 200; }
+        .nav-bottom-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; font-size: 0.7rem; color: #8ba894; cursor: pointer; transition: 0.2s; padding: 4px 12px; border-radius: 30px; }
+        .nav-bottom-item i { font-size: 1.5rem; }
+        .nav-bottom-item.active { color: #059669; font-weight: 500; }
+        .modal-marketplace { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; overflow-y: auto; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-header { position: sticky; top: 0; background: white; padding: 16px; display: flex; justify-content: space-between; border-bottom: 1px solid #eef2ef; }
+        .close-modal { background: #eef2ef; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+        .modal-img-principal { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+        .miniaturas-modal { display: flex; gap: 8px; padding: 12px; overflow-x: auto; background: #fafdfa; }
+        .miniatura-modal { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; border: 2px solid transparent; cursor: pointer; }
+        .miniatura-modal.active { border-color: #059669; }
+        .modal-info { padding: 20px; }
+        .modal-titulo { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+        .modal-categoria { color: #059669; font-weight: 600; margin-bottom: 12px; }
+        .modal-desc { color: #4a5b52; line-height: 1.4; margin-bottom: 16px; }
+        .modal-ubicacion, .modal-usuario { font-size: 0.85rem; color: #6b8a73; margin: 8px 0; }
+        .modal-acciones { display: flex; gap: 12px; margin-top: 24px; margin-bottom: 20px; }
+        .btn-modal { flex: 1; padding: 14px; border-radius: 40px; font-weight: 600; border: none; cursor: pointer; }
+        .btn-modal-primary { background: #059669; color: white; }
+        .btn-modal-secondary { background: #eef2ef; color: #2c4b35; }
+        .modal-modern { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); justify-content: center; align-items: center; z-index: 1100; }
+        .modal-content { background: white; border-radius: 28px; max-width: 90%; width: 400px; padding: 24px; max-height: 85vh; overflow-y: auto; }
+        .form-mobile input, .form-mobile textarea, .form-mobile select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dde6e0; border-radius: 24px; font-size: 0.9rem; }
+        .upload-zone { background: #fafdfa; border: 2px dashed #cbdcd2; border-radius: 20px; padding: 16px; text-align: center; cursor: pointer; margin: 12px 0; }
+        .btn-modern { background: #059669; color: white; border: none; padding: 12px; border-radius: 40px; font-weight: 600; width: 100%; cursor: pointer; }
+        .chat-container { background: #f8faf8; border-radius: 20px; padding: 12px; max-height: 300px; overflow-y: auto; }
+        .mensaje { background: white; border-radius: 18px; padding: 8px 12px; margin-bottom: 8px; max-width: 80%; font-size: 0.8rem; }
+        .mensaje.emisor { background: #059669; color: white; margin-left: auto; }
+        .mensaje-imagen { max-width: 150px; border-radius: 12px; margin-top: 6px; cursor: pointer; }
+        .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 20px; text-align: center; }
+        .google-btn { background: #4285f4; color: white; border: none; padding: 14px 28px; border-radius: 40px; font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; margin-top: 20px; }
+        .chat-input-area { display: flex; gap: 8px; margin-top: 16px; }
+        .chat-input-area input { flex: 1; border-radius: 40px; padding: 10px 16px; border: 1px solid #dde6e0; outline: none; }
+        .chat-input-area button { background: #059669; color: white; border: none; border-radius: 40px; padding: 0 20px; cursor: pointer; }
+        .chat-adjuntar { background: #8aa59a; color: white; border: none; border-radius: 40px; padding: 0 16px; cursor: pointer; }
+        .conv-item { padding: 16px; border-bottom: 1px solid #eef2ef; cursor: pointer; transition: 0.2s; }
+        .conv-item:hover { background: #f8faf8; }
+        .mensaje-nuevo { background: #ef4444; color: white; padding: 2px 6px; border-radius: 20px; font-size: 10px; margin-left: 8px; }
+        @media (max-width: 700px) { .grid-pinterest { gap: 8px; } }
     </style>
 </head>
 <body>
 
-<!-- Pantalla de login (se oculta cuando hay usuario) -->
 <div id="loginScreen" class="login-screen">
     <i class="fas fa-exchange-alt" style="font-size: 64px; color: #059669; margin-bottom: 20px;"></i>
     <h2 style="color: #2c3e2f;">Intercambia</h2>
@@ -498,7 +99,6 @@
     </button>
 </div>
 
-<!-- App principal (se muestra tras login) -->
 <div id="appContainer" style="display: none;">
     <div class="mobile-header">
         <div class="logo-area-mobile">
@@ -518,7 +118,6 @@
 
     <div class="categories-scroll" id="categoriesMobileContainer"></div>
 
-    <!-- Vistas -->
     <div id="feedView"><div id="feedGrid" class="grid-pinterest">Cargando...</div></div>
     <div id="favoritosView" style="display:none;"><div id="favoritosGrid" class="grid-pinterest"></div></div>
     <div id="crearView" style="display:none;">
@@ -533,7 +132,7 @@
                 <div class="upload-zone" id="uploadMainMobile">📸 Foto principal (clic)</div>
                 <input type="file" id="fotoMainInput" accept="image/*" style="display:none;">
                 <div id="previewMainMobile" style="margin:8px 0;"></div>
-                <div class="upload-zone" id="uploadExtraMobile">➕ Fotos adicionales (máx 4)</div>
+                <div class="upload-zone" id="uploadExtraMobile">📸 Fotos adicionales (máx 4, haz clic varias veces)</div>
                 <input type="file" id="fotosExtraInput" accept="image/*" multiple style="display:none;">
                 <div id="previewExtraMobile" style="display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;"></div>
                 <div style="margin:16px 0;">
@@ -553,7 +152,6 @@
         <div id="chatDetalleMobile" style="margin:12px; display:none;"></div>
     </div>
 
-    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
         <button class="nav-bottom-item active" data-tab="feed"><i class="fas fa-home"></i><span>Inicio</span></button>
         <button class="nav-bottom-item" data-tab="favoritos"><i class="fas fa-bookmark"></i><span>Guardados</span></button>
@@ -563,7 +161,6 @@
     </div>
 </div>
 
-<!-- MODAL DETALLE MARKETPLACE -->
 <div id="detailModal" class="modal-marketplace">
     <div class="modal-header">
         <h3>Detalle del objeto</h3>
@@ -581,12 +178,10 @@
     </div>
 </div>
 
-<!-- MODALES PREVIEW / FOTO -->
 <div id="previewModal" class="modal-modern"><div class="modal-content"><h3>Confirmar publicación</h3><img id="previewImgModal" style="width:100%; border-radius: 16px;"><p id="previewTextModal" style="margin:12px 0;"></p><button id="confirmarPublicarBtn" class="btn-modern">Publicar</button><button id="cancelPreviewBtn" style="background:#ccc; margin-top:12px;" class="btn-modern">Cancelar</button></div></div>
 <div id="fotoModal" class="modal-modern"><div class="modal-content"><img id="fotoAmpliada" style="width:100%; border-radius: 16px;"><button onclick="document.getElementById('fotoModal').style.display='none'" style="margin-top:12px;" class="btn-modern">Cerrar</button></div></div>
 
 <script>
-    // ========== CONFIGURACIÓN ==========
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
     const R2_PUBLIC_URL = "https://pub-ec355fc78ea64824955ad7015e4e7353.r2.dev";
     
@@ -594,17 +189,20 @@
     let authToken = null;
     let objetos = [];
     let favoritosIds = new Set();
-    let chats = [];
     let nextId = 100;
     let fotoPrincipalData = null;
     let fotosExtraArr = [];
     let mapaTemp = null;
-    let pollingInterval = null;
+    
+    // Chat global
+    let chatPollingInterval = null;
+    let chatActual = { objetoId: null, otroUsuario: null, titulo: null };
     let ultimoMensajeId = 0;
+    let mensajesCache = [];
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
-    // ========== AUTENTICACIÓN REAL CON GOOGLE ==========
+    // ========== AUTENTICACIÓN ==========
     function getTokenFromURL() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
@@ -662,7 +260,7 @@
         } catch(e) { console.error('Error guardando OneSignal ID:', e); }
     }
 
-    // ========== API REAL ==========
+    // ========== API ==========
     async function apiFetch(path, options = {}) {
         const headers = options.headers || {};
         if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
@@ -755,14 +353,11 @@
         return await apiFetch('/mis-conversaciones');
     }
 
-    // ========== UI RENDER ==========
+    // ========== RENDER UI ==========
     function renderCategorias() {
         const container = document.getElementById("categoriesMobileContainer");
         if(!container) return;
-        container.innerHTML = `<div class="categories-flex">
-            <button class="cat-mobile active" data-cat="all">Todos</button>
-            ${categorias.map(c => `<button class="cat-mobile" data-cat="${c}">${c}</button>`).join('')}
-        </div>`;
+        container.innerHTML = `<div class="categories-flex"><button class="cat-mobile active" data-cat="all">Todos</button>${categorias.map(c => `<button class="cat-mobile" data-cat="${c}">${c}</button>`).join('')}</div>`;
         document.querySelectorAll('.cat-mobile').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.cat-mobile').forEach(b => b.classList.remove('active'));
@@ -798,10 +393,7 @@
                         <div class="pin-category">${obj.categoria}</div>
                         <div class="pin-title">${obj.titulo}</div>
                         <div class="pin-desc">${obj.descripcion.substring(0, 80)}${obj.descripcion.length>80 ? '...' : ''}</div>
-                        <div class="ubicacion-user">
-                            <span><i class="fas fa-map-marker-alt"></i> ${obj.ubicacionTexto}</span>
-                            <div><i class="fas fa-user"></i> ${obj.userNombre}</div>
-                        </div>
+                        <div class="ubicacion-user"><span><i class="fas fa-map-marker-alt"></i> ${obj.ubicacionTexto}</span><div><i class="fas fa-user"></i> ${obj.userNombre}</div></div>
                         <div class="acciones-botones">
                             <button class="btn-guardar ${esFav ? '' : 'outline'}" data-id="${obj.id}"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
                             ${obj.userId !== currentUser?.email ? `<button class="btn-intercambiar" data-id="${obj.id}"><i class="fas fa-handshake"></i> Intercambiar</button>` : ''}
@@ -818,7 +410,7 @@
         });
         async function favHandler(e) { e.stopPropagation(); const id = parseInt(this.dataset.id); if(favoritosIds.has(id)) await quitarFavorito(id); else await agregarFavorito(id); renderFeed(); renderFavoritos(); }
         
-        document.querySelectorAll('.btn-intercambiar').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); abrirChatConObjeto(id); }));
+        document.querySelectorAll('.btn-intercambiar').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); abrirChatConObjeto(id); switchTab('mensajes'); }));
         
         document.querySelectorAll('.btn-reportar').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); const motivo = prompt('¿Por qué reportas este objeto?'); if(motivo) await reportarObjeto(id, motivo); }));
         
@@ -871,53 +463,124 @@
             ${obj.userId !== currentUser?.email ? `<button id="modalIntercambiarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-handshake"></i> Intercambiar</button>` : `<button id="modalEliminarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-trash"></i> Eliminar</button>`}
         `;
         document.getElementById("modalGuardarBtn")?.addEventListener("click", async () => { if(favoritosIds.has(obj.id)) await quitarFavorito(obj.id); else await agregarFavorito(obj.id); document.getElementById("detailModal").style.display = "none"; renderFeed(); renderFavoritos(); });
-        document.getElementById("modalIntercambiarBtn")?.addEventListener("click", () => { abrirChatConObjeto(obj.id); document.getElementById("detailModal").style.display = "none"; });
+        document.getElementById("modalIntercambiarBtn")?.addEventListener("click", () => { abrirChatConObjeto(obj.id); document.getElementById("detailModal").style.display = "none"; switchTab('mensajes'); });
         document.getElementById("modalEliminarBtn")?.addEventListener("click", async () => { if(confirm("Eliminar?")){ await eliminarObjeto(obj.id); document.getElementById("detailModal").style.display = "none"; } });
         
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== CHAT ==========
+    // ========== CHAT CON POLLING ==========
+    function detenerPollingChat() {
+        if (chatPollingInterval) {
+            clearInterval(chatPollingInterval);
+            chatPollingInterval = null;
+        }
+    }
+
+    function iniciarPollingChat() {
+        detenerPollingChat();
+        chatPollingInterval = setInterval(async () => {
+            if (chatActual.objetoId && chatActual.otroUsuario && document.getElementById('chatDetalleMobile')?.style.display === 'block') {
+                await cargarMensajesChat();
+            }
+        }, 5000);
+    }
+
+    async function cargarMensajesChat() {
+        if (!chatActual.objetoId) return;
+        try {
+            const msgs = await obtenerMensajes(chatActual.objetoId, chatActual.otroUsuario);
+            const cont = document.getElementById('chatMsgsBox');
+            if (!cont) return;
+            
+            const hayNuevos = msgs.length > 0 && (ultimoMensajeId === 0 || msgs[msgs.length-1]?.id > ultimoMensajeId);
+            
+            if (hayNuevos || ultimoMensajeId === 0) {
+                cont.innerHTML = msgs.map(m => `
+                    <div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}">
+                        <strong>${m.emisor === currentUser?.email ? 'Tú' : m.emisor}</strong>: ${m.mensaje}
+                        ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
+                        <small>${new Date(m.fecha).toLocaleTimeString()}</small>
+                    </div>
+                `).join('');
+                cont.scrollTop = cont.scrollHeight;
+                if (msgs.length > 0) ultimoMensajeId = msgs[msgs.length-1].id;
+            }
+        } catch(e) { console.error('Error cargando mensajes:', e); }
+    }
+
     async function abrirChatConObjeto(objetoId) {
+        detenerPollingChat();
         const obj = objetos.find(o => o.id === objetoId);
         if(!obj) return;
         
-        // Cargar mensajes existentes
-        const msgs = await obtenerMensajes(objetoId, obj.userId);
+        chatActual = { objetoId, otroUsuario: obj.userId, titulo: obj.titulo };
+        ultimoMensajeId = 0;
         
         const contenedor = document.getElementById("chatDetalleMobile");
         contenedor.style.display = "block";
-        contenedor.innerHTML = `<div style="background:white; border-radius:24px; padding:16px;">
-            <h4>${obj.titulo}</h4>
-            <div id="chatMsgsBox" class="chat-container"></div>
-            <div style="display:flex; gap:8px; margin-top:16px;">
-                <input type="text" id="msgInputMobile" style="flex:1; border-radius:40px; padding:10px; border:1px solid #ddd;">
-                <button id="sendMsgMobileBtn" class="btn-modern" style="width:auto; padding:0 20px;">Enviar</button>
+        contenedor.innerHTML = `
+            <div style="background:white; border-radius:24px; padding:16px;">
+                <h4>💬 ${obj.titulo}</h4>
+                <small>Conversando con ${obj.userNombre}</small>
+                <div id="chatMsgsBox" class="chat-container" style="margin-top:12px;"></div>
+                <div class="chat-input-area">
+                    <button class="chat-adjuntar" id="adjuntarArchivoBtn"><i class="fas fa-paperclip"></i></button>
+                    <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje...">
+                    <button id="sendMsgMobileBtn">Enviar</button>
+                </div>
+                <input type="file" id="archivoAdjunto" style="display:none;" accept="image/*,application/pdf">
             </div>
-        </div>`;
+        `;
         
-        function cargarMensajes() {
-            const box = document.getElementById("chatMsgsBox");
-            if(box) box.innerHTML = msgs.map(m => `<div class="mensaje ${m.emisor === currentUser?.email ? 'emisor' : 'receptor'}">${m.mensaje}</div>`).join('');
-        }
-        cargarMensajes();
+        await cargarMensajesChat();
+        iniciarPollingChat();
         
         document.getElementById("sendMsgMobileBtn").onclick = async () => {
             const input = document.getElementById("msgInputMobile");
             if(input.value.trim()){
                 await enviarMensaje(objetoId, obj.userId, input.value);
                 input.value = "";
-                const nuevosMsgs = await obtenerMensajes(objetoId, obj.userId);
-                msgs.length = 0;
-                msgs.push(...nuevosMsgs);
-                cargarMensajes();
+                await cargarMensajesChat();
             }
         };
+        document.getElementById("msgInputMobile").addEventListener("keypress", (e) => {
+            if (e.key === 'Enter') document.getElementById("sendMsgMobileBtn").click();
+        });
         
-        switchTab("mensajes");
+        document.getElementById("adjuntarArchivoBtn").onclick = () => document.getElementById("archivoAdjunto").click();
+        document.getElementById("archivoAdjunto").onchange = async (e) => {
+            const archivo = e.target.files[0];
+            if (archivo) {
+                await enviarMensaje(objetoId, obj.userId, "📎 Archivo adjunto", archivo);
+                e.target.value = '';
+                await cargarMensajesChat();
+            }
+        };
     }
 
-    // ========== PUBLICAR OBJETO ==========
+    async function cargarConversaciones() {
+        try {
+            const convs = await obtenerMisConversaciones();
+            const listaDiv = document.getElementById("listaChatsMobile");
+            if (!convs.length) { listaDiv.innerHTML = '<div style="text-align:center; padding:20px;">💬 No hay conversaciones activas aún.</div>'; return; }
+            listaDiv.innerHTML = convs.map(c => `
+                <div class="conv-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}">
+                    <strong>📦 ${c.titulo}</strong><br>
+                    💬 con ${c.otroUsuario}<br>
+                    <small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
+                </div>
+            `).join('');
+            document.querySelectorAll('.conv-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    abrirChatConObjeto(parseInt(el.dataset.id));
+                    switchTab('mensajes');
+                });
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    // ========== PUBLICAR OBJETO (con múltiples fotos) ==========
     async function publicarObjeto(titulo, descripcion, categoria, fotos, lat, lng, direccion) {
         const form = new FormData();
         form.append('titulo', titulo);
@@ -931,12 +594,47 @@
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
 
+    let fotosExtraSeleccionadas = [];
+
+    function actualizarPreviewFotosExtra() {
+        const container = document.getElementById("previewExtraMobile");
+        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => `<div style="position:relative;"><img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;"><button onclick="eliminarFotoExtra(${idx})" style="position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer;">✕</button></div>`).join('');
+    }
+
+    window.eliminarFotoExtra = function(idx) {
+        fotosExtraSeleccionadas.splice(idx, 1);
+        actualizarPreviewFotosExtra();
+    };
+
     document.getElementById("uploadMainMobile")?.addEventListener("click",()=>document.getElementById("fotoMainInput").click());
-    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ if(e.target.files[0]){ const reader = new FileReader(); reader.onload = ev => { fotoPrincipalData = e.target.files[0]; document.getElementById("previewMainMobile").innerHTML = `<img src="${ev.target.result}" style="width:80px; border-radius:16px;">`; }; reader.readAsDataURL(e.target.files[0]); } });
+    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ if(e.target.files[0]){ fotoPrincipalData = e.target.files[0]; const reader = new FileReader(); reader.onload = ev => { document.getElementById("previewMainMobile").innerHTML = `<img src="${ev.target.result}" style="width:80px; border-radius:16px;">`; }; reader.readAsDataURL(e.target.files[0]); } });
+    
     document.getElementById("uploadExtraMobile")?.addEventListener("click",()=>document.getElementById("fotosExtraInput").click());
-    document.getElementById("fotosExtraInput")?.addEventListener("change",(e)=>{ fotosExtraArr = Array.from(e.target.files).slice(0,4); const cont = document.getElementById("previewExtraMobile"); cont.innerHTML = fotosExtraArr.map(f=>`<img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; border-radius:12px;">`).join(''); });
+    document.getElementById("fotosExtraInput")?.addEventListener("change",(e)=>{ 
+        const nuevosArchivos = Array.from(e.target.files);
+        fotosExtraSeleccionadas.push(...nuevosArchivos);
+        if (fotosExtraSeleccionadas.length > 4) fotosExtraSeleccionadas = fotosExtraSeleccionadas.slice(0,4);
+        actualizarPreviewFotosExtra();
+        e.target.value = '';
+    });
+    
     document.getElementById("ubicarBtnMobile")?.addEventListener("click",()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos=>{ document.getElementById("latMobile").value = pos.coords.latitude; document.getElementById("lngMobile").value = pos.coords.longitude; const mapDiv = document.getElementById("mapaMobile"); mapDiv.style.display = "block"; if(mapaTemp) mapaTemp.remove(); mapaTemp = L.map('mapaMobile').setView([pos.coords.latitude, pos.coords.longitude], 13); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaTemp); L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(mapaTemp); }); else alert("No se pudo"); });
-    document.getElementById("previewMobileBtn")?.addEventListener("click",()=>{ if(!fotoPrincipalData){ alert("Foto principal requerida"); return; } const tit = document.getElementById("tituloMobile").value; const cat = document.getElementById("categoriaMobile").value; const desc = document.getElementById("descripcionMobile").value; const dir = document.getElementById("direccionMobile").value; const reader = new FileReader(); reader.onload = e => { document.getElementById("previewImgModal").src = e.target.result; document.getElementById("previewTextModal").innerHTML = `<strong>${tit}</strong><br>${cat}<br>${desc}<br><i class="fas fa-map-marker-alt"></i> ${dir || "Sin dirección"}`; document.getElementById("previewModal").style.display="flex"; }; reader.readAsDataURL(fotoPrincipalData); });
+    
+    document.getElementById("previewMobileBtn")?.addEventListener("click",()=>{ 
+        if(!fotoPrincipalData){ alert("Foto principal requerida"); return; } 
+        const tit = document.getElementById("tituloMobile").value; 
+        const cat = document.getElementById("categoriaMobile").value; 
+        const desc = document.getElementById("descripcionMobile").value; 
+        const dir = document.getElementById("direccionMobile").value; 
+        const reader = new FileReader(); 
+        reader.onload = e => { 
+            document.getElementById("previewImgModal").src = e.target.result; 
+            document.getElementById("previewTextModal").innerHTML = `<strong>${tit}</strong><br>${cat}<br>${desc}<br><i class="fas fa-map-marker-alt"></i> ${dir || "Sin dirección"}`; 
+            document.getElementById("previewModal").style.display="flex"; 
+        }; 
+        reader.readAsDataURL(fotoPrincipalData); 
+    });
+    
     document.getElementById("confirmarPublicarBtn").onclick = async () => { 
         const tit = document.getElementById("tituloMobile").value;
         const cat = document.getElementById("categoriaMobile").value;
@@ -944,19 +642,21 @@
         const dir = document.getElementById("direccionMobile").value;
         const lat = document.getElementById("latMobile").value;
         const lng = document.getElementById("lngMobile").value;
-        const fotos = [fotoPrincipalData, ...fotosExtraArr];
+        const fotos = [fotoPrincipalData, ...fotosExtraSeleccionadas];
         await publicarObjeto(tit, desc, cat, fotos, lat, lng, dir);
         document.getElementById("previewModal").style.display="none";
         await cargarObjetosDesdeAPI();
         limpiarForm();
         alert("¡Objeto publicado!");
     };
+    
     document.getElementById("cancelPreviewBtn").addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
+    
     function limpiarForm(){ 
         document.getElementById("tituloMobile").value = ""; 
         document.getElementById("descripcionMobile").value = ""; 
         fotoPrincipalData = null; 
-        fotosExtraArr = []; 
+        fotosExtraSeleccionadas = []; 
         document.getElementById("previewMainMobile").innerHTML = ""; 
         document.getElementById("previewExtraMobile").innerHTML = ""; 
         document.getElementById("direccionMobile").value = "";
@@ -975,29 +675,17 @@
         document.getElementById("mensajesView").style.display = tabId==="mensajes" ? "block" : "none";
         if(tabId==="favoritos") renderFavoritos();
         if(tabId==="misCosas") renderMisCosas();
-        if(tabId==="mensajes") cargarConversaciones();
+        if(tabId==="mensajes") { cargarConversaciones(); detenerPollingChat(); }
     }
 
-    async function cargarConversaciones() {
-        try {
-            const convs = await obtenerMisConversaciones();
-            const listaDiv = document.getElementById("listaChatsMobile");
-            if (!convs.length) { listaDiv.innerHTML = '<div style="text-align:center; padding:20px;">💬 No hay conversaciones activas aún.</div>'; return; }
-            listaDiv.innerHTML = convs.map(c => `
-                <div class="conv-item" style="padding:16px; border-bottom:1px solid #eef2ef; cursor:pointer;" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}">
-                    <strong>📦 ${c.titulo}</strong><br>💬 con ${c.otroUsuario}<br><small>Último: ${new Date(c.ultimaFecha).toLocaleString()}</small>
-                </div>
-            `).join('');
-            document.querySelectorAll('.conv-item').forEach(el => {
-                el.addEventListener('click', () => abrirChatConObjeto(parseInt(el.dataset.id)));
-            });
-        } catch(e) { console.error(e); }
-    }
-
-    // ========== PERFIL ==========
     function mostrarPerfil() {
         alert(`👤 ${currentUser.name || currentUser.email}\n📧 ${currentUser.email}\n⭐ 4.9 · 15 intercambios`);
     }
+
+    window.verFotoAmpliada = function(url) {
+        document.getElementById("fotoAmpliada").src = url;
+        document.getElementById("fotoModal").style.display = "flex";
+    };
 
     // ========== INICIALIZACIÓN ==========
     async function init() {
