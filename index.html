@@ -51,9 +51,22 @@
 
         /* BOTTOM NAV */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.96); backdrop-filter: blur(10px); border-top: 1px solid #e0ece4; display: flex; justify-content: space-around; padding: 8px 12px 12px; z-index: 200; }
-        .nav-bottom-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; font-size: 0.7rem; color: #8ba894; cursor: pointer; transition: 0.2s; padding: 4px 12px; border-radius: 30px; }
+        .nav-bottom-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; font-size: 0.7rem; color: #8ba894; cursor: pointer; transition: 0.2s; padding: 4px 12px; border-radius: 30px; position: relative; }
         .nav-bottom-item i { font-size: 1.5rem; }
         .nav-bottom-item.active { color: #059669; font-weight: 500; }
+        .badge-mensajes {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 20px;
+            min-width: 18px;
+            text-align: center;
+        }
 
         /* MODALES */
         .modal-marketplace { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; overflow-y: auto; animation: slideUp 0.3s ease; }
@@ -96,7 +109,6 @@
             position: relative;
         }
 
-        /* Panel izquierdo - lista de conversaciones */
         .conversations-list {
             width: 35%;
             background: #f8faf8;
@@ -120,17 +132,6 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #1f2937;
-        }
-
-        .back-to-list-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #059669;
-            padding: 8px;
-            border-radius: 50%;
         }
 
         .conversations-search {
@@ -167,6 +168,7 @@
             transition: 0.2s;
             border-radius: 12px;
             margin: 4px 8px;
+            position: relative;
         }
 
         .conversation-item:hover {
@@ -201,6 +203,9 @@
             color: #1f2937;
             font-size: 0.9rem;
             margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .conversation-last-message {
@@ -216,7 +221,17 @@
             color: #8aa59a;
         }
 
-        /* Panel derecho - chat activo */
+        .badge-no-leidos {
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 20px;
+            min-width: 20px;
+            text-align: center;
+        }
+
         .chat-active {
             flex: 1;
             display: flex;
@@ -438,14 +453,13 @@
             border-radius: 4px;
         }
 
-        /* ========== RESPONSIVE: MODO MÓVIL (estilo Messenger) ========== */
+        /* RESPONSIVE MÓVIL */
         @media (max-width: 768px) {
             .messenger-container {
                 height: calc(100vh - 160px);
                 overflow: hidden;
             }
 
-            /* Ocultar lista cuando el chat está abierto */
             .messenger-container.chat-open .conversations-list {
                 transform: translateX(-100%);
                 position: absolute;
@@ -474,11 +488,6 @@
                 justify-content: center;
             }
 
-            .conversations-header .back-to-list-btn {
-                display: none;
-            }
-
-            /* Cuando el chat está abierto, mostrar botón de volver */
             .messenger-container.chat-open .chat-back-btn {
                 display: flex;
             }
@@ -497,7 +506,6 @@
             }
         }
 
-        /* LOGIN */
         .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 20px; text-align: center; }
         .google-btn { background: #4285f4; color: white; border: none; padding: 14px 28px; border-radius: 40px; font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; margin-top: 20px; }
     </style>
@@ -576,7 +584,7 @@
         <button class="nav-bottom-item" data-tab="favoritos"><i class="fas fa-bookmark"></i><span>Guardados</span></button>
         <button class="nav-bottom-item" data-tab="crear"><i class="fas fa-plus-circle"></i><span>Crear</span></button>
         <button class="nav-bottom-item" data-tab="misCosas"><i class="fas fa-box"></i><span>Mis cosas</span></button>
-        <button class="nav-bottom-item" data-tab="mensajes"><i class="fas fa-comment-dots"></i><span>Mensajes</span></button>
+        <button class="nav-bottom-item" data-tab="mensajes" id="mensajesNavBtn"><i class="fas fa-comment-dots"></i><span>Mensajes</span><span id="mensajesBadge" class="badge-mensajes" style="display:none;">0</span></button>
     </div>
 </div>
 
@@ -616,6 +624,7 @@
     let chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
     let ultimoMensajeId = 0;
     let conversacionesCache = [];
+    let mensajesNoLeidos = new Map(); // mapa de id_objeto -> cantidad de mensajes no leídos
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -786,6 +795,69 @@
         }
     }
 
+    // ========== FUNCIONES DE CONTADOR DE MENSAJES ==========
+    async function actualizarContadorMensajes() {
+        if (!currentUser) return;
+        
+        try {
+            const convs = await obtenerMisConversaciones();
+            let totalNoLeidos = 0;
+            
+            for (const c of convs) {
+                const msgs = await obtenerMensajes(c.id_objeto, c.otroUsuario);
+                // Contar mensajes del otro usuario que no son míos
+                const noLeidos = msgs.filter(m => m.emisor === c.otroUsuario && m.leido !== 1).length;
+                if (noLeidos > 0) {
+                    mensajesNoLeidos.set(c.id_objeto, noLeidos);
+                    totalNoLeidos += noLeidos;
+                } else {
+                    mensajesNoLeidos.delete(c.id_objeto);
+                }
+            }
+            
+            const badge = document.getElementById('mensajesBadge');
+            if (badge) {
+                if (totalNoLeidos > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.innerText = totalNoLeidos > 99 ? '99+' : totalNoLeidos;
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+            
+            // Actualizar los badges en cada conversación si la lista está visible
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                const id = parseInt(item.dataset.id);
+                const noLeidos = mensajesNoLeidos.get(id) || 0;
+                const badgeSpan = item.querySelector('.badge-no-leidos');
+                if (noLeidos > 0) {
+                    if (badgeSpan) {
+                        badgeSpan.innerText = noLeidos;
+                    } else {
+                        const nameDiv = item.querySelector('.conversation-name');
+                        if (nameDiv && !item.querySelector('.badge-no-leidos')) {
+                            const newBadge = document.createElement('span');
+                            newBadge.className = 'badge-no-leidos';
+                            newBadge.innerText = noLeidos;
+                            nameDiv.appendChild(newBadge);
+                        }
+                    }
+                } else if (badgeSpan) {
+                    badgeSpan.remove();
+                }
+            });
+        } catch(e) { console.error('Error actualizando contador:', e); }
+    }
+
+    async function marcarMensajesComoLeidos(objetoId, otroUsuario) {
+        // En una implementación real, tendrías un endpoint para marcar como leídos
+        // Por ahora, solo limpiamos el contador local
+        if (mensajesNoLeidos.has(objetoId)) {
+            mensajesNoLeidos.delete(objetoId);
+            await actualizarContadorMensajes();
+        }
+    }
+
     // ========== RENDER UI ==========
     function renderCategorias() {
         const container = document.getElementById("categoriesMobileContainer");
@@ -902,7 +974,7 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== BANDEJA DE MENSAJES ESTILO MESSENGER RESPONSIVE ==========
+    // ========== BANDEJA DE MENSAJES ESTILO MESSENGER ==========
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -915,6 +987,7 @@
         chatPollingInterval = setInterval(async () => {
             if (chatActual.id_objeto && chatActual.otroUsuario && document.getElementById('chatMessagesArea')) {
                 await cargarMensajesChat();
+                await actualizarContadorMensajes();
             }
         }, 5000);
     }
@@ -947,6 +1020,9 @@
                 cont.scrollTop = cont.scrollHeight;
                 if (msgs.length > 0) ultimoMensajeId = msgs[msgs.length-1].id;
             }
+            
+            // Marcar mensajes como leídos (simulado localmente)
+            await marcarMensajesComoLeidos(chatActual.id_objeto, chatActual.otroUsuario);
         } catch(e) { console.error('Error cargando mensajes:', e); }
     }
 
@@ -996,12 +1072,12 @@
             if (msgs.length > 0) ultimoMensajeId = msgs[msgs.length-1].id;
         }
         
-        iniciarPollingChat();
+        // Marcar como leídos al abrir el chat
+        await marcarMensajesComoLeidos(parseInt(objetoId), otroUsuario);
         
-        // Abrir modo chat en móvil
+        iniciarPollingChat();
         openChatOnMobile();
         
-        // Marcar conversación como activa en la lista
         document.querySelectorAll('.conversation-item').forEach(item => {
             item.classList.remove('active');
             if (item.dataset.id == objetoId && item.dataset.otro == otroUsuario) {
@@ -1042,6 +1118,7 @@
                 await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, texto);
                 input.value = "";
                 await cargarMensajesChat();
+                await actualizarContadorMensajes();
             }
         };
         document.getElementById("msgInputMobile").addEventListener("keypress", (e) => {
@@ -1054,6 +1131,7 @@
                 await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, "📎 Archivo", archivo);
                 e.target.value = '';
                 await cargarMensajesChat();
+                await actualizarContadorMensajes();
             }
         };
         document.getElementById("closeChatBtn").onclick = () => {
@@ -1087,16 +1165,21 @@
                 </div>
                 <div class="conversations-scroll" id="conversationsList">
                     ${conversacionesCache.length === 0 ? '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>' : 
-                        conversacionesCache.map(c => `
+                        conversacionesCache.map(c => {
+                            const noLeidos = mensajesNoLeidos.get(c.id_objeto) || 0;
+                            return `
                             <div class="conversation-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}" data-titulo="${c.titulo}">
                                 <div class="conversation-avatar">${c.otroNombre.charAt(0).toUpperCase()}</div>
                                 <div class="conversation-info">
-                                    <div class="conversation-name">${c.otroNombre}</div>
+                                    <div class="conversation-name">
+                                        ${c.otroNombre}
+                                        ${noLeidos > 0 ? `<span class="badge-no-leidos">${noLeidos}</span>` : ''}
+                                    </div>
                                     <div class="conversation-last-message">📦 ${c.titulo}</div>
                                 </div>
                                 <div class="conversation-time">${new Date(c.ultimaFecha).toLocaleDateString()}</div>
-                            </div>
-                        `).join('')
+                            </div>`;
+                        }).join('')
                     }
                 </div>
             </div>
@@ -1147,6 +1230,8 @@
         } else {
             renderChatActivo();
         }
+        
+        await actualizarContadorMensajes();
     }
 
     async function cargarConversaciones() {
@@ -1267,6 +1352,13 @@
                 await cargarFavoritosDesdeAPI();
                 guardarOneSignalId(currentUser.email);
                 await renderMessenger();
+                
+                // Actualizar contador periódicamente
+                setInterval(async () => {
+                    if (currentUser) {
+                        await actualizarContadorMensajes();
+                    }
+                }, 10000);
             } else {
                 localStorage.removeItem('auth_token');
                 document.getElementById('loginScreen').style.display = 'flex';
