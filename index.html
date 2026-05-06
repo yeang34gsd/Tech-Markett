@@ -461,6 +461,7 @@
     let chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
     let badgePollingInterval = null;
     let ultimoMensajeRenderizado = null;
+    let chatAbierto = false;
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -756,7 +757,7 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== CHAT SIN PARPADEOS ==========
+    // ========== CHAT CORREGIDO ==========
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -767,34 +768,32 @@
     function iniciarPollingChat() {
         detenerPollingChat();
         chatPollingInterval = setInterval(async () => {
-            if (chatActual.id_objeto && chatActual.otroUsuario && document.getElementById('chatMessagesArea')) {
+            if (chatActual.id_objeto && chatActual.otroUsuario && chatAbierto) {
                 await cargarMensajesChat();
             }
-        }, 5000);
+        }, 3000);
     }
 
-    // Variable para evitar actualizaciones simultáneas
-    let actualizandoChat = false;
-
     async function cargarMensajesChat() {
-        if (!chatActual.id_objeto || !chatActual.otroUsuario || actualizandoChat) return;
+        if (!chatActual.id_objeto || !chatActual.otroUsuario) return;
         
-        actualizandoChat = true;
         try {
             const msgs = await obtenerMensajes(chatActual.id_objeto, chatActual.otroUsuario);
             const cont = document.getElementById('chatMessagesArea');
             if (!cont) return;
             
-            if (!msgs || msgs.length === 0) {
-                cont.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">✨ No hay mensajes aún. Envía uno para empezar.</div>';
+            const lastMsgId = msgs.length > 0 ? msgs[msgs.length - 1].id : null;
+            if (ultimoMensajeRenderizado === lastMsgId && cont.innerHTML !== '') {
                 return;
             }
             
-            const lastMsgId = msgs[msgs.length-1]?.id;
-            if (ultimoMensajeRenderizado === lastMsgId) {
-                actualizandoChat = false;
+            if (!msgs || msgs.length === 0) {
+                cont.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">✨ No hay mensajes aún. Envía uno para empezar.</div>';
+                ultimoMensajeRenderizado = null;
                 return;
             }
+            
+            const wasAtBottom = cont.scrollHeight - cont.scrollTop <= cont.clientHeight + 50;
             
             cont.innerHTML = msgs.map(m => {
                 const esEmisor = m.emisor === currentUser?.email;
@@ -806,16 +805,19 @@
                     <small>${new Date(m.fecha).toLocaleTimeString()}</small>
                 </div>`;
             }).join('');
-            cont.scrollTop = cont.scrollHeight;
+            
             ultimoMensajeRenderizado = lastMsgId;
+            
+            if (wasAtBottom || cont.innerHTML === '') {
+                cont.scrollTop = cont.scrollHeight;
+            }
             
             const mensajesNoLeidos = msgs.filter(m => m.emisor !== currentUser?.email && m.leido === 0);
             for (const m of mensajesNoLeidos) {
                 await marcarMensajeComoLeido(m.id);
             }
-        } catch(e) { console.error('Error cargando mensajes:', e); }
-        finally {
-            actualizandoChat = false;
+        } catch(e) { 
+            console.error('Error cargando mensajes:', e); 
         }
     }
 
@@ -824,6 +826,7 @@
         if (messengerContainer && window.innerWidth <= 768) {
             messengerContainer.classList.remove('chat-open');
         }
+        chatAbierto = false;
     }
 
     function openChatOnMobile() {
@@ -831,14 +834,20 @@
         if (messengerContainer && window.innerWidth <= 768) {
             messengerContainer.classList.add('chat-open');
         }
+        chatAbierto = true;
     }
 
     async function abrirChatDirecto(objetoId, otroUsuario, titulo) {
         detenerPollingChat();
         const obj = objetos.find(o => o.id === parseInt(objetoId));
-        const otroNombre = obj?.userNombre || otroUsuario.split('@')[0];
+        const otroNombre = obj?.userNombre || (otroUsuario ? otroUsuario.split('@')[0] : 'Usuario');
         
-        chatActual = { id_objeto: parseInt(objetoId), otroUsuario: otroUsuario, titulo: titulo, otroNombre: otroNombre };
+        chatActual = { 
+            id_objeto: parseInt(objetoId), 
+            otroUsuario: otroUsuario, 
+            titulo: titulo, 
+            otroNombre: otroNombre 
+        };
         ultimoMensajeRenderizado = null;
         
         await renderChatActivo();
@@ -873,50 +882,85 @@
                     </div>
                     <button class="chat-active-close" id="closeChatBtn"><i class="fas fa-times"></i></button>
                 </div>
-                <div id="chatMessagesArea" class="chat-messages-area"></div>
+                <div id="chatMessagesArea" class="chat-messages-area">
+                    <div style="text-align:center; padding:20px; color:#8aa59a;">💬 Cargando mensajes...</div>
+                </div>
                 <div class="chat-input-area">
                     <button class="chat-adjuntar" id="adjuntarArchivoBtn"><i class="fas fa-paperclip"></i></button>
-                    <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje...">
+                    <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje..." autocomplete="off">
                     <button class="btn-enviar" id="sendMsgMobileBtn">Enviar</button>
                 </div>
                 <input type="file" id="archivoAdjunto" style="display:none;">
             </div>
         `;
         
-        document.getElementById("sendMsgMobileBtn").onclick = async () => {
-            const input = document.getElementById("msgInputMobile");
-            const texto = input.value.trim();
-            if(texto){
-                await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, texto);
-                input.value = "";
-                await cargarMensajesChat();
-                await renderMessenger();
-                await actualizarBadgeMensajes();
-            }
-        };
-        document.getElementById("msgInputMobile").addEventListener("keypress", (e) => {
-            if (e.key === 'Enter') document.getElementById("sendMsgMobileBtn").click();
-        });
-        document.getElementById("adjuntarArchivoBtn").onclick = () => document.getElementById("archivoAdjunto").click();
-        document.getElementById("archivoAdjunto").onchange = async (e) => {
-            const archivo = e.target.files[0];
-            if (archivo) {
-                await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, "📎 Archivo", archivo);
-                e.target.value = '';
-                await cargarMensajesChat();
-                await renderMessenger();
-                await actualizarBadgeMensajes();
-            }
-        };
-        document.getElementById("closeChatBtn").onclick = () => {
-            chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
-            renderChatActivo();
-            closeChatOnMobile();
-            document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
-        };
-        document.getElementById("chatBackBtn").onclick = () => {
-            closeChatOnMobile();
-        };
+        const sendBtn = document.getElementById("sendMsgMobileBtn");
+        if (sendBtn) {
+            sendBtn.onclick = async () => {
+                const input = document.getElementById("msgInputMobile");
+                const texto = input.value.trim();
+                if(texto){
+                    await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, texto);
+                    input.value = "";
+                    await cargarMensajesChat();
+                    await renderMessenger();
+                    await actualizarBadgeMensajes();
+                    input.focus();
+                }
+            };
+        }
+        
+        const msgInput = document.getElementById("msgInputMobile");
+        if (msgInput) {
+            msgInput.addEventListener("keypress", (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById("sendMsgMobileBtn")?.click();
+                }
+            });
+        }
+        
+        const adjuntarBtn = document.getElementById("adjuntarArchivoBtn");
+        if (adjuntarBtn) {
+            adjuntarBtn.onclick = () => document.getElementById("archivoAdjunto").click();
+        }
+        
+        const archivoInput = document.getElementById("archivoAdjunto");
+        if (archivoInput) {
+            archivoInput.onchange = async (e) => {
+                const archivo = e.target.files[0];
+                if (archivo) {
+                    await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, "📎 Archivo", archivo);
+                    e.target.value = '';
+                    await cargarMensajesChat();
+                    await renderMessenger();
+                    await actualizarBadgeMensajes();
+                }
+            };
+        }
+        
+        const closeBtn = document.getElementById("closeChatBtn");
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                detenerPollingChat();
+                chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
+                contenedor.innerHTML = `
+                    <div class="empty-chat">
+                        <i class="fas fa-comment-dots"></i>
+                        <p>Selecciona una conversación para empezar a chatear</p>
+                    </div>
+                `;
+                closeChatOnMobile();
+                document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
+            };
+        }
+        
+        const backBtn = document.getElementById("chatBackBtn");
+        if (backBtn) {
+            backBtn.onclick = () => {
+                closeChatOnMobile();
+            };
+        }
     }
 
     async function renderMessenger() {
@@ -933,10 +977,10 @@
                 <div class="conversations-scroll" id="conversationsList">
                     ${convs.length === 0 ? '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>' : 
                         convs.map(c => {
-                            const otroNombre = c.otroUsuario?.split('@')[0] || c.otroUsuario;
+                            const otroNombre = c.otroUsuario?.split('@')[0] || c.otroUsuario || 'Usuario';
                             const noLeidos = c.no_leidos || 0;
                             return `
-                            <div class="conversation-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}" data-titulo="${c.titulo}">
+                            <div class="conversation-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}" data-titulo="${escapeHtml(c.titulo)}">
                                 <div class="conversation-avatar">${otroNombre.charAt(0).toUpperCase()}</div>
                                 <div class="conversation-info">
                                     <div class="conversation-name">
@@ -996,7 +1040,7 @@
             });
             openChatOnMobile();
         } else {
-            renderChatActivo();
+            chatAbierto = false;
         }
         
         await actualizarBadgeMensajes();
