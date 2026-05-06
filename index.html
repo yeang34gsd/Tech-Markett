@@ -365,7 +365,7 @@
             <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
             <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
         </svg>
         Iniciar sesión con Google
     </button>
@@ -463,6 +463,8 @@
     let fotosExtraSeleccionadas = [];
     let mapaTemp = null;
     
+    // Polling global para feed y chat
+    let feedPollingInterval = null;
     let chatPollingInterval = null;
     let chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
     let conversacionesCache = [];
@@ -560,7 +562,7 @@
             renderFeed();
             renderFavoritos();
             renderMisCosas();
-        } catch(e) { console.error('Error:', e); }
+        } catch(e) { console.error('Error cargando objetos:', e); }
     }
 
     async function cargarFavoritosDesdeAPI() {
@@ -643,6 +645,23 @@
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
         } catch(e) { console.error('Error marcando mensaje como leído:', e); }
+    }
+
+    // ========== POLLING PARA FEED ==========
+    function iniciarPollingFeed() {
+        if (feedPollingInterval) clearInterval(feedPollingInterval);
+        feedPollingInterval = setInterval(async () => {
+            if (document.getElementById('feedView').style.display === 'block') {
+                await cargarObjetosDesdeAPI();
+            }
+        }, 15000); // Actualizar cada 15 segundos
+    }
+
+    function detenerPollingFeed() {
+        if (feedPollingInterval) {
+            clearInterval(feedPollingInterval);
+            feedPollingInterval = null;
+        }
     }
 
     // ========== RENDER UI ==========
@@ -790,8 +809,7 @@
             cont.innerHTML = msgs.map(m => {
                 const esEmisor = m.emisor === currentUser?.email;
                 const nombre = esEmisor ? 'Tú' : (m.emisor?.split('@')[0] || m.emisor);
-                const esNoLeido = !esEmisor && m.leido === 0;
-                return `<div class="mensaje ${esEmisor ? 'emisor' : 'receptor'} ${esNoLeido ? 'no-leido' : ''}">
+                return `<div class="mensaje ${esEmisor ? 'emisor' : 'receptor'}">
                     ${!esEmisor ? `<strong>${nombre}</strong>` : ''}
                     <div style="word-break: break-word; white-space: normal;">${escapeHtml(m.mensaje) || '📎 Archivo'}</div>
                     ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
@@ -800,7 +818,6 @@
             }).join('');
             cont.scrollTop = cont.scrollHeight;
             
-            // Marcar mensajes no leídos como leídos
             const mensajesNoLeidos = msgs.filter(m => m.emisor !== currentUser?.email && m.leido === 0);
             for (const m of mensajesNoLeidos) {
                 await marcarMensajeComoLeido(m.id);
@@ -842,7 +859,6 @@
             }
         });
         
-        // Actualizar contador después de abrir chat
         await renderMessenger();
     }
 
@@ -985,7 +1001,6 @@
             renderChatActivo();
         }
         
-        // Actualizar badge del bottom nav
         const totalNoLeidos = convs.reduce((acc, c) => acc + (c.no_leidos || 0), 0);
         const badge = document.getElementById('mensajesBadge');
         if (badge) {
@@ -1093,6 +1108,13 @@
         if(tabId==="favoritos") renderFavoritos();
         if(tabId==="misCosas") renderMisCosas();
         if(tabId==="mensajes") { detenerPollingChat(); cargarConversaciones(); }
+        
+        // Iniciar o detener polling según la pestaña
+        if (tabId === "feed") {
+            iniciarPollingFeed();
+        } else {
+            detenerPollingFeed();
+        }
     }
 
     function mostrarPerfil() {
@@ -1121,6 +1143,7 @@
                 await cargarFavoritosDesdeAPI();
                 guardarOneSignalId(currentUser.email);
                 await cargarConversaciones();
+                iniciarPollingFeed(); // Iniciar polling del feed
             } else {
                 localStorage.removeItem('auth_token');
                 document.getElementById('loginScreen').style.display = 'flex';
