@@ -346,6 +346,17 @@
 
         .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 20px; text-align: center; }
         .google-btn { background: #4285f4; color: white; border: none; padding: 14px 28px; border-radius: 40px; font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; margin-top: 20px; }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -458,10 +469,11 @@
     let mapaTemp = null;
     
     let chatPollingInterval = null;
-    let chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
+    let chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null, objeto: null };
     let badgePollingInterval = null;
     let ultimoMensajeRenderizado = null;
     let chatAbierto = false;
+    let enviandoMensaje = false;
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -496,6 +508,8 @@
         localStorage.removeItem('auth_token');
         currentUser = null;
         authToken = null;
+        detenerPollingChat();
+        if (badgePollingInterval) clearInterval(badgePollingInterval);
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('appContainer').style.display = 'none';
     }
@@ -546,7 +560,7 @@
                 fotoPrincipal: obj.url,
                 fotos: obj.fotos_extra?.map(f => f.url) || [],
                 userId: obj.usuario,
-                userNombre: obj.usuario,
+                userNombre: obj.usuario?.split('@')[0] || obj.usuario || 'Usuario',
                 ubicacionTexto: obj.direccion || 'Sin ubicación',
                 lat: obj.latitud,
                 lng: obj.longitud,
@@ -572,28 +586,43 @@
     async function eliminarObjeto(id) { await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); objetos = objetos.filter(o => o.id !== id); renderFeed(); renderFavoritos(); renderMisCosas(); alert('Objeto eliminado'); }
     
     async function enviarMensaje(objetoId, receptor, mensaje, archivo = null) {
-        if (archivo) {
-            const form = new FormData();
-            form.append('id_objeto', objetoId);
-            form.append('receptor', receptor);
-            form.append('mensaje', mensaje);
-            form.append('archivo', archivo);
-            const response = await fetch(`${WORKER_URL}/mensaje`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${authToken}` },
-                body: form
-            });
-            if (!response.ok) throw new Error(await response.text());
-            return response.json();
+        if (enviandoMensaje) return null;
+        enviandoMensaje = true;
+        try {
+            if (archivo) {
+                const form = new FormData();
+                form.append('id_objeto', objetoId);
+                form.append('receptor', receptor);
+                form.append('mensaje', mensaje);
+                form.append('archivo', archivo);
+                const response = await fetch(`${WORKER_URL}/mensaje`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: form
+                });
+                if (!response.ok) throw new Error(await response.text());
+                const data = await response.json();
+                return data.mensaje || null;
+            }
+            const data = await apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
+            return data.mensaje || null;
+        } catch(e) {
+            console.error('Error enviando mensaje:', e);
+            return null;
+        } finally {
+            enviandoMensaje = false;
         }
-        return await apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
     }
 
     async function obtenerMensajes(objetoId, otroUsuario) {
         try {
             const id = parseInt(objetoId);
-            const response = await apiFetch(`/mensajes?id_objeto=${id}&otro=${encodeURIComponent(otroUsuario)}`);
-            return response || [];
+            const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${id}&otro=${encodeURIComponent(otroUsuario)}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!response.ok) return [];
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
         } catch(e) {
             console.error('Error en obtenerMensajes:', e);
             return [];
@@ -602,8 +631,12 @@
 
     async function obtenerMisConversaciones() {
         try {
-            const response = await apiFetch('/mis-conversaciones');
-            return response || [];
+            const response = await fetch(`${WORKER_URL}/mis-conversaciones`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!response.ok) return [];
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
         } catch(e) {
             console.error('Error en obtenerMisConversaciones:', e);
             return [];
@@ -681,13 +714,13 @@
         return `<div class="pin-card" data-id="${obj.id}" data-obj='${JSON.stringify(obj)}'>
                     <img class="pin-img" src="${obj.fotoPrincipal}">
                     <div class="pin-info">
-                        <div class="pin-category">${obj.categoria}</div>
-                        <div class="pin-title">${obj.titulo}</div>
-                        <div class="pin-desc">${obj.descripcion.substring(0, 80)}${obj.descripcion.length>80 ? '...' : ''}</div>
-                        <div class="ubicacion-user"><span><i class="fas fa-map-marker-alt"></i> ${obj.ubicacionTexto}</span><div><i class="fas fa-user"></i> ${obj.userNombre}</div></div>
+                        <div class="pin-category">${escapeHtml(obj.categoria)}</div>
+                        <div class="pin-title">${escapeHtml(obj.titulo)}</div>
+                        <div class="pin-desc">${escapeHtml(obj.descripcion.substring(0, 80))}${obj.descripcion.length>80 ? '...' : ''}</div>
+                        <div class="ubicacion-user"><span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(obj.ubicacionTexto)}</span><div><i class="fas fa-user"></i> ${escapeHtml(obj.userNombre)}</div></div>
                         <div class="acciones-botones">
                             <button class="btn-guardar ${esFav ? '' : 'outline'}" data-id="${obj.id}"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
-                            ${obj.userId !== currentUser?.email ? `<button class="btn-intercambiar" data-id="${obj.id}" data-usuario="${obj.userId}" data-titulo="${obj.titulo}"><i class="fas fa-handshake"></i> Intercambiar</button>` : ''}
+                            ${obj.userId !== currentUser?.email ? `<button class="btn-intercambiar" data-id="${obj.id}" data-usuario="${obj.userId}" data-titulo="${escapeHtml(obj.titulo)}"><i class="fas fa-handshake"></i> Intercambiar</button>` : ''}
                         </div>
                         ${obj.userId !== currentUser?.email ? `<button class="btn-reportar" data-id="${obj.id}"><i class="fas fa-flag"></i> Reportar</button>` : `<button class="btn-eliminar" data-id="${obj.id}"><i class="fas fa-trash"></i> Eliminar</button>`}
                     </div>
@@ -775,7 +808,7 @@
     }
 
     async function cargarMensajesChat() {
-        if (!chatActual.id_objeto || !chatActual.otroUsuario) return;
+        if (!chatActual.id_objeto || !chatActual.otroUsuario || !currentUser) return;
         
         try {
             const msgs = await obtenerMensajes(chatActual.id_objeto, chatActual.otroUsuario);
@@ -808,7 +841,7 @@
             
             ultimoMensajeRenderizado = lastMsgId;
             
-            if (wasAtBottom || cont.innerHTML === '') {
+            if (wasAtBottom || cont.innerHTML === '<div style="text-align:center; padding:20px; color:#8aa59a;">✨ No hay mensajes aún. Envía uno para empezar.</div>') {
                 cont.scrollTop = cont.scrollHeight;
             }
             
@@ -839,6 +872,7 @@
 
     async function abrirChatDirecto(objetoId, otroUsuario, titulo) {
         detenerPollingChat();
+        
         const obj = objetos.find(o => o.id === parseInt(objetoId));
         const otroNombre = obj?.userNombre || (otroUsuario ? otroUsuario.split('@')[0] : 'Usuario');
         
@@ -846,7 +880,8 @@
             id_objeto: parseInt(objetoId), 
             otroUsuario: otroUsuario, 
             titulo: titulo, 
-            otroNombre: otroNombre 
+            otroNombre: otroNombre,
+            objeto: obj
         };
         ultimoMensajeRenderizado = null;
         
@@ -875,7 +910,7 @@
             <div class="chat-active">
                 <div class="chat-active-header">
                     <button class="chat-back-btn" id="chatBackBtn"><i class="fas fa-arrow-left"></i></button>
-                    <div class="chat-active-avatar">${chatActual.otroNombre.charAt(0).toUpperCase()}</div>
+                    <div class="chat-active-avatar">${escapeHtml(chatActual.otroNombre.charAt(0).toUpperCase())}</div>
                     <div class="chat-active-info">
                         <div class="chat-active-name">${escapeHtml(chatActual.otroNombre)}</div>
                         <div class="chat-active-objeto">📦 ${escapeHtml(chatActual.titulo)}</div>
@@ -897,14 +932,23 @@
         const sendBtn = document.getElementById("sendMsgMobileBtn");
         if (sendBtn) {
             sendBtn.onclick = async () => {
+                if (enviandoMensaje) return;
                 const input = document.getElementById("msgInputMobile");
                 const texto = input.value.trim();
                 if(texto){
+                    const btn = sendBtn;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<span class="loading-spinner"></span>';
+                    btn.disabled = true;
+                    
                     await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, texto);
                     input.value = "";
                     await cargarMensajesChat();
                     await renderMessenger();
                     await actualizarBadgeMensajes();
+                    
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                     input.focus();
                 }
             };
@@ -913,7 +957,7 @@
         const msgInput = document.getElementById("msgInputMobile");
         if (msgInput) {
             msgInput.addEventListener("keypress", (e) => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !enviandoMensaje) {
                     e.preventDefault();
                     document.getElementById("sendMsgMobileBtn")?.click();
                 }
@@ -930,11 +974,23 @@
             archivoInput.onchange = async (e) => {
                 const archivo = e.target.files[0];
                 if (archivo) {
+                    const btn = sendBtn;
+                    const originalText = btn?.innerHTML;
+                    if (btn) {
+                        btn.innerHTML = '<span class="loading-spinner"></span>';
+                        btn.disabled = true;
+                    }
+                    
                     await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, "📎 Archivo", archivo);
                     e.target.value = '';
                     await cargarMensajesChat();
                     await renderMessenger();
                     await actualizarBadgeMensajes();
+                    
+                    if (btn) {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
                 }
             };
         }
@@ -943,7 +999,7 @@
         if (closeBtn) {
             closeBtn.onclick = () => {
                 detenerPollingChat();
-                chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
+                chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null, objeto: null };
                 contenedor.innerHTML = `
                     <div class="empty-chat">
                         <i class="fas fa-comment-dots"></i>
@@ -952,6 +1008,7 @@
                 `;
                 closeChatOnMobile();
                 document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
+                chatAbierto = false;
             };
         }
         
@@ -980,16 +1037,16 @@
                             const otroNombre = c.otroUsuario?.split('@')[0] || c.otroUsuario || 'Usuario';
                             const noLeidos = c.no_leidos || 0;
                             return `
-                            <div class="conversation-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario}" data-titulo="${escapeHtml(c.titulo)}">
-                                <div class="conversation-avatar">${otroNombre.charAt(0).toUpperCase()}</div>
+                            <div class="conversation-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario || ''}" data-titulo="${escapeHtml(c.titulo || '')}">
+                                <div class="conversation-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
                                 <div class="conversation-info">
                                     <div class="conversation-name">
                                         ${escapeHtml(otroNombre)}
                                         ${noLeidos > 0 ? `<span class="badge-no-leidos">${noLeidos}</span>` : ''}
                                     </div>
-                                    <div class="conversation-last-message">📦 ${escapeHtml(c.titulo)}</div>
+                                    <div class="conversation-last-message">📦 ${escapeHtml(c.titulo || 'Objeto')}</div>
                                 </div>
-                                <div class="conversation-time">${new Date(c.ultimaFecha).toLocaleDateString()}</div>
+                                <div class="conversation-time">${c.ultimaFecha ? new Date(c.ultimaFecha).toLocaleDateString() : ''}</div>
                             </div>`;
                         }).join('')
                     }
@@ -1014,7 +1071,9 @@
                 const id = parseInt(el.dataset.id);
                 const otro = el.dataset.otro;
                 const titulo = el.dataset.titulo;
-                abrirChatDirecto(id, otro, titulo);
+                if (id && otro) {
+                    abrirChatDirecto(id, otro, titulo);
+                }
             });
         });
         
@@ -1089,13 +1148,13 @@
         e.target.value = '';
     });
     document.getElementById("ubicarBtnMobile")?.addEventListener("click",()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos=>{ document.getElementById("latMobile").value = pos.coords.latitude; document.getElementById("lngMobile").value = pos.coords.longitude; const mapDiv = document.getElementById("mapaMobile"); mapDiv.style.display = "block"; if(mapaTemp) mapaTemp.remove(); mapaTemp = L.map('mapaMobile').setView([pos.coords.latitude, pos.coords.longitude], 13); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaTemp); L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(mapaTemp); }); else alert("No se pudo"); });
-    document.getElementById("previewMobileBtn")?.addEventListener("click",()=>{ if(!fotoPrincipalData){ alert("Foto principal requerida"); return; } const reader = new FileReader(); reader.onload = e => { document.getElementById("previewImgModal").src = e.target.result; document.getElementById("previewTextModal").innerHTML = `<strong>${document.getElementById("tituloMobile").value}</strong><br>${document.getElementById("descripcionMobile").value}<br><i class="fas fa-map-marker-alt"></i> ${document.getElementById("direccionMobile").value || "Sin dirección"}`; document.getElementById("previewModal").style.display="flex"; }; reader.readAsDataURL(fotoPrincipalData); });
+    document.getElementById("previewMobileBtn")?.addEventListener("click",()=>{ if(!fotoPrincipalData){ alert("Foto principal requerida"); return; } const reader = new FileReader(); reader.onload = e => { document.getElementById("previewImgModal").src = e.target.result; document.getElementById("previewTextModal").innerHTML = `<strong>${escapeHtml(document.getElementById("tituloMobile").value)}</strong><br>${escapeHtml(document.getElementById("descripcionMobile").value)}<br><i class="fas fa-map-marker-alt"></i> ${escapeHtml(document.getElementById("direccionMobile").value || "Sin dirección")}`; document.getElementById("previewModal").style.display="flex"; }; reader.readAsDataURL(fotoPrincipalData); });
     document.getElementById("confirmarPublicarBtn").onclick = async () => {
         if (publicando) return;
         publicando = true;
         const btn = document.getElementById("confirmarPublicarBtn");
         btn.disabled = true;
-        btn.textContent = "Publicando...";
+        btn.innerHTML = '<span class="loading-spinner"></span> Publicando...';
         try {
             await publicarObjeto(
                 document.getElementById("tituloMobile").value,
@@ -1113,10 +1172,10 @@
         } catch(e) { alert("Error: " + e.message); } finally {
             publicando = false;
             btn.disabled = false;
-            btn.textContent = "Publicar";
+            btn.innerHTML = "Publicar";
         }
     };
-    document.getElementById("cancelPreviewBtn").addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
+    document.getElementById("cancelPreviewBtn")?.addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
     function limpiarForm(){ 
         document.getElementById("tituloMobile").value = ""; 
         document.getElementById("descripcionMobile").value = ""; 
@@ -1162,7 +1221,7 @@
                 currentUser = user;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'block';
-                document.getElementById("topAvatar").src = currentUser.picture || 'https://ui-avatars.com/api/?background=059669&color=fff';
+                document.getElementById("topAvatar").src = currentUser.picture || 'https://ui-avatars.com/api/?background=059669&color=fff&name=' + encodeURIComponent(currentUser.name || currentUser.email);
                 document.getElementById("topUserName").innerHTML = currentUser.name?.split(' ')[0] || currentUser.email.split('@')[0];
                 document.getElementById("profileTopBtn").addEventListener("click", mostrarPerfil);
                 await cargarObjetosDesdeAPI();
@@ -1180,8 +1239,8 @@
             document.getElementById('appContainer').style.display = 'none';
         }
         renderCategorias();
-        document.getElementById("searchMobileInput").addEventListener("input", () => renderFeed());
-        document.getElementById("closeDetailModal").addEventListener("click", () => document.getElementById("detailModal").style.display = "none");
+        document.getElementById("searchMobileInput")?.addEventListener("input", () => renderFeed());
+        document.getElementById("closeDetailModal")?.addEventListener("click", () => document.getElementById("detailModal").style.display = "none");
         
         document.querySelectorAll(".nav-bottom-item").forEach(btn => {
             btn.addEventListener("click", () => {
