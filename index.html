@@ -86,9 +86,10 @@
         .form-mobile input, .form-mobile textarea, .form-mobile select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dde6e0; border-radius: 24px; font-size: 0.9rem; }
         .upload-zone { background: #fafdfa; border: 2px dashed #cbdcd2; border-radius: 20px; padding: 16px; text-align: center; cursor: pointer; margin: 12px 0; }
         .btn-modern { background: #059669; color: white; border: none; padding: 12px; border-radius: 28px; font-weight: 600; width: 100%; cursor: pointer; transition: 0.2s; }
-        .btn-modern:hover { background: #047857; transform: scale(1.02); }
+        .btn-modern:hover { background: #047857; }
         .btn-modern:disabled { background: #9ac9b0; cursor: not-allowed; }
 
+        /* Chat Styles */
         .messenger-container {
             display: flex;
             background: white;
@@ -115,16 +116,14 @@
             padding: 16px;
             border-bottom: 1px solid #eef2ef;
             background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
-
         .conversations-header h3 { font-size: 1.1rem; font-weight: 600; color: #1f2937; }
-        .conversations-search { padding: 12px 16px; border-bottom: 1px solid #eef2ef; }
-        .conversations-search input { width: 100%; padding: 10px 16px; border: 1px solid #eef2ef; border-radius: 40px; font-size: 0.85rem; outline: none; background: white; }
-        .conversations-search input:focus { border-color: #059669; }
-        .conversations-scroll { flex: 1; overflow-y: auto; padding: 8px 0; }
+
+        .conversations-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
 
         .conversation-item {
             display: flex;
@@ -135,7 +134,6 @@
             transition: 0.2s;
             border-radius: 12px;
             margin: 4px 8px;
-            position: relative;
         }
         .conversation-item:hover { background: #eef2ef; }
         .conversation-item.active { background: #e8f5e9; }
@@ -223,7 +221,6 @@
             color: #8aa59a;
             padding: 8px;
             border-radius: 50%;
-            transition: 0.2s;
         }
         .chat-active-close:hover { background: #eef2ef; color: #ef4444; }
 
@@ -274,7 +271,7 @@
         }
         .mensaje.emisor small { color: rgba(255,255,255,0.8); }
         .mensaje.receptor small { color: #8aa59a; }
-        .mensaje-imagen { max-width: 180px; border-radius: 12px; margin-top: 8px; cursor: pointer; }
+        .mensaje-imagen { max-width: 150px; border-radius: 12px; margin-top: 8px; cursor: pointer; }
 
         .chat-input-area {
             padding: 16px;
@@ -293,16 +290,6 @@
             font-size: 0.9rem;
         }
         .chat-input-area input:focus { border-color: #059669; }
-        .chat-adjuntar {
-            background: #eef2ef;
-            color: #059669;
-            border: none;
-            border-radius: 40px;
-            padding: 10px 14px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .chat-adjuntar:hover { background: #059669; color: white; }
         .btn-enviar {
             background: #059669;
             color: white;
@@ -311,7 +298,6 @@
             padding: 10px 20px;
             cursor: pointer;
             font-weight: 600;
-            transition: 0.2s;
         }
         .btn-enviar:hover { background: #047857; }
         .empty-chat {
@@ -327,21 +313,14 @@
         }
         .empty-chat i { font-size: 48px; opacity: 0.5; }
 
-        .conversations-scroll::-webkit-scrollbar, .chat-messages-area::-webkit-scrollbar { width: 4px; }
-        .conversations-scroll::-webkit-scrollbar-track, .chat-messages-area::-webkit-scrollbar-track { background: #eef2ef; }
-        .conversations-scroll::-webkit-scrollbar-thumb, .chat-messages-area::-webkit-scrollbar-thumb { background: #cbdcd2; border-radius: 4px; }
-
         @media (max-width: 768px) {
-            .messenger-container { height: calc(100vh - 160px); overflow: hidden; }
-            .messenger-container.chat-open .conversations-list { transform: translateX(-100%); position: absolute; width: 100%; z-index: 1; background: #f8faf8; height: 100%; }
+            .messenger-container { height: calc(100vh - 160px); }
+            .messenger-container.chat-open .conversations-list { transform: translateX(-100%); position: absolute; width: 100%; z-index: 1; height: 100%; }
             .messenger-container.chat-open .chat-active { width: 100%; }
             .conversations-list { width: 100%; transition: transform 0.3s ease; }
             .chat-active { width: 100%; }
-            .chat-back-btn { display: flex; align-items: center; justify-content: center; }
+            .chat-back-btn { display: flex; }
             .messenger-container.chat-open .chat-back-btn { display: flex; }
-            .conversation-item { padding: 10px 12px; }
-            .conversation-avatar { width: 44px; height: 44px; }
-            .mensaje { max-width: 85%; }
         }
 
         .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 20px; text-align: center; }
@@ -425,7 +404,22 @@
     </div>
     <div id="misCosasView" style="display:none;"><div id="misCosasGrid" class="grid-pinterest"></div></div>
     <div id="mensajesView" style="display:none;">
-        <div id="messengerContainer" class="messenger-container"></div>
+        <div id="messengerContainer" class="messenger-container">
+            <div class="conversations-list">
+                <div class="conversations-header">
+                    <h3>Chats</h3>
+                </div>
+                <div class="conversations-scroll" id="conversationsList">
+                    <div style="text-align:center; padding:20px;">Cargando conversaciones...</div>
+                </div>
+            </div>
+            <div id="chat-active-container" class="chat-active">
+                <div class="empty-chat">
+                    <i class="fas fa-comment-dots"></i>
+                    <p>Selecciona una conversación para empezar a chatear</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="bottom-nav">
@@ -468,12 +462,10 @@
     let fotosExtraSeleccionadas = [];
     let mapaTemp = null;
     
+    // Chat variables
     let chatPollingInterval = null;
-    let chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null, objeto: null };
-    let badgePollingInterval = null;
-    let ultimoMensajeRenderizado = null;
-    let chatAbierto = false;
-    let enviandoMensaje = false;
+    let chatActual = null;
+    let chatMensajesCache = new Map();
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -509,7 +501,6 @@
         currentUser = null;
         authToken = null;
         detenerPollingChat();
-        if (badgePollingInterval) clearInterval(badgePollingInterval);
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('appContainer').style.display = 'none';
     }
@@ -585,79 +576,303 @@
     async function reportarObjeto(id, motivo) { await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }); alert('Reporte enviado.'); }
     async function eliminarObjeto(id) { await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); objetos = objetos.filter(o => o.id !== id); renderFeed(); renderFavoritos(); renderMisCosas(); alert('Objeto eliminado'); }
     
-    async function enviarMensaje(objetoId, receptor, mensaje, archivo = null) {
-        if (enviandoMensaje) return null;
-        enviandoMensaje = true;
+    async function enviarMensaje(objetoId, receptor, mensaje) {
         try {
-            if (archivo) {
-                const form = new FormData();
-                form.append('id_objeto', objetoId);
-                form.append('receptor', receptor);
-                form.append('mensaje', mensaje);
-                form.append('archivo', archivo);
-                const response = await fetch(`${WORKER_URL}/mensaje`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${authToken}` },
-                    body: form
-                });
-                if (!response.ok) throw new Error(await response.text());
-                const data = await response.json();
-                return data.mensaje || null;
-            }
-            const data = await apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
-            return data.mensaje || null;
+            const data = await apiFetch('/mensaje', { 
+                method: 'POST', 
+                body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) 
+            });
+            return data;
         } catch(e) {
             console.error('Error enviando mensaje:', e);
             return null;
-        } finally {
-            enviandoMensaje = false;
         }
     }
 
-    async function obtenerMensajes(objetoId, otroUsuario) {
+    // ========== CHAT FUNCTIONS ==========
+    function detenerPollingChat() {
+        if (chatPollingInterval) {
+            clearInterval(chatPollingInterval);
+            chatPollingInterval = null;
+        }
+    }
+
+    function iniciarPollingChat() {
+        detenerPollingChat();
+        chatPollingInterval = setInterval(async () => {
+            if (chatActual && document.getElementById('chatMessagesArea')) {
+                await cargarMensajesChat();
+            }
+        }, 3000);
+    }
+
+    async function cargarMensajesChat() {
+        if (!chatActual || !chatActual.id_objeto || !chatActual.otroUsuario) return;
+        
+        const cacheKey = `${chatActual.id_objeto}_${chatActual.otroUsuario}`;
+        
         try {
-            const id = parseInt(objetoId);
-            const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${id}&otro=${encodeURIComponent(otroUsuario)}`, {
+            const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${chatActual.id_objeto}&otro=${encodeURIComponent(chatActual.otroUsuario)}`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
-            if (!response.ok) return [];
-            const data = await response.json();
-            return Array.isArray(data) ? data : [];
-        } catch(e) {
-            console.error('Error en obtenerMensajes:', e);
-            return [];
+            
+            if (!response.ok) return;
+            
+            const mensajes = await response.json();
+            const mensajesArray = Array.isArray(mensajes) ? mensajes : [];
+            
+            const cacheActual = chatMensajesCache.get(cacheKey) || [];
+            const hayCambios = JSON.stringify(mensajesArray.map(m => m.id)) !== JSON.stringify(cacheActual.map(m => m.id));
+            
+            if (!hayCambios && cacheActual.length > 0) return;
+            
+            chatMensajesCache.set(cacheKey, mensajesArray);
+            
+            if (chatActual && chatActual.id_objeto === chatActual.id_objeto && chatActual.otroUsuario === chatActual.otroUsuario) {
+                await renderizarMensajes(mensajesArray);
+            }
+            
+            for (const m of mensajesArray) {
+                if (m.emisor !== currentUser?.email && m.leido === 0) {
+                    await fetch(`${WORKER_URL}/mensaje/${m.id}?action=leer`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    }).catch(e => console.error('Error:', e));
+                }
+            }
+            
+            await actualizarBadgeMensajes();
+            
+        } catch (error) {
+            console.error('Error cargando mensajes:', error);
         }
     }
 
-    async function obtenerMisConversaciones() {
+    async function renderizarMensajes(mensajes) {
+        const container = document.getElementById('chatMessagesArea');
+        if (!container) return;
+        
+        const estabaAlFondo = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+        
+        if (!mensajes || mensajes.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay mensajes aún. ¡Envía el primero!</div>';
+            return;
+        }
+        
+        const html = mensajes.map(m => {
+            const esMio = m.emisor === currentUser?.email;
+            const nombre = esMio ? 'Tú' : (m.emisor?.split('@')[0] || 'Usuario');
+            return `
+                <div class="mensaje ${esMio ? 'emisor' : 'receptor'}" data-id="${m.id}">
+                    ${!esMio ? `<strong>${escapeHtml(nombre)}</strong>` : ''}
+                    <div>${escapeHtml(m.mensaje || '')}</div>
+                    ${m.archivo_url ? `<img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')">` : ''}
+                    <small>${new Date(m.fecha).toLocaleTimeString()}</small>
+                </div>
+            `;
+        }).join('');
+        
+        if (container.innerHTML !== html) {
+            container.innerHTML = html;
+        }
+        
+        if (estabaAlFondo) {
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 50);
+        }
+    }
+
+    async function enviarMensajeChat(texto) {
+        if (!chatActual || !texto.trim()) return false;
+        
+        const input = document.getElementById('msgInputMobile');
+        const textoOriginal = texto.trim();
+        
+        if (input) input.value = '';
+        
+        try {
+            const response = await fetch(`${WORKER_URL}/mensaje`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    id_objeto: chatActual.id_objeto,
+                    receptor: chatActual.otroUsuario,
+                    mensaje: textoOriginal
+                })
+            });
+            
+            if (!response.ok) throw new Error('Error al enviar');
+            
+            const cacheKey = `${chatActual.id_objeto}_${chatActual.otroUsuario}`;
+            chatMensajesCache.delete(cacheKey);
+            
+            await cargarMensajesChat();
+            await cargarConversaciones();
+            
+            return true;
+        } catch (error) {
+            console.error('Error:', error);
+            alert('No se pudo enviar el mensaje');
+            if (input) input.value = textoOriginal;
+            return false;
+        }
+    }
+
+    async function abrirChatDirecto(objetoId, otroUsuario, titulo) {
+        detenerPollingChat();
+        
+        const objeto = objetos.find(o => o.id === parseInt(objetoId));
+        const otroNombre = objeto?.userNombre || otroUsuario?.split('@')[0] || 'Usuario';
+        
+        chatActual = {
+            id_objeto: parseInt(objetoId),
+            otroUsuario: otroUsuario,
+            titulo: titulo,
+            otroNombre: otroNombre
+        };
+        
+        const chatContainer = document.getElementById('chat-active-container');
+        if (!chatContainer) return;
+        
+        chatContainer.innerHTML = `
+            <div class="chat-active">
+                <div class="chat-active-header">
+                    <button class="chat-back-btn" onclick="closeChatOnMobile()"><i class="fas fa-arrow-left"></i></button>
+                    <div class="chat-active-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
+                    <div class="chat-active-info">
+                        <div class="chat-active-name">${escapeHtml(otroNombre)}</div>
+                        <div class="chat-active-objeto">📦 ${escapeHtml(titulo)}</div>
+                    </div>
+                    <button class="chat-active-close" onclick="cerrarChat()"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="chatMessagesArea" class="chat-messages-area">
+                    <div style="text-align:center; padding:20px;">Cargando mensajes...</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje..." autocomplete="off">
+                    <button class="btn-enviar" id="sendMsgMobileBtn">Enviar</button>
+                </div>
+            </div>
+        `;
+        
+        const sendBtn = document.getElementById('sendMsgMobileBtn');
+        const msgInput = document.getElementById('msgInputMobile');
+        
+        if (sendBtn) {
+            sendBtn.onclick = () => {
+                const texto = msgInput?.value || '';
+                enviarMensajeChat(texto);
+            };
+        }
+        
+        if (msgInput) {
+            msgInput.onkeypress = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    enviarMensajeChat(msgInput.value);
+                }
+            };
+            setTimeout(() => msgInput.focus(), 100);
+        }
+        
+        const cacheKey = `${chatActual.id_objeto}_${chatActual.otroUsuario}`;
+        chatMensajesCache.delete(cacheKey);
+        await cargarMensajesChat();
+        
+        iniciarPollingChat();
+        openChatOnMobile();
+        await cargarConversaciones();
+    }
+
+    function cerrarChat() {
+        detenerPollingChat();
+        chatActual = null;
+        
+        const chatContainer = document.getElementById('chat-active-container');
+        if (chatContainer) {
+            chatContainer.innerHTML = `
+                <div class="empty-chat">
+                    <i class="fas fa-comment-dots"></i>
+                    <p>Selecciona una conversación para empezar a chatear</p>
+                </div>
+            `;
+        }
+        closeChatOnMobile();
+    }
+
+    function closeChatOnMobile() {
+        const container = document.getElementById('messengerContainer');
+        if (container && window.innerWidth <= 768) {
+            container.classList.remove('chat-open');
+        }
+    }
+
+    function openChatOnMobile() {
+        const container = document.getElementById('messengerContainer');
+        if (container && window.innerWidth <= 768 && chatActual) {
+            container.classList.add('chat-open');
+        }
+    }
+
+    async function cargarConversaciones() {
         try {
             const response = await fetch(`${WORKER_URL}/mis-conversaciones`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
-            if (!response.ok) return [];
-            const data = await response.json();
-            return Array.isArray(data) ? data : [];
-        } catch(e) {
-            console.error('Error en obtenerMisConversaciones:', e);
-            return [];
+            
+            if (!response.ok) return;
+            
+            const conversaciones = await response.json();
+            const listaContainer = document.getElementById('conversationsList');
+            
+            if (!listaContainer) return;
+            
+            if (!conversaciones || conversaciones.length === 0) {
+                listaContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>';
+                return;
+            }
+            
+            listaContainer.innerHTML = conversaciones.map(c => {
+                const otroNombre = c.otroUsuario?.split('@')[0] || 'Usuario';
+                const noLeidos = c.no_leidos || 0;
+                const isActive = chatActual && 
+                                chatActual.id_objeto === c.id_objeto && 
+                                chatActual.otroUsuario === c.otroUsuario;
+                
+                return `
+                    <div class="conversation-item ${isActive ? 'active' : ''}" 
+                         onclick="abrirChatDirecto(${c.id_objeto}, '${c.otroUsuario || ''}', '${escapeHtml(c.titulo || '').replace(/'/g, "\\'")}')">
+                        <div class="conversation-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                ${escapeHtml(otroNombre)}
+                                ${noLeidos > 0 ? `<span class="badge-no-leidos">${noLeidos}</span>` : ''}
+                            </div>
+                            <div class="conversation-last-message">📦 ${escapeHtml(c.titulo || 'Objeto')}</div>
+                        </div>
+                        <div class="conversation-time">${c.ultimaFecha ? new Date(c.ultimaFecha).toLocaleDateString() : ''}</div>
+                    </div>
+                `;
+            }).join('');
+            
+        } catch (error) {
+            console.error('Error cargando conversaciones:', error);
         }
     }
 
-    async function marcarMensajeComoLeido(mensajeId) {
-        try {
-            await fetch(`${WORKER_URL}/mensaje/${mensajeId}?action=leer`, {
-                method: 'PATCH',
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-        } catch(e) { console.error('Error marcando mensaje como leído:', e); }
-    }
-
-    // ========== POLLING PARA BADGE ==========
     async function actualizarBadgeMensajes() {
         if (!currentUser) return;
         try {
-            const convs = await obtenerMisConversaciones();
-            const totalNoLeidos = convs.reduce((acc, c) => acc + (c.no_leidos || 0), 0);
+            const response = await fetch(`${WORKER_URL}/mis-conversaciones`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!response.ok) return;
+            const conversaciones = await response.json();
+            const totalNoLeidos = conversaciones.reduce((acc, c) => acc + (c.no_leidos || 0), 0);
             const badge = document.getElementById('mensajesBadge');
             if (badge) {
                 if (totalNoLeidos > 0) {
@@ -667,14 +882,7 @@
                     badge.style.display = 'none';
                 }
             }
-        } catch(e) { console.error('Error actualizando badge:', e); }
-    }
-
-    function iniciarPollingBadge() {
-        if (badgePollingInterval) clearInterval(badgePollingInterval);
-        badgePollingInterval = setInterval(() => {
-            actualizarBadgeMensajes();
-        }, 10000);
+        } catch(e) { console.error('Error:', e); }
     }
 
     // ========== RENDER UI ==========
@@ -790,330 +998,6 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== CHAT CORREGIDO ==========
-    function detenerPollingChat() {
-        if (chatPollingInterval) {
-            clearInterval(chatPollingInterval);
-            chatPollingInterval = null;
-        }
-    }
-
-    function iniciarPollingChat() {
-        detenerPollingChat();
-        chatPollingInterval = setInterval(async () => {
-            if (chatActual.id_objeto && chatActual.otroUsuario && chatAbierto) {
-                await cargarMensajesChat();
-            }
-        }, 3000);
-    }
-
-    async function cargarMensajesChat() {
-        if (!chatActual.id_objeto || !chatActual.otroUsuario || !currentUser) return;
-        
-        try {
-            const msgs = await obtenerMensajes(chatActual.id_objeto, chatActual.otroUsuario);
-            const cont = document.getElementById('chatMessagesArea');
-            if (!cont) return;
-            
-            const lastMsgId = msgs.length > 0 ? msgs[msgs.length - 1].id : null;
-            if (ultimoMensajeRenderizado === lastMsgId && cont.innerHTML !== '') {
-                return;
-            }
-            
-            if (!msgs || msgs.length === 0) {
-                cont.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">✨ No hay mensajes aún. Envía uno para empezar.</div>';
-                ultimoMensajeRenderizado = null;
-                return;
-            }
-            
-            const wasAtBottom = cont.scrollHeight - cont.scrollTop <= cont.clientHeight + 50;
-            
-            cont.innerHTML = msgs.map(m => {
-                const esEmisor = m.emisor === currentUser?.email;
-                const nombre = esEmisor ? 'Tú' : (m.emisor?.split('@')[0] || m.emisor);
-                return `<div class="mensaje ${esEmisor ? 'emisor' : 'receptor'}">
-                    ${!esEmisor ? `<strong>${escapeHtml(nombre)}</strong>` : ''}
-                    <div style="word-break: break-word; white-space: normal;">${escapeHtml(m.mensaje) || '📎 Archivo'}</div>
-                    ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
-                    <small>${new Date(m.fecha).toLocaleTimeString()}</small>
-                </div>`;
-            }).join('');
-            
-            ultimoMensajeRenderizado = lastMsgId;
-            
-            if (wasAtBottom || cont.innerHTML === '<div style="text-align:center; padding:20px; color:#8aa59a;">✨ No hay mensajes aún. Envía uno para empezar.</div>') {
-                cont.scrollTop = cont.scrollHeight;
-            }
-            
-            const mensajesNoLeidos = msgs.filter(m => m.emisor !== currentUser?.email && m.leido === 0);
-            for (const m of mensajesNoLeidos) {
-                await marcarMensajeComoLeido(m.id);
-            }
-        } catch(e) { 
-            console.error('Error cargando mensajes:', e); 
-        }
-    }
-
-    function closeChatOnMobile() {
-        const messengerContainer = document.getElementById('messengerContainer');
-        if (messengerContainer && window.innerWidth <= 768) {
-            messengerContainer.classList.remove('chat-open');
-        }
-        chatAbierto = false;
-    }
-
-    function openChatOnMobile() {
-        const messengerContainer = document.getElementById('messengerContainer');
-        if (messengerContainer && window.innerWidth <= 768) {
-            messengerContainer.classList.add('chat-open');
-        }
-        chatAbierto = true;
-    }
-
-    async function abrirChatDirecto(objetoId, otroUsuario, titulo) {
-        detenerPollingChat();
-        
-        const obj = objetos.find(o => o.id === parseInt(objetoId));
-        const otroNombre = obj?.userNombre || (otroUsuario ? otroUsuario.split('@')[0] : 'Usuario');
-        
-        chatActual = { 
-            id_objeto: parseInt(objetoId), 
-            otroUsuario: otroUsuario, 
-            titulo: titulo, 
-            otroNombre: otroNombre,
-            objeto: obj
-        };
-        ultimoMensajeRenderizado = null;
-        
-        await renderChatActivo();
-        await cargarMensajesChat();
-        
-        iniciarPollingChat();
-        openChatOnMobile();
-        
-        document.querySelectorAll('.conversation-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.dataset.id == objetoId && item.dataset.otro == otroUsuario) {
-                item.classList.add('active');
-            }
-        });
-        
-        await renderMessenger();
-        await actualizarBadgeMensajes();
-    }
-
-    async function renderChatActivo() {
-        const contenedor = document.getElementById('chat-active-container');
-        if (!contenedor) return;
-        
-        contenedor.innerHTML = `
-            <div class="chat-active">
-                <div class="chat-active-header">
-                    <button class="chat-back-btn" id="chatBackBtn"><i class="fas fa-arrow-left"></i></button>
-                    <div class="chat-active-avatar">${escapeHtml(chatActual.otroNombre.charAt(0).toUpperCase())}</div>
-                    <div class="chat-active-info">
-                        <div class="chat-active-name">${escapeHtml(chatActual.otroNombre)}</div>
-                        <div class="chat-active-objeto">📦 ${escapeHtml(chatActual.titulo)}</div>
-                    </div>
-                    <button class="chat-active-close" id="closeChatBtn"><i class="fas fa-times"></i></button>
-                </div>
-                <div id="chatMessagesArea" class="chat-messages-area">
-                    <div style="text-align:center; padding:20px; color:#8aa59a;">💬 Cargando mensajes...</div>
-                </div>
-                <div class="chat-input-area">
-                    <button class="chat-adjuntar" id="adjuntarArchivoBtn"><i class="fas fa-paperclip"></i></button>
-                    <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje..." autocomplete="off">
-                    <button class="btn-enviar" id="sendMsgMobileBtn">Enviar</button>
-                </div>
-                <input type="file" id="archivoAdjunto" style="display:none;">
-            </div>
-        `;
-        
-        const sendBtn = document.getElementById("sendMsgMobileBtn");
-        if (sendBtn) {
-            sendBtn.onclick = async () => {
-                if (enviandoMensaje) return;
-                const input = document.getElementById("msgInputMobile");
-                const texto = input.value.trim();
-                if(texto){
-                    const btn = sendBtn;
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<span class="loading-spinner"></span>';
-                    btn.disabled = true;
-                    
-                    await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, texto);
-                    input.value = "";
-                    await cargarMensajesChat();
-                    await renderMessenger();
-                    await actualizarBadgeMensajes();
-                    
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    input.focus();
-                }
-            };
-        }
-        
-        const msgInput = document.getElementById("msgInputMobile");
-        if (msgInput) {
-            msgInput.addEventListener("keypress", (e) => {
-                if (e.key === 'Enter' && !enviandoMensaje) {
-                    e.preventDefault();
-                    document.getElementById("sendMsgMobileBtn")?.click();
-                }
-            });
-        }
-        
-        const adjuntarBtn = document.getElementById("adjuntarArchivoBtn");
-        if (adjuntarBtn) {
-            adjuntarBtn.onclick = () => document.getElementById("archivoAdjunto").click();
-        }
-        
-        const archivoInput = document.getElementById("archivoAdjunto");
-        if (archivoInput) {
-            archivoInput.onchange = async (e) => {
-                const archivo = e.target.files[0];
-                if (archivo) {
-                    const btn = sendBtn;
-                    const originalText = btn?.innerHTML;
-                    if (btn) {
-                        btn.innerHTML = '<span class="loading-spinner"></span>';
-                        btn.disabled = true;
-                    }
-                    
-                    await enviarMensaje(chatActual.id_objeto, chatActual.otroUsuario, "📎 Archivo", archivo);
-                    e.target.value = '';
-                    await cargarMensajesChat();
-                    await renderMessenger();
-                    await actualizarBadgeMensajes();
-                    
-                    if (btn) {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
-                }
-            };
-        }
-        
-        const closeBtn = document.getElementById("closeChatBtn");
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                detenerPollingChat();
-                chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null, objeto: null };
-                contenedor.innerHTML = `
-                    <div class="empty-chat">
-                        <i class="fas fa-comment-dots"></i>
-                        <p>Selecciona una conversación para empezar a chatear</p>
-                    </div>
-                `;
-                closeChatOnMobile();
-                document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active'));
-                chatAbierto = false;
-            };
-        }
-        
-        const backBtn = document.getElementById("chatBackBtn");
-        if (backBtn) {
-            backBtn.onclick = () => {
-                closeChatOnMobile();
-            };
-        }
-    }
-
-    async function renderMessenger() {
-        const convs = await obtenerMisConversaciones();
-        
-        const messengerHtml = `
-            <div class="conversations-list">
-                <div class="conversations-header">
-                    <h3>Chats</h3>
-                </div>
-                <div class="conversations-search">
-                    <input type="text" id="searchConversations" placeholder="Buscar conversaciones...">
-                </div>
-                <div class="conversations-scroll" id="conversationsList">
-                    ${convs.length === 0 ? '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>' : 
-                        convs.map(c => {
-                            const otroNombre = c.otroUsuario?.split('@')[0] || c.otroUsuario || 'Usuario';
-                            const noLeidos = c.no_leidos || 0;
-                            return `
-                            <div class="conversation-item" data-id="${c.id_objeto}" data-otro="${c.otroUsuario || ''}" data-titulo="${escapeHtml(c.titulo || '')}">
-                                <div class="conversation-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
-                                <div class="conversation-info">
-                                    <div class="conversation-name">
-                                        ${escapeHtml(otroNombre)}
-                                        ${noLeidos > 0 ? `<span class="badge-no-leidos">${noLeidos}</span>` : ''}
-                                    </div>
-                                    <div class="conversation-last-message">📦 ${escapeHtml(c.titulo || 'Objeto')}</div>
-                                </div>
-                                <div class="conversation-time">${c.ultimaFecha ? new Date(c.ultimaFecha).toLocaleDateString() : ''}</div>
-                            </div>`;
-                        }).join('')
-                    }
-                </div>
-            </div>
-            <div id="chat-active-container" class="chat-active">
-                <div class="empty-chat">
-                    <i class="fas fa-comment-dots"></i>
-                    <p>Selecciona una conversación para empezar a chatear</p>
-                </div>
-            </div>
-        `;
-        
-        const messengerContainer = document.getElementById('messengerContainer');
-        if (messengerContainer) {
-            messengerContainer.innerHTML = messengerHtml;
-            messengerContainer.classList.remove('chat-open');
-        }
-        
-        document.querySelectorAll('.conversation-item').forEach(el => {
-            el.addEventListener('click', () => {
-                const id = parseInt(el.dataset.id);
-                const otro = el.dataset.otro;
-                const titulo = el.dataset.titulo;
-                if (id && otro) {
-                    abrirChatDirecto(id, otro, titulo);
-                }
-            });
-        });
-        
-        const searchInput = document.getElementById('searchConversations');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                document.querySelectorAll('.conversation-item').forEach(item => {
-                    const nombre = item.querySelector('.conversation-name')?.innerText.toLowerCase() || '';
-                    const tituloConv = item.dataset.titulo?.toLowerCase() || '';
-                    item.style.display = (nombre.includes(term) || tituloConv.includes(term)) ? 'flex' : 'none';
-                });
-            });
-        }
-        
-        if (chatActual.id_objeto && chatActual.otroUsuario) {
-            await renderChatActivo();
-            await cargarMensajesChat();
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                if (item.dataset.id == chatActual.id_objeto && item.dataset.otro == chatActual.otroUsuario) {
-                    item.classList.add('active');
-                }
-            });
-            openChatOnMobile();
-        } else {
-            chatAbierto = false;
-        }
-        
-        await actualizarBadgeMensajes();
-    }
-
-    async function cargarConversaciones() {
-        await renderMessenger();
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
-    }
-
     // ========== PUBLICAR OBJETO ==========
     let publicando = false;
 
@@ -1211,6 +1095,23 @@
         document.getElementById("fotoModal").style.display = "flex";
     };
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Hacer funciones globales para onclick
+    window.abrirChatDirecto = abrirChatDirecto;
+    window.cerrarChat = cerrarChat;
+    window.closeChatOnMobile = closeChatOnMobile;
+    window.verFotoAmpliada = verFotoAmpliada;
+    window.eliminarFotoExtra = eliminarFotoExtra;
+
     // ========== INICIALIZACIÓN ==========
     async function init() {
         const token = getTokenFromURL();
@@ -1228,7 +1129,11 @@
                 await cargarFavoritosDesdeAPI();
                 guardarOneSignalId(currentUser.email);
                 await cargarConversaciones();
-                iniciarPollingBadge();
+                
+                // Polling para badge
+                setInterval(async () => {
+                    await actualizarBadgeMensajes();
+                }, 10000);
             } else {
                 localStorage.removeItem('auth_token');
                 document.getElementById('loginScreen').style.display = 'flex';
