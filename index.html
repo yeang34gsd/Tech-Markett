@@ -459,8 +459,8 @@
     
     let chatPollingInterval = null;
     let chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
-    let conversacionesCache = [];
     let badgePollingInterval = null;
+    let ultimoMensajeRenderizado = null;
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -756,7 +756,7 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== CHAT (SIN PARPADEOS) ==========
+    // ========== CHAT SIN PARPADEOS ==========
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -773,50 +773,50 @@
         }, 5000);
     }
 
-    let ultimoMensajeId = 0;
+    // Variable para evitar actualizaciones simultáneas
+    let actualizandoChat = false;
 
     async function cargarMensajesChat() {
-        if (!chatActual.id_objeto || !chatActual.otroUsuario) return;
+        if (!chatActual.id_objeto || !chatActual.otroUsuario || actualizandoChat) return;
+        
+        actualizandoChat = true;
         try {
             const msgs = await obtenerMensajes(chatActual.id_objeto, chatActual.otroUsuario);
             const cont = document.getElementById('chatMessagesArea');
             if (!cont) return;
             
             if (!msgs || msgs.length === 0) {
-                if (cont.innerHTML !== '<div style="text-align:center; padding:20px; color:#8aa59a;">✨ No hay mensajes aún. Envía uno para empezar.</div>') {
-                    cont.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">✨ No hay mensajes aún. Envía uno para empezar.</div>';
-                }
-                ultimoMensajeId = 0;
+                cont.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">✨ No hay mensajes aún. Envía uno para empezar.</div>';
                 return;
             }
             
-            const nuevosMensajes = msgs.filter(m => m.id > ultimoMensajeId);
+            const lastMsgId = msgs[msgs.length-1]?.id;
+            if (ultimoMensajeRenderizado === lastMsgId) {
+                actualizandoChat = false;
+                return;
+            }
             
-            if (nuevosMensajes.length > 0) {
-                const nuevosHtml = nuevosMensajes.map(m => {
-                    const esEmisor = m.emisor === currentUser?.email;
-                    const nombre = esEmisor ? 'Tú' : (m.emisor?.split('@')[0] || m.emisor);
-                    return `<div class="mensaje ${esEmisor ? 'emisor' : 'receptor'}">
-                        ${!esEmisor ? `<strong>${escapeHtml(nombre)}</strong>` : ''}
-                        <div style="word-break: break-word; white-space: normal;">${escapeHtml(m.mensaje) || '📎 Archivo'}</div>
-                        ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
-                        <small>${new Date(m.fecha).toLocaleTimeString()}</small>
-                    </div>`;
-                }).join('');
-                
-                cont.insertAdjacentHTML('beforeend', nuevosHtml);
-                cont.scrollTop = cont.scrollHeight;
-                
-                if (msgs.length > 0) {
-                    ultimoMensajeId = msgs[msgs.length-1].id;
-                }
-                
-                const mensajesNoLeidos = msgs.filter(m => m.emisor !== currentUser?.email && m.leido === 0);
-                for (const m of mensajesNoLeidos) {
-                    await marcarMensajeComoLeido(m.id);
-                }
+            cont.innerHTML = msgs.map(m => {
+                const esEmisor = m.emisor === currentUser?.email;
+                const nombre = esEmisor ? 'Tú' : (m.emisor?.split('@')[0] || m.emisor);
+                return `<div class="mensaje ${esEmisor ? 'emisor' : 'receptor'}">
+                    ${!esEmisor ? `<strong>${escapeHtml(nombre)}</strong>` : ''}
+                    <div style="word-break: break-word; white-space: normal;">${escapeHtml(m.mensaje) || '📎 Archivo'}</div>
+                    ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
+                    <small>${new Date(m.fecha).toLocaleTimeString()}</small>
+                </div>`;
+            }).join('');
+            cont.scrollTop = cont.scrollHeight;
+            ultimoMensajeRenderizado = lastMsgId;
+            
+            const mensajesNoLeidos = msgs.filter(m => m.emisor !== currentUser?.email && m.leido === 0);
+            for (const m of mensajesNoLeidos) {
+                await marcarMensajeComoLeido(m.id);
             }
         } catch(e) { console.error('Error cargando mensajes:', e); }
+        finally {
+            actualizandoChat = false;
+        }
     }
 
     function closeChatOnMobile() {
@@ -839,7 +839,7 @@
         const otroNombre = obj?.userNombre || otroUsuario.split('@')[0];
         
         chatActual = { id_objeto: parseInt(objetoId), otroUsuario: otroUsuario, titulo: titulo, otroNombre: otroNombre };
-        ultimoMensajeId = 0;
+        ultimoMensajeRenderizado = null;
         
         await renderChatActivo();
         await cargarMensajesChat();
@@ -855,6 +855,7 @@
         });
         
         await renderMessenger();
+        await actualizarBadgeMensajes();
     }
 
     async function renderChatActivo() {
@@ -920,7 +921,6 @@
 
     async function renderMessenger() {
         const convs = await obtenerMisConversaciones();
-        conversacionesCache = convs;
         
         const messengerHtml = `
             <div class="conversations-list">
@@ -931,8 +931,8 @@
                     <input type="text" id="searchConversations" placeholder="Buscar conversaciones...">
                 </div>
                 <div class="conversations-scroll" id="conversationsList">
-                    ${conversacionesCache.length === 0 ? '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>' : 
-                        conversacionesCache.map(c => {
+                    ${convs.length === 0 ? '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>' : 
+                        convs.map(c => {
                             const otroNombre = c.otroUsuario?.split('@')[0] || c.otroUsuario;
                             const noLeidos = c.no_leidos || 0;
                             return `
