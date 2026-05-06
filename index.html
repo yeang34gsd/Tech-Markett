@@ -96,7 +96,7 @@
         .btn-modern:hover { background: #047857; transform: scale(1.02); }
         .btn-modern:disabled { background: #9ac9b0; cursor: not-allowed; }
 
-        /* ========== BANDEJA DE MENSAJES ESTILO MESSENGER RESPONSIVE ========== */
+        /* ========== CHAT ESTILOS CORREGIDOS ========== */
         .messenger-container {
             display: flex;
             background: white;
@@ -206,6 +206,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .conversation-last-message {
@@ -302,6 +303,7 @@
             color: #ef4444;
         }
 
+        /* CHAT MESSAGES AREA - ESTILOS CORREGIDOS */
         .chat-messages-area {
             flex: 1;
             overflow-y: auto;
@@ -313,10 +315,12 @@
         }
 
         .mensaje {
-            max-width: 70%;
+            max-width: 75%;
             font-size: 0.85rem;
             line-height: 1.4;
             animation: fadeIn 0.3s ease;
+            word-break: break-word;
+            white-space: normal;
         }
 
         @keyframes fadeIn {
@@ -324,20 +328,22 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Mensaje del usuario (emisor) - verde a la derecha */
         .mensaje.emisor {
             align-self: flex-end;
             background: #059669;
             color: white;
-            border-radius: 20px 20px 4px 20px;
-            padding: 10px 16px;
+            border-radius: 18px 18px 4px 18px;
+            padding: 10px 14px;
         }
 
+        /* Mensaje del otro usuario (receptor) - blanco a la izquierda */
         .mensaje.receptor {
             align-self: flex-start;
             background: white;
             color: #1f2937;
-            border-radius: 20px 20px 20px 4px;
-            padding: 10px 16px;
+            border-radius: 18px 18px 18px 4px;
+            padding: 10px 14px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             border: 1px solid #eef2ef;
         }
@@ -619,12 +625,11 @@
     let fotosExtraSeleccionadas = [];
     let mapaTemp = null;
     
-    // Chat global
     let chatPollingInterval = null;
     let chatActual = { id_objeto: null, otroUsuario: null, titulo: null, otroNombre: null };
     let ultimoMensajeId = 0;
     let conversacionesCache = [];
-    let mensajesNoLeidos = new Map(); // mapa de id_objeto -> cantidad de mensajes no leídos
+    let mensajesNoLeidos = new Map();
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -729,30 +734,11 @@
         } catch(e) { console.error('Error:', e); }
     }
 
-    async function agregarFavorito(id) {
-        await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) });
-        favoritosIds.add(id);
-        renderFeed(); renderFavoritos();
-    }
-
-    async function quitarFavorito(id) {
-        await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) });
-        favoritosIds.delete(id);
-        renderFeed(); renderFavoritos();
-    }
-
-    async function reportarObjeto(id, motivo) {
-        await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
-        alert('Reporte enviado.');
-    }
-
-    async function eliminarObjeto(id) {
-        await apiFetch(`/objeto/${id}`, { method: 'DELETE' });
-        objetos = objetos.filter(o => o.id !== id);
-        renderFeed(); renderFavoritos(); renderMisCosas();
-        alert('Objeto eliminado');
-    }
-
+    async function agregarFavorito(id) { await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.add(id); renderFeed(); renderFavoritos(); }
+    async function quitarFavorito(id) { await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.delete(id); renderFeed(); renderFavoritos(); }
+    async function reportarObjeto(id, motivo) { await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }); alert('Reporte enviado.'); }
+    async function eliminarObjeto(id) { await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); objetos = objetos.filter(o => o.id !== id); renderFeed(); renderFavoritos(); renderMisCosas(); alert('Objeto eliminado'); }
+    
     async function enviarMensaje(objetoId, receptor, mensaje, archivo = null) {
         if (archivo) {
             const form = new FormData();
@@ -768,10 +754,7 @@
             if (!response.ok) throw new Error(await response.text());
             return response.json();
         }
-        return await apiFetch('/mensaje', { 
-            method: 'POST', 
-            body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) 
-        });
+        return await apiFetch('/mensaje', { method: 'POST', body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) });
     }
 
     async function obtenerMensajes(objetoId, otroUsuario) {
@@ -779,34 +762,26 @@
             const id = parseInt(objetoId);
             const response = await apiFetch(`/mensajes?id_objeto=${id}&otro=${encodeURIComponent(otroUsuario)}`);
             return response || [];
-        } catch(e) {
-            console.error('Error en obtenerMensajes:', e);
-            return [];
-        }
+        } catch(e) { console.error('Error en obtenerMensajes:', e); return []; }
     }
 
     async function obtenerMisConversaciones() {
         try {
             const response = await apiFetch('/mis-conversaciones');
             return response || [];
-        } catch(e) {
-            console.error('Error en obtenerMisConversaciones:', e);
-            return [];
-        }
+        } catch(e) { console.error('Error en obtenerMisConversaciones:', e); return []; }
     }
 
-    // ========== FUNCIONES DE CONTADOR DE MENSAJES ==========
+    // ========== CONTADOR MENSAJES NO LEÍDOS ==========
     async function actualizarContadorMensajes() {
         if (!currentUser) return;
-        
         try {
             const convs = await obtenerMisConversaciones();
             let totalNoLeidos = 0;
             
             for (const c of convs) {
                 const msgs = await obtenerMensajes(c.id_objeto, c.otroUsuario);
-                // Contar mensajes del otro usuario que no son míos
-                const noLeidos = msgs.filter(m => m.emisor === c.otroUsuario && m.leido !== 1).length;
+                const noLeidos = msgs.filter(m => m.emisor === c.otroUsuario && !m.leido).length;
                 if (noLeidos > 0) {
                     mensajesNoLeidos.set(c.id_objeto, noLeidos);
                     totalNoLeidos += noLeidos;
@@ -825,7 +800,6 @@
                 }
             }
             
-            // Actualizar los badges en cada conversación si la lista está visible
             document.querySelectorAll('.conversation-item').forEach(item => {
                 const id = parseInt(item.dataset.id);
                 const noLeidos = mensajesNoLeidos.get(id) || 0;
@@ -850,8 +824,6 @@
     }
 
     async function marcarMensajesComoLeidos(objetoId, otroUsuario) {
-        // En una implementación real, tendrías un endpoint para marcar como leídos
-        // Por ahora, solo limpiamos el contador local
         if (mensajesNoLeidos.has(objetoId)) {
             mensajesNoLeidos.delete(objetoId);
             await actualizarContadorMensajes();
@@ -916,11 +888,8 @@
         async function favHandler(e) { e.stopPropagation(); const id = parseInt(this.dataset.id); if(favoritosIds.has(id)) await quitarFavorito(id); else await agregarFavorito(id); renderFeed(); renderFavoritos(); }
         
         document.querySelectorAll('.btn-intercambiar').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); const usuario = btn.dataset.usuario; const titulo = btn.dataset.titulo; abrirChatDirecto(id, usuario, titulo); switchTab('mensajes'); }));
-        
         document.querySelectorAll('.btn-reportar').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); const motivo = prompt('Motivo?'); if(motivo) await reportarObjeto(id, motivo); }));
-        
         document.querySelectorAll('.btn-eliminar').forEach(btn => btn.addEventListener('click', async (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); if(confirm("Eliminar?")) await eliminarObjeto(id); }));
-        
         document.querySelectorAll('.pin-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if(e.target.closest('button')) return;
@@ -974,7 +943,7 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== BANDEJA DE MENSAJES ESTILO MESSENGER ==========
+    // ========== CHAT ==========
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -1012,7 +981,7 @@
                     const nombre = esEmisor ? 'Tú' : (m.emisor?.split('@')[0] || m.emisor);
                     return `<div class="mensaje ${esEmisor ? 'emisor' : 'receptor'}">
                         ${!esEmisor ? `<strong>${nombre}</strong>` : ''}
-                        <div>${m.mensaje || '📎 Archivo'}</div>
+                        <div style="word-break: break-word; white-space: normal;">${escapeHtml(m.mensaje) || '📎 Archivo'}</div>
                         ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
                         <small>${new Date(m.fecha).toLocaleTimeString()}</small>
                     </div>`;
@@ -1021,7 +990,6 @@
                 if (msgs.length > 0) ultimoMensajeId = msgs[msgs.length-1].id;
             }
             
-            // Marcar mensajes como leídos (simulado localmente)
             await marcarMensajesComoLeidos(chatActual.id_objeto, chatActual.otroUsuario);
         } catch(e) { console.error('Error cargando mensajes:', e); }
     }
@@ -1042,7 +1010,6 @@
 
     async function abrirChatDirecto(objetoId, otroUsuario, titulo) {
         detenerPollingChat();
-        
         const obj = objetos.find(o => o.id === parseInt(objetoId));
         const otroNombre = obj?.userNombre || otroUsuario.split('@')[0];
         
@@ -1063,7 +1030,7 @@
                 const nombre = esEmisor ? 'Tú' : (m.emisor?.split('@')[0] || m.emisor);
                 return `<div class="mensaje ${esEmisor ? 'emisor' : 'receptor'}">
                     ${!esEmisor ? `<strong>${nombre}</strong>` : ''}
-                    <div>${m.mensaje || '📎 Archivo'}</div>
+                    <div style="word-break: break-word; white-space: normal;">${escapeHtml(m.mensaje) || '📎 Archivo'}</div>
                     ${m.archivo_url ? `<div><img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')"></div>` : ''}
                     <small>${new Date(m.fecha).toLocaleTimeString()}</small>
                 </div>`;
@@ -1072,9 +1039,7 @@
             if (msgs.length > 0) ultimoMensajeId = msgs[msgs.length-1].id;
         }
         
-        // Marcar como leídos al abrir el chat
         await marcarMensajesComoLeidos(parseInt(objetoId), otroUsuario);
-        
         iniciarPollingChat();
         openChatOnMobile();
         
@@ -1096,8 +1061,8 @@
                     <button class="chat-back-btn" id="chatBackBtn"><i class="fas fa-arrow-left"></i></button>
                     <div class="chat-active-avatar">${chatActual.otroNombre.charAt(0).toUpperCase()}</div>
                     <div class="chat-active-info">
-                        <div class="chat-active-name">${chatActual.otroNombre}</div>
-                        <div class="chat-active-objeto">📦 ${chatActual.titulo}</div>
+                        <div class="chat-active-name">${escapeHtml(chatActual.otroNombre)}</div>
+                        <div class="chat-active-objeto">📦 ${escapeHtml(chatActual.titulo)}</div>
                     </div>
                     <button class="chat-active-close" id="closeChatBtn"><i class="fas fa-times"></i></button>
                 </div>
@@ -1172,10 +1137,10 @@
                                 <div class="conversation-avatar">${c.otroNombre.charAt(0).toUpperCase()}</div>
                                 <div class="conversation-info">
                                     <div class="conversation-name">
-                                        ${c.otroNombre}
+                                        ${escapeHtml(c.otroNombre)}
                                         ${noLeidos > 0 ? `<span class="badge-no-leidos">${noLeidos}</span>` : ''}
                                     </div>
-                                    <div class="conversation-last-message">📦 ${c.titulo}</div>
+                                    <div class="conversation-last-message">📦 ${escapeHtml(c.titulo)}</div>
                                 </div>
                                 <div class="conversation-time">${new Date(c.ultimaFecha).toLocaleDateString()}</div>
                             </div>`;
@@ -1236,6 +1201,11 @@
 
     async function cargarConversaciones() {
         await renderMessenger();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
     }
 
     // ========== PUBLICAR OBJETO ==========
@@ -1353,11 +1323,8 @@
                 guardarOneSignalId(currentUser.email);
                 await renderMessenger();
                 
-                // Actualizar contador periódicamente
                 setInterval(async () => {
-                    if (currentUser) {
-                        await actualizarContadorMensajes();
-                    }
+                    if (currentUser) await actualizarContadorMensajes();
                 }, 10000);
             } else {
                 localStorage.removeItem('auth_token');
