@@ -176,9 +176,6 @@
             font-weight: normal;
             color: #6b8a73;
         }
-        .conversation-last-message .mensaje-preview.leido {
-            color: #8aa59a;
-        }
         .conversation-last-message .mensaje-preview.no-leido {
             color: #059669;
             font-weight: 500;
@@ -375,11 +372,16 @@
             transform: translateX(-50%);
             background: #ef4444;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 40px;
             font-size: 0.85rem;
             z-index: 1000;
             animation: fadeOut 3s ease forwards;
+            white-space: nowrap;
+            max-width: 90%;
+            white-space: normal;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         @keyframes fadeOut {
             0% { opacity: 1; }
@@ -393,6 +395,13 @@
         @keyframes highlight {
             0% { background-color: #d1fae5; }
             100% { background-color: transparent; }
+        }
+        
+        #mapaMobile {
+            height: 200px;
+            border-radius: 16px;
+            margin-top: 10px;
+            z-index: 1;
         }
     </style>
 </head>
@@ -438,7 +447,7 @@
         <div style="background:white; margin:12px; border-radius:24px; padding:20px;">
             <h3><i class="fas fa-plus-circle" style="color:#059669;"></i> Publicar objeto</h3>
             <div class="form-mobile">
-                <input type="text" id="tituloMobile" placeholder="Título">
+                <input type="text" id="tituloMobile" placeholder="Título del objeto">
                 <select id="categoriaMobile">
                     <option>Electrónica</option><option>Ropa</option><option>Libros</option><option>Mascotas</option><option>Hogar</option><option>Deportes</option>
                 </select>
@@ -451,10 +460,12 @@
                 <div id="previewExtraMobile" style="display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;"></div>
                 <div style="margin:16px 0;">
                     <label>📍 Ubicación</label>
-                    <button type="button" id="ubicarBtnMobile" style="background:#059669; color:white; border:none; padding:8px; border-radius:40px; width:100%; margin:8px 0;">Usar mi ubicación</button>
+                    <button type="button" id="ubicarBtnMobile" class="btn-modern" style="background:#059669; margin-bottom:12px;"><i class="fas fa-location-dot"></i> Usar mi ubicación</button>
                     <input type="text" id="direccionMobile" placeholder="Dirección o referencia">
-                    <div id="mapaMobile" style="height: 180px; border-radius: 16px; margin-top: 10px; display: none;"></div>
-                    <input type="hidden" id="latMobile" value=""><input type="hidden" id="lngMobile" value="">
+                    <div id="mapaMobile" style="height: 200px; border-radius: 16px; margin-top: 10px; display: none;"></div>
+                    <input type="hidden" id="latMobile" value="">
+                    <input type="hidden" id="lngMobile" value="">
+                    <button type="button" id="limpiarUbicacionBtn" style="background:#eef2ef; color:#2c4b35; margin-top:8px; display:none;" class="btn-modern">🗑️ Limpiar ubicación</button>
                 </div>
                 <button id="previewMobileBtn" class="btn-modern">Vista previa</button>
             </div>
@@ -520,6 +531,13 @@
     let fotosExtraSeleccionadas = [];
     let mapaTemp = null;
     
+    // Ubicación
+    let ubicacionSeleccionada = {
+        lat: null,
+        lng: null,
+        direccion: ''
+    };
+    
     // Chat variables
     let chatPollingInterval = null;
     let conversacionesPollingInterval = null;
@@ -528,18 +546,41 @@
     let enviandoMensaje = false;
     let mensajesPendientes = [];
     let ultimasConversaciones = [];
-    let ultimosMensajesCache = new Map(); // Cache para los últimos mensajes de cada conversación
+    let ultimosMensajesCache = new Map();
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
     // ========== UTILIDADES ==========
     function mostrarToast(mensaje, esError = true) {
+        const toastAnterior = document.querySelector('.toast-message');
+        if (toastAnterior) toastAnterior.remove();
+        
         const toast = document.createElement('div');
         toast.className = 'toast-message';
-        toast.style.background = esError ? '#ef4444' : '#10b981';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${esError ? '#ef4444' : '#10b981'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            animation: fadeOut 3s ease forwards;
+            white-space: nowrap;
+            max-width: 90%;
+            white-space: normal;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
         toast.textContent = mensaje;
         document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+        
+        setTimeout(() => {
+            if (toast && toast.remove) toast.remove();
+        }, 3000);
     }
 
     function escapeHtml(str) {
@@ -624,21 +665,161 @@
         return response.json();
     }
 
-    // ========== OBTENER ÚLTIMO MENSAJE DE UNA CONVERSACIÓN ==========
-    async function obtenerUltimoMensaje(objetoId, otroUsuario) {
-        try {
-            const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            if (!response.ok) return null;
-            const mensajes = await response.json();
-            const mensajesArray = Array.isArray(mensajes) ? mensajes : [];
-            if (mensajesArray.length === 0) return null;
-            return mensajesArray[mensajesArray.length - 1];
-        } catch (error) {
-            console.error('Error obteniendo último mensaje:', error);
-            return null;
+    // ========== UBICACIÓN CORREGIDA ==========
+    function limpiarUbicacion() {
+        ubicacionSeleccionada = {
+            lat: null,
+            lng: null,
+            direccion: ''
+        };
+        document.getElementById("latMobile").value = "";
+        document.getElementById("lngMobile").value = "";
+        document.getElementById("direccionMobile").value = "";
+        
+        const mapDiv = document.getElementById("mapaMobile");
+        const limpiarBtn = document.getElementById("limpiarUbicacionBtn");
+        
+        if (mapDiv) {
+            mapDiv.style.display = "none";
+            if (mapaTemp) {
+                mapaTemp.remove();
+                mapaTemp = null;
+            }
         }
+        
+        if (limpiarBtn) limpiarBtn.style.display = "none";
+    }
+
+    function obtenerUbicacionActual() {
+        const btnUbicar = document.getElementById("ubicarBtnMobile");
+        const originalText = btnUbicar.innerHTML;
+        
+        if (!navigator.geolocation) {
+            mostrarToast("Tu navegador no soporta geolocalización", true);
+            return;
+        }
+        
+        btnUbicar.innerHTML = '<span class="loading-spinner" style="width:16px; height:16px;"></span> Obteniendo...';
+        btnUbicar.disabled = true;
+        
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                ubicacionSeleccionada.lat = lat;
+                ubicacionSeleccionada.lng = lng;
+                document.getElementById("latMobile").value = lat;
+                document.getElementById("lngMobile").value = lng;
+                
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                    const data = await response.json();
+                    
+                    if (data && data.display_name) {
+                        const parts = data.display_name.split(',');
+                        let direccionCorta = parts.slice(0, 3).join(',');
+                        ubicacionSeleccionada.direccion = direccionCorta;
+                        document.getElementById("direccionMobile").value = direccionCorta;
+                    }
+                } catch (error) {
+                    console.error('Error obteniendo dirección:', error);
+                    ubicacionSeleccionada.direccion = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+                    document.getElementById("direccionMobile").value = ubicacionSeleccionada.direccion;
+                }
+                
+                const mapDiv = document.getElementById("mapaMobile");
+                mapDiv.style.display = "block";
+                
+                if (mapaTemp) mapaTemp.remove();
+                
+                mapaTemp = L.map('mapaMobile').setView([lat, lng], 15);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                }).addTo(mapaTemp);
+                
+                const marker = L.marker([lat, lng], { draggable: true }).addTo(mapaTemp);
+                
+                marker.on('dragend', async function(e) {
+                    const newPos = marker.getLatLng();
+                    ubicacionSeleccionada.lat = newPos.lat;
+                    ubicacionSeleccionada.lng = newPos.lng;
+                    document.getElementById("latMobile").value = newPos.lat;
+                    document.getElementById("lngMobile").value = newPos.lng;
+                    
+                    try {
+                        const reverseResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${newPos.lat}&lon=${newPos.lng}&zoom=18`);
+                        const reverseData = await reverseResponse.json();
+                        if (reverseData && reverseData.display_name) {
+                            const parts = reverseData.display_name.split(',');
+                            let direccionCorta = parts.slice(0, 3).join(',');
+                            ubicacionSeleccionada.direccion = direccionCorta;
+                            document.getElementById("direccionMobile").value = direccionCorta;
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
+                
+                document.getElementById("limpiarUbicacionBtn").style.display = "block";
+                
+                setTimeout(() => {
+                    mapDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+                
+                mostrarToast("📍 Ubicación obtenida correctamente", false);
+                
+                btnUbicar.innerHTML = originalText;
+                btnUbicar.disabled = false;
+            },
+            (error) => {
+                console.error('Error de geolocalización:', error);
+                let mensaje = "No se pudo obtener tu ubicación. ";
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        mensaje += "Permiso denegado.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        mensaje += "Información no disponible.";
+                        break;
+                    case error.TIMEOUT:
+                        mensaje += "Tiempo de espera agotado.";
+                        break;
+                    default:
+                        mensaje += "Error desconocido.";
+                }
+                mostrarToast(mensaje, true);
+                btnUbicar.innerHTML = originalText;
+                btnUbicar.disabled = false;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    }
+
+    async function publicarObjetoConUbicacion(titulo, descripcion, categoria, fotos, direccionManual) {
+        const form = new FormData();
+        form.append('titulo', titulo);
+        form.append('descripcion', `${categoria} | ${descripcion}`);
+        
+        const lat = ubicacionSeleccionada.lat || document.getElementById("latMobile").value || '';
+        const lng = ubicacionSeleccionada.lng || document.getElementById("lngMobile").value || '';
+        const direccion = direccionManual || ubicacionSeleccionada.direccion || document.getElementById("direccionMobile").value || '';
+        
+        form.append('latitud', lat);
+        form.append('longitud', lng);
+        form.append('direccion', direccion);
+        
+        for (let i = 0; i < Math.min(fotos.length, 5); i++) {
+            form.append(`foto_${i}`, fotos[i]);
+        }
+        
+        console.log('Publicando con ubicación:', { lat, lng, direccion });
+        
+        return await apiFetch('/objeto', { method: 'POST', body: form });
     }
 
     // ========== CHAT FUNCTIONS ==========
@@ -818,7 +999,6 @@
             }
             
             if (mensajesLeidos) {
-                // Limpiar cache del último mensaje para actualizar la vista previa
                 ultimosMensajesCache.delete(cacheKey);
                 await cargarConversaciones();
                 await actualizarBadgeMensajes();
@@ -935,7 +1115,6 @@
         await cargarConversaciones();
     }
     
-    // Nueva función para cerrar el chat completamente y limpiar el estado activo
     function cerrarChatCompletamente() {
         detenerPollingChat();
         chatActual = null;
@@ -951,14 +1130,12 @@
             `;
         }
         
-        // Limpiar clase active de todas las conversaciones
         document.querySelectorAll('.conversation-item').forEach(item => {
             item.classList.remove('active');
         });
         
         closeChatOnMobile();
         
-        // Recargar conversaciones para asegurar que la lista esté actualizada
         setTimeout(() => {
             cargarConversaciones();
             actualizarBadgeMensajes();
@@ -979,6 +1156,29 @@
         }
     }
 
+    async function obtenerUltimoMensaje(objetoId, otroUsuario) {
+        try {
+            const cacheKey = `${objetoId}_${otroUsuario}`;
+            if (ultimosMensajesCache.has(cacheKey)) {
+                return ultimosMensajesCache.get(cacheKey);
+            }
+            
+            const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!response.ok) return null;
+            const mensajes = await response.json();
+            const mensajesArray = Array.isArray(mensajes) ? mensajes : [];
+            if (mensajesArray.length === 0) return null;
+            const ultimo = mensajesArray[mensajesArray.length - 1];
+            ultimosMensajesCache.set(cacheKey, ultimo);
+            return ultimo;
+        } catch (error) {
+            console.error('Error obteniendo último mensaje:', error);
+            return null;
+        }
+    }
+
     async function cargarConversaciones() {
         try {
             const response = await fetch(`${WORKER_URL}/mis-conversaciones`, {
@@ -990,22 +1190,9 @@
             const conversaciones = await response.json();
             const conversacionesArray = Array.isArray(conversaciones) ? conversaciones : [];
             
-            // Para cada conversación, obtener el último mensaje
             const conversacionesConMensajes = await Promise.all(conversacionesArray.map(async (conv) => {
-                const cacheKey = `${conv.id_objeto}_${conv.otroUsuario}`;
-                let ultimoMensaje = ultimosMensajesCache.get(cacheKey);
-                
-                if (!ultimoMensaje) {
-                    ultimoMensaje = await obtenerUltimoMensaje(conv.id_objeto, conv.otroUsuario);
-                    if (ultimoMensaje) {
-                        ultimosMensajesCache.set(cacheKey, ultimoMensaje);
-                    }
-                }
-                
-                return {
-                    ...conv,
-                    ultimoMensaje: ultimoMensaje
-                };
+                const ultimoMensaje = await obtenerUltimoMensaje(conv.id_objeto, conv.otroUsuario);
+                return { ...conv, ultimoMensaje };
             }));
             
             const cambiosDetectados = JSON.stringify(conversacionesConMensajes.map(c => ({ 
@@ -1057,12 +1244,11 @@
                     }
                 }
                 
-                // Mostrar vista previa del último mensaje
                 let previewMensaje = '';
                 if (c.ultimoMensaje) {
                     const esMio = c.ultimoMensaje.emisor === currentUser?.email;
                     const textoPreview = c.ultimoMensaje.mensaje || '📎 Archivo adjunto';
-                    const previewCortado = textoPreview.length > 30 ? textoPreview.substring(0, 30) + '...' : textoPreview;
+                    const previewCortado = textoPreview.length > 35 ? textoPreview.substring(0, 35) + '...' : textoPreview;
                     previewMensaje = `
                         <div class="conversation-last-message">
                             <i class="fas ${esMio ? 'fa-reply' : 'fa-comment'}"></i>
@@ -1282,78 +1468,109 @@
     // ========== PUBLICAR OBJETO ==========
     let publicando = false;
 
-    async function publicarObjeto(titulo, descripcion, categoria, fotos, lat, lng, direccion) {
-        const form = new FormData();
-        form.append('titulo', titulo);
-        form.append('descripcion', `${categoria} | ${descripcion}`);
-        form.append('latitud', lat || '');
-        form.append('longitud', lng || '');
-        form.append('direccion', direccion || '');
-        for (let i = 0; i < Math.min(fotos.length, 5); i++) form.append(`foto_${i}`, fotos[i]);
-        return await apiFetch('/objeto', { method: 'POST', body: form });
+    function limpiarFormPublicacion() {
+        document.getElementById("tituloMobile").value = "";
+        document.getElementById("descripcionMobile").value = "";
+        document.getElementById("categoriaMobile").value = "Electrónica";
+        fotoPrincipalData = null;
+        fotosExtraSeleccionadas = [];
+        document.getElementById("previewMainMobile").innerHTML = "";
+        document.getElementById("previewExtraMobile").innerHTML = "";
+        limpiarUbicacion();
     }
 
-    function actualizarPreviewFotosExtra() {
-        const container = document.getElementById("previewExtraMobile");
-        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => `<div style="position:relative;"><img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; border-radius:12px;"><button onclick="eliminarFotoExtra(${idx})" style="position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; border-radius:50%; width:20px; height:20px;">✕</button></div>`).join('');
-    }
-
-    window.eliminarFotoExtra = function(idx) {
-        fotosExtraSeleccionadas.splice(idx, 1);
-        actualizarPreviewFotosExtra();
-    };
-
+    // Eventos de publicación
     document.getElementById("uploadMainMobile")?.addEventListener("click",()=>document.getElementById("fotoMainInput").click());
-    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ if(e.target.files[0]){ fotoPrincipalData = e.target.files[0]; const reader = new FileReader(); reader.onload = ev => { document.getElementById("previewMainMobile").innerHTML = `<img src="${ev.target.result}" style="width:80px; border-radius:16px;">`; }; reader.readAsDataURL(e.target.files[0]); } });
+    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ if(e.target.files[0]){ fotoPrincipalData = e.target.files[0]; const reader = new FileReader(); reader.onload = ev => { document.getElementById("previewMainMobile").innerHTML = `<img src="${ev.target.result}" style="width:80px; height:80px; border-radius:16px; object-fit:cover;">`; }; reader.readAsDataURL(e.target.files[0]); } });
     document.getElementById("uploadExtraMobile")?.addEventListener("click",()=>document.getElementById("fotosExtraInput").click());
     document.getElementById("fotosExtraInput")?.addEventListener("change",(e)=>{ 
         fotosExtraSeleccionadas.push(...Array.from(e.target.files));
         if (fotosExtraSeleccionadas.length > 4) fotosExtraSeleccionadas = fotosExtraSeleccionadas.slice(0,4);
-        actualizarPreviewFotosExtra();
+        const container = document.getElementById("previewExtraMobile");
+        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => `<div style="position:relative;"><img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;"><button onclick="eliminarFotoExtra(${idx})" style="position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; border-radius:50%; width:20px; height:20px; border:none; cursor:pointer;">✕</button></div>`).join('');
         e.target.value = '';
     });
-    document.getElementById("ubicarBtnMobile")?.addEventListener("click",()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(pos=>{ document.getElementById("latMobile").value = pos.coords.latitude; document.getElementById("lngMobile").value = pos.coords.longitude; const mapDiv = document.getElementById("mapaMobile"); mapDiv.style.display = "block"; if(mapaTemp) mapaTemp.remove(); mapaTemp = L.map('mapaMobile').setView([pos.coords.latitude, pos.coords.longitude], 13); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapaTemp); L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(mapaTemp); }); else alert("No se pudo"); });
-    document.getElementById("previewMobileBtn")?.addEventListener("click",()=>{ if(!fotoPrincipalData){ alert("Foto principal requerida"); return; } const reader = new FileReader(); reader.onload = e => { document.getElementById("previewImgModal").src = e.target.result; document.getElementById("previewTextModal").innerHTML = `<strong>${escapeHtml(document.getElementById("tituloMobile").value)}</strong><br>${escapeHtml(document.getElementById("descripcionMobile").value)}<br><i class="fas fa-map-marker-alt"></i> ${escapeHtml(document.getElementById("direccionMobile").value || "Sin dirección")}`; document.getElementById("previewModal").style.display="flex"; }; reader.readAsDataURL(fotoPrincipalData); });
+    
+    document.getElementById("ubicarBtnMobile")?.addEventListener("click", obtenerUbicacionActual);
+    document.getElementById("limpiarUbicacionBtn")?.addEventListener("click", limpiarUbicacion);
+    
+    window.eliminarFotoExtra = function(idx) {
+        fotosExtraSeleccionadas.splice(idx, 1);
+        const container = document.getElementById("previewExtraMobile");
+        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => `<div style="position:relative;"><img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;"><button onclick="eliminarFotoExtra(${idx})" style="position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; border-radius:50%; width:20px; height:20px; border:none; cursor:pointer;">✕</button></div>`).join('');
+    };
+    
+    document.getElementById("previewMobileBtn")?.addEventListener("click", () => {
+        if (!fotoPrincipalData) {
+            mostrarToast("Foto principal requerida", true);
+            return;
+        }
+        
+        const titulo = document.getElementById("tituloMobile").value;
+        const descripcion = document.getElementById("descripcionMobile").value;
+        const categoria = document.getElementById("categoriaMobile").value;
+        const direccion = document.getElementById("direccionMobile").value || "Sin dirección especificada";
+        
+        if (!titulo || !descripcion) {
+            mostrarToast("Título y descripción son requeridos", true);
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById("previewImgModal").src = e.target.result;
+            document.getElementById("previewTextModal").innerHTML = `
+                <strong>${escapeHtml(titulo)}</strong><br>
+                ${escapeHtml(descripcion)}<br>
+                <i class="fas fa-tag"></i> ${escapeHtml(categoria)}<br>
+                <i class="fas fa-map-marker-alt"></i> ${escapeHtml(direccion)}
+                ${ubicacionSeleccionada.lat ? `<br><small>📍 Coordenadas: ${ubicacionSeleccionada.lat.toFixed(4)}, ${ubicacionSeleccionada.lng.toFixed(4)}</small>` : ''}
+            `;
+            document.getElementById("previewModal").style.display = "flex";
+        };
+        reader.readAsDataURL(fotoPrincipalData);
+    });
+    
     document.getElementById("confirmarPublicarBtn").onclick = async () => {
         if (publicando) return;
         publicando = true;
         const btn = document.getElementById("confirmarPublicarBtn");
+        const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<span class="loading-spinner"></span> Publicando...';
+        
         try {
-            await publicarObjeto(
-                document.getElementById("tituloMobile").value,
-                document.getElementById("descripcionMobile").value,
-                document.getElementById("categoriaMobile").value,
+            const titulo = document.getElementById("tituloMobile").value;
+            const descripcion = document.getElementById("descripcionMobile").value;
+            const categoria = document.getElementById("categoriaMobile").value;
+            const direccion = document.getElementById("direccionMobile").value;
+            
+            await publicarObjetoConUbicacion(
+                titulo,
+                descripcion,
+                categoria,
                 [fotoPrincipalData, ...fotosExtraSeleccionadas],
-                document.getElementById("latMobile").value,
-                document.getElementById("lngMobile").value,
-                document.getElementById("direccionMobile").value
+                direccion
             );
+            
             document.getElementById("previewModal").style.display = "none";
             await cargarObjetosDesdeAPI();
-            limpiarForm();
-            mostrarToast("¡Objeto publicado!", false);
-        } catch(e) { mostrarToast("Error: " + e.message, true); } finally {
+            limpiarFormPublicacion();
+            mostrarToast("¡Objeto publicado correctamente!", false);
+            
+            document.querySelector('.nav-bottom-item[data-tab="feed"]').click();
+            
+        } catch(error) {
+            console.error('Error al publicar:', error);
+            mostrarToast("Error al publicar: " + (error.message || "Intenta de nuevo"), true);
+        } finally {
             publicando = false;
             btn.disabled = false;
-            btn.innerHTML = "Publicar";
+            btn.innerHTML = originalText;
         }
     };
+    
     document.getElementById("cancelPreviewBtn")?.addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
-    function limpiarForm(){ 
-        document.getElementById("tituloMobile").value = ""; 
-        document.getElementById("descripcionMobile").value = ""; 
-        fotoPrincipalData = null; 
-        fotosExtraSeleccionadas = []; 
-        document.getElementById("previewMainMobile").innerHTML = ""; 
-        document.getElementById("previewExtraMobile").innerHTML = ""; 
-        document.getElementById("direccionMobile").value = "";
-        document.getElementById("latMobile").value = "";
-        document.getElementById("lngMobile").value = "";
-        document.getElementById("mapaMobile").style.display = "none";
-        if(mapaTemp) mapaTemp.remove();
-    }
 
     // ========== NAVEGACIÓN ==========
     function switchTab(tabId) {
