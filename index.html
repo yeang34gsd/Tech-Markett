@@ -161,7 +161,28 @@
             gap: 8px;
             flex-wrap: wrap;
         }
-        .conversation-last-message { font-size: 0.75rem; color: #8aa59a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conversation-last-message { 
+            font-size: 0.75rem; 
+            color: #8aa59a; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .conversation-last-message i { font-size: 0.65rem; }
+        .conversation-last-message .mensaje-preview {
+            font-weight: normal;
+            color: #6b8a73;
+        }
+        .conversation-last-message .mensaje-preview.leido {
+            color: #8aa59a;
+        }
+        .conversation-last-message .mensaje-preview.no-leido {
+            color: #059669;
+            font-weight: 500;
+        }
         .conversation-time { font-size: 0.7rem; color: #8aa59a; }
         .badge-no-leidos {
             background: #ef4444;
@@ -507,6 +528,7 @@
     let enviandoMensaje = false;
     let mensajesPendientes = [];
     let ultimasConversaciones = [];
+    let ultimosMensajesCache = new Map(); // Cache para los últimos mensajes de cada conversación
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -602,41 +624,22 @@
         return response.json();
     }
 
-    async function cargarObjetosDesdeAPI() {
+    // ========== OBTENER ÚLTIMO MENSAJE DE UNA CONVERSACIÓN ==========
+    async function obtenerUltimoMensaje(objetoId, otroUsuario) {
         try {
-            const data = await apiFetch('/objetos');
-            objetos = data.map(obj => ({
-                id: obj.id,
-                titulo: obj.titulo,
-                categoria: obj.descripcion?.split('|')[0]?.trim() || 'General',
-                descripcion: obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '',
-                fotoPrincipal: obj.url,
-                fotos: obj.fotos_extra?.map(f => f.url) || [],
-                userId: obj.usuario,
-                userNombre: obj.usuario?.split('@')[0] || obj.usuario || 'Usuario',
-                ubicacionTexto: obj.direccion || 'Sin ubicación',
-                lat: obj.latitud,
-                lng: obj.longitud,
-                intercambiado: obj.intercambiado === 1,
-                sospechoso: obj.sospechoso === 1
-            }));
-            renderFeed();
-            renderFavoritos();
-            renderMisCosas();
-        } catch(e) { console.error('Error:', e); }
+            const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (!response.ok) return null;
+            const mensajes = await response.json();
+            const mensajesArray = Array.isArray(mensajes) ? mensajes : [];
+            if (mensajesArray.length === 0) return null;
+            return mensajesArray[mensajesArray.length - 1];
+        } catch (error) {
+            console.error('Error obteniendo último mensaje:', error);
+            return null;
+        }
     }
-
-    async function cargarFavoritosDesdeAPI() {
-        try {
-            const data = await apiFetch('/favoritos');
-            favoritosIds = new Set(data.map(f => f.id));
-        } catch(e) { console.error('Error:', e); }
-    }
-
-    async function agregarFavorito(id) { await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.add(id); renderFeed(); renderFavoritos(); }
-    async function quitarFavorito(id) { await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.delete(id); renderFeed(); renderFavoritos(); }
-    async function reportarObjeto(id, motivo) { await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }); alert('Reporte enviado.'); }
-    async function eliminarObjeto(id) { await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); objetos = objetos.filter(o => o.id !== id); renderFeed(); renderFavoritos(); renderMisCosas(); alert('Objeto eliminado'); }
 
     // ========== CHAT FUNCTIONS ==========
     
@@ -689,6 +692,7 @@
                 
                 const cacheKey = `${pendiente.objetoId}_${pendiente.receptor}`;
                 chatMensajesCache.delete(cacheKey);
+                ultimosMensajesCache.delete(`${pendiente.objetoId}_${pendiente.receptor}`);
                 await cargarMensajesChat();
                 await cargarConversaciones();
                 await actualizarBadgeMensajes();
@@ -814,6 +818,8 @@
             }
             
             if (mensajesLeidos) {
+                // Limpiar cache del último mensaje para actualizar la vista previa
+                ultimosMensajesCache.delete(cacheKey);
                 await cargarConversaciones();
                 await actualizarBadgeMensajes();
             }
@@ -877,13 +883,13 @@
         chatContainer.innerHTML = `
             <div class="chat-active">
                 <div class="chat-active-header">
-                    <button class="chat-back-btn" onclick="closeChatOnMobile()"><i class="fas fa-arrow-left"></i></button>
+                    <button class="chat-back-btn" onclick="cerrarChatCompletamente()"><i class="fas fa-arrow-left"></i></button>
                     <div class="chat-active-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
                     <div class="chat-active-info">
                         <div class="chat-active-name">${escapeHtml(otroNombre)}</div>
                         <div class="chat-active-objeto">📦 ${escapeHtml(titulo)}</div>
                     </div>
-                    <button class="chat-active-close" onclick="cerrarChat()"><i class="fas fa-times"></i></button>
+                    <button class="chat-active-close" onclick="cerrarChatCompletamente()"><i class="fas fa-times"></i></button>
                 </div>
                 <div id="chatMessagesArea" class="chat-messages-area">
                     <div style="text-align:center; padding:20px;">Cargando mensajes...</div>
@@ -928,8 +934,9 @@
         openChatOnMobile();
         await cargarConversaciones();
     }
-
-    function cerrarChat() {
+    
+    // Nueva función para cerrar el chat completamente y limpiar el estado activo
+    function cerrarChatCompletamente() {
         detenerPollingChat();
         chatActual = null;
         mensajesPendientes = [];
@@ -943,7 +950,19 @@
                 </div>
             `;
         }
+        
+        // Limpiar clase active de todas las conversaciones
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
         closeChatOnMobile();
+        
+        // Recargar conversaciones para asegurar que la lista esté actualizada
+        setTimeout(() => {
+            cargarConversaciones();
+            actualizarBadgeMensajes();
+        }, 100);
     }
 
     function closeChatOnMobile() {
@@ -971,31 +990,51 @@
             const conversaciones = await response.json();
             const conversacionesArray = Array.isArray(conversaciones) ? conversaciones : [];
             
-            const cambiosDetectados = JSON.stringify(conversacionesArray.map(c => ({ 
+            // Para cada conversación, obtener el último mensaje
+            const conversacionesConMensajes = await Promise.all(conversacionesArray.map(async (conv) => {
+                const cacheKey = `${conv.id_objeto}_${conv.otroUsuario}`;
+                let ultimoMensaje = ultimosMensajesCache.get(cacheKey);
+                
+                if (!ultimoMensaje) {
+                    ultimoMensaje = await obtenerUltimoMensaje(conv.id_objeto, conv.otroUsuario);
+                    if (ultimoMensaje) {
+                        ultimosMensajesCache.set(cacheKey, ultimoMensaje);
+                    }
+                }
+                
+                return {
+                    ...conv,
+                    ultimoMensaje: ultimoMensaje
+                };
+            }));
+            
+            const cambiosDetectados = JSON.stringify(conversacionesConMensajes.map(c => ({ 
                 id: c.id_objeto, 
                 otro: c.otroUsuario, 
                 no_leidos: c.no_leidos, 
-                ultimaFecha: c.ultimaFecha 
+                ultimaFecha: c.ultimaFecha,
+                ultimoMensajeId: c.ultimoMensaje?.id
             }))) !== JSON.stringify(ultimasConversaciones.map(c => ({ 
                 id: c.id_objeto, 
                 otro: c.otroUsuario, 
                 no_leidos: c.no_leidos, 
-                ultimaFecha: c.ultimaFecha 
+                ultimaFecha: c.ultimaFecha,
+                ultimoMensajeId: c.ultimoMensaje?.id
             })));
             
-            ultimasConversaciones = conversacionesArray;
+            ultimasConversaciones = conversacionesConMensajes;
             
             const listaContainer = document.getElementById('conversationsList');
             if (!listaContainer) return;
             
-            if (!conversacionesArray || conversacionesArray.length === 0) {
+            if (!conversacionesConMensajes || conversacionesConMensajes.length === 0) {
                 listaContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>';
                 return;
             }
             
-            conversacionesArray.sort((a, b) => new Date(b.ultimaFecha) - new Date(a.ultimaFecha));
+            conversacionesConMensajes.sort((a, b) => new Date(b.ultimaFecha) - new Date(a.ultimaFecha));
             
-            listaContainer.innerHTML = conversacionesArray.map(c => {
+            listaContainer.innerHTML = conversacionesConMensajes.map(c => {
                 const otroNombre = c.otroUsuario?.split('@')[0] || 'Usuario';
                 const noLeidos = c.no_leidos || 0;
                 const isActive = chatActual && 
@@ -1018,6 +1057,24 @@
                     }
                 }
                 
+                // Mostrar vista previa del último mensaje
+                let previewMensaje = '';
+                if (c.ultimoMensaje) {
+                    const esMio = c.ultimoMensaje.emisor === currentUser?.email;
+                    const textoPreview = c.ultimoMensaje.mensaje || '📎 Archivo adjunto';
+                    const previewCortado = textoPreview.length > 30 ? textoPreview.substring(0, 30) + '...' : textoPreview;
+                    previewMensaje = `
+                        <div class="conversation-last-message">
+                            <i class="fas ${esMio ? 'fa-reply' : 'fa-comment'}"></i>
+                            <span class="mensaje-preview ${noLeidos > 0 && !esMio ? 'no-leido' : 'leido'}">
+                                ${esMio ? 'Tú: ' : ''}${escapeHtml(previewCortado)}
+                            </span>
+                        </div>
+                    `;
+                } else {
+                    previewMensaje = `<div class="conversation-last-message">📦 ${escapeHtml(c.titulo || 'Objeto')}</div>`;
+                }
+                
                 return `
                     <div class="conversation-item ${isActive ? 'active' : ''}" 
                          onclick="abrirChatDirecto(${c.id_objeto}, '${c.otroUsuario || ''}', '${escapeHtml(c.titulo || '').replace(/'/g, "\\'")}')">
@@ -1027,7 +1084,7 @@
                                 ${escapeHtml(otroNombre)}
                                 ${noLeidos > 0 ? `<span class="badge-no-leidos">${noLeidos}</span>` : ''}
                             </div>
-                            <div class="conversation-last-message">📦 ${escapeHtml(c.titulo || 'Objeto')}</div>
+                            ${previewMensaje}
                         </div>
                         <div class="conversation-time">${fechaTexto}</div>
                     </div>
@@ -1074,6 +1131,42 @@
     }
 
     // ========== RENDER UI ==========
+    async function cargarObjetosDesdeAPI() {
+        try {
+            const data = await apiFetch('/objetos');
+            objetos = data.map(obj => ({
+                id: obj.id,
+                titulo: obj.titulo,
+                categoria: obj.descripcion?.split('|')[0]?.trim() || 'General',
+                descripcion: obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '',
+                fotoPrincipal: obj.url,
+                fotos: obj.fotos_extra?.map(f => f.url) || [],
+                userId: obj.usuario,
+                userNombre: obj.usuario?.split('@')[0] || obj.usuario || 'Usuario',
+                ubicacionTexto: obj.direccion || 'Sin ubicación',
+                lat: obj.latitud,
+                lng: obj.longitud,
+                intercambiado: obj.intercambiado === 1,
+                sospechoso: obj.sospechoso === 1
+            }));
+            renderFeed();
+            renderFavoritos();
+            renderMisCosas();
+        } catch(e) { console.error('Error:', e); }
+    }
+
+    async function cargarFavoritosDesdeAPI() {
+        try {
+            const data = await apiFetch('/favoritos');
+            favoritosIds = new Set(data.map(f => f.id));
+        } catch(e) { console.error('Error:', e); }
+    }
+
+    async function agregarFavorito(id) { await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.add(id); renderFeed(); renderFavoritos(); }
+    async function quitarFavorito(id) { await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.delete(id); renderFeed(); renderFavoritos(); }
+    async function reportarObjeto(id, motivo) { await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }); alert('Reporte enviado.'); }
+    async function eliminarObjeto(id) { await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); objetos = objetos.filter(o => o.id !== id); renderFeed(); renderFavoritos(); renderMisCosas(); alert('Objeto eliminado'); }
+
     function renderCategorias() {
         const container = document.getElementById("categoriesMobileContainer");
         if(!container) return;
@@ -1291,7 +1384,7 @@
 
     // Hacer funciones globales para onclick
     window.abrirChatDirecto = abrirChatDirecto;
-    window.cerrarChat = cerrarChat;
+    window.cerrarChatCompletamente = cerrarChatCompletamente;
     window.closeChatOnMobile = closeChatOnMobile;
     window.verFotoAmpliada = verFotoAmpliada;
     window.eliminarFotoExtra = eliminarFotoExtra;
