@@ -172,6 +172,12 @@
             border-radius: 20px;
             min-width: 20px;
             text-align: center;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .chat-active {
@@ -341,9 +347,6 @@
         .mensaje-enviando {
             opacity: 0.6;
         }
-        .mensaje-error {
-            border-left: 3px solid #ef4444;
-        }
         .toast-message {
             position: fixed;
             bottom: 80px;
@@ -361,6 +364,14 @@
             0% { opacity: 1; }
             70% { opacity: 1; }
             100% { opacity: 0; visibility: hidden; }
+        }
+        
+        .nuevo-mensaje-indicador {
+            animation: highlight 0.5s ease;
+        }
+        @keyframes highlight {
+            0% { background-color: #d1fae5; }
+            100% { background-color: transparent; }
         }
     </style>
 </head>
@@ -490,10 +501,12 @@
     
     // Chat variables
     let chatPollingInterval = null;
+    let conversacionesPollingInterval = null;
     let chatActual = null;
     let chatMensajesCache = new Map();
     let enviandoMensaje = false;
-    let mensajesPendientes = []; // Cola de mensajes pendientes
+    let mensajesPendientes = [];
+    let ultimasConversaciones = [];
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
@@ -549,6 +562,7 @@
         currentUser = null;
         authToken = null;
         detenerPollingChat();
+        detenerPollingConversaciones();
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('appContainer').style.display = 'none';
     }
@@ -652,7 +666,7 @@
                 console.error(`Intento ${i + 1} falló:`, errorText);
                 
                 if (i < intentos - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Espera progresiva
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
                 }
             } catch (error) {
                 console.error(`Intento ${i + 1} error:`, error);
@@ -675,14 +689,13 @@
             const resultado = await enviarMensajeConReintento(pendiente.objetoId, pendiente.receptor, pendiente.mensaje);
             
             if (resultado.success) {
-                mensajesPendientes.shift(); // Eliminar mensaje enviado
+                mensajesPendientes.shift();
                 mostrarToast('Mensaje enviado', false);
                 
-                // Actualizar chat
                 const cacheKey = `${pendiente.objetoId}_${pendiente.receptor}`;
                 chatMensajesCache.delete(cacheKey);
                 await cargarMensajesChat();
-                await cargarConversaciones();
+                await cargarConversaciones(); // Actualizar bandeja inmediatamente
                 await actualizarBadgeMensajes();
             } else {
                 mostrarToast('Error al enviar mensaje. Reintentando...', true);
@@ -692,14 +705,13 @@
         } finally {
             enviandoMensaje = false;
             
-            // Procesar siguiente mensaje pendiente
             if (mensajesPendientes.length > 0) {
                 setTimeout(() => procesarMensajesPendientes(), 1000);
             }
         }
     }
 
-    // Función principal para enviar mensaje (usa cola)
+    // Función principal para enviar mensaje
     async function enviarMensajeChat(texto) {
         if (!chatActual || !texto.trim()) {
             mostrarToast('No hay chat activo', true);
@@ -709,10 +721,8 @@
         const textoLimpio = texto.trim();
         const input = document.getElementById('msgInputMobile');
         
-        // Limpiar input inmediatamente para feedback
         if (input) input.value = '';
         
-        // Agregar a cola de pendientes
         mensajesPendientes.push({
             objetoId: chatActual.id_objeto,
             receptor: chatActual.otroUsuario,
@@ -720,7 +730,7 @@
             timestamp: Date.now()
         });
         
-        // Mostrar mensaje temporal en el chat (optimista)
+        // Mostrar mensaje temporal
         const container = document.getElementById('chatMessagesArea');
         if (container) {
             const mensajeTemp = `
@@ -733,15 +743,14 @@
             container.scrollTop = container.scrollHeight;
         }
         
-        // Procesar cola
         await procesarMensajesPendientes();
         
-        // Eliminar mensajes temporales
         document.querySelectorAll('.mensaje[data-temporal="true"]').forEach(el => el.remove());
         
         return true;
     }
 
+    // Detener polling del chat activo
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -749,6 +758,15 @@
         }
     }
 
+    // Detener polling de conversaciones
+    function detenerPollingConversaciones() {
+        if (conversacionesPollingInterval) {
+            clearInterval(conversacionesPollingInterval);
+            conversacionesPollingInterval = null;
+        }
+    }
+
+    // Iniciar polling del chat activo
     function iniciarPollingChat() {
         detenerPollingChat();
         chatPollingInterval = setInterval(async () => {
@@ -756,6 +774,15 @@
                 await cargarMensajesChat();
             }
         }, 3000);
+    }
+
+    // Iniciar polling de conversaciones (para actualizar la bandeja)
+    function iniciarPollingConversaciones() {
+        detenerPollingConversaciones();
+        conversacionesPollingInterval = setInterval(async () => {
+            await cargarConversaciones();
+            await actualizarBadgeMensajes();
+        }, 5000); // Cada 5 segundos actualiza la bandeja
     }
 
     async function cargarMensajesChat() {
@@ -785,16 +812,21 @@
             }
             
             // Marcar como leídos
+            let mensajesLeidos = false;
             for (const m of mensajesArray) {
                 if (m.emisor !== currentUser?.email && m.leido === 0) {
                     await fetch(`${WORKER_URL}/mensaje/${m.id}?action=leer`, {
                         method: 'PATCH',
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     }).catch(e => console.error('Error:', e));
+                    mensajesLeidos = true;
                 }
             }
             
-            await actualizarBadgeMensajes();
+            if (mensajesLeidos) {
+                await cargarConversaciones(); // Actualizar bandeja cuando hay mensajes leídos
+                await actualizarBadgeMensajes();
+            }
             
         } catch (error) {
             console.error('Error cargando mensajes:', error);
@@ -904,13 +936,13 @@
         
         iniciarPollingChat();
         openChatOnMobile();
-        await cargarConversaciones();
+        await cargarConversaciones(); // Actualizar bandeja para quitar el badge
     }
 
     function cerrarChat() {
         detenerPollingChat();
         chatActual = null;
-        mensajesPendientes = []; // Limpiar mensajes pendientes
+        mensajesPendientes = [];
         
         const chatContainer = document.getElementById('chat-active-container');
         if (chatContainer) {
@@ -938,6 +970,7 @@
         }
     }
 
+    // Función mejorada para cargar conversaciones con detección de cambios
     async function cargarConversaciones() {
         try {
             const response = await fetch(`${WORKER_URL}/mis-conversaciones`, {
@@ -947,21 +980,50 @@
             if (!response.ok) return;
             
             const conversaciones = await response.json();
-            const listaContainer = document.getElementById('conversationsList');
+            const conversacionesArray = Array.isArray(conversaciones) ? conversaciones : [];
             
+            // Verificar si hay cambios en las conversaciones
+            const cambiosDetectados = JSON.stringify(conversacionesArray.map(c => ({ id: c.id_objeto, otro: c.otroUsuario, no_leidos: c.no_leidos, ultimaFecha: c.ultimaFecha }))) !== 
+                                      JSON.stringify(ultimasConversaciones.map(c => ({ id: c.id_objeto, otro: c.otroUsuario, no_leidos: c.no_leidos, ultimaFecha: c.ultimaFecha })));
+            
+            if (!cambiosDetectados && ultimasConversaciones.length > 0) return;
+            
+            ultimasConversaciones = conversacionesArray;
+            
+            const listaContainer = document.getElementById('conversationsList');
             if (!listaContainer) return;
             
-            if (!conversaciones || conversaciones.length === 0) {
+            if (!conversacionesArray || conversacionesArray.length === 0) {
                 listaContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>';
                 return;
             }
             
-            listaContainer.innerHTML = conversaciones.map(c => {
+            // Ordenar por fecha más reciente
+            conversacionesArray.sort((a, b) => new Date(b.ultimaFecha) - new Date(a.ultimaFecha));
+            
+            listaContainer.innerHTML = conversacionesArray.map(c => {
                 const otroNombre = c.otroUsuario?.split('@')[0] || 'Usuario';
                 const noLeidos = c.no_leidos || 0;
                 const isActive = chatActual && 
                                 chatActual.id_objeto === c.id_objeto && 
                                 chatActual.otroUsuario === c.otroUsuario;
+                
+                // Formatear fecha relativa
+                let fechaTexto = '';
+                if (c.ultimaFecha) {
+                    const fecha = new Date(c.ultimaFecha);
+                    const hoy = new Date();
+                    const ayer = new Date(hoy);
+                    ayer.setDate(ayer.getDate() - 1);
+                    
+                    if (fecha.toDateString() === hoy.toDateString()) {
+                        fechaTexto = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    } else if (fecha.toDateString() === ayer.toDateString()) {
+                        fechaTexto = 'Ayer';
+                    } else {
+                        fechaTexto = fecha.toLocaleDateString();
+                    }
+                }
                 
                 return `
                     <div class="conversation-item ${isActive ? 'active' : ''}" 
@@ -974,10 +1036,22 @@
                             </div>
                             <div class="conversation-last-message">📦 ${escapeHtml(c.titulo || 'Objeto')}</div>
                         </div>
-                        <div class="conversation-time">${c.ultimaFecha ? new Date(c.ultimaFecha).toLocaleDateString() : ''}</div>
+                        <div class="conversation-time">${fechaTexto}</div>
                     </div>
                 `;
             }).join('');
+            
+            // Efecto visual para nuevas conversaciones con mensajes no leídos
+            if (cambiosDetectados) {
+                const nuevosItems = document.querySelectorAll('.conversation-item .badge-no-leidos');
+                nuevosItems.forEach(item => {
+                    const parent = item.closest('.conversation-item');
+                    if (parent && !parent.classList.contains('active')) {
+                        parent.classList.add('nuevo-mensaje-indicador');
+                        setTimeout(() => parent.classList.remove('nuevo-mensaje-indicador'), 1000);
+                    }
+                });
+            }
             
         } catch (error) {
             console.error('Error cargando conversaciones:', error);
@@ -992,12 +1066,15 @@
             });
             if (!response.ok) return;
             const conversaciones = await response.json();
-            const totalNoLeidos = conversaciones.reduce((acc, c) => acc + (c.no_leidos || 0), 0);
+            const totalNoLeidos = (conversaciones || []).reduce((acc, c) => acc + (c.no_leidos || 0), 0);
             const badge = document.getElementById('mensajesBadge');
             if (badge) {
                 if (totalNoLeidos > 0) {
                     badge.style.display = 'inline-block';
                     badge.innerText = totalNoLeidos > 99 ? '99+' : totalNoLeidos;
+                    // Animación en el badge cuando llegan nuevos mensajes
+                    badge.style.animation = 'pulse 0.5s ease';
+                    setTimeout(() => badge.style.animation = '', 500);
                 } else {
                     badge.style.display = 'none';
                 }
@@ -1203,7 +1280,13 @@
         document.getElementById("mensajesView").style.display = tabId==="mensajes" ? "block" : "none";
         if(tabId==="favoritos") renderFavoritos();
         if(tabId==="misCosas") renderMisCosas();
-        if(tabId==="mensajes") { detenerPollingChat(); cargarConversaciones(); }
+        if(tabId==="mensajes") { 
+            detenerPollingChat();
+            cargarConversaciones();
+            iniciarPollingConversaciones(); // Iniciar polling para la bandeja
+        } else {
+            detenerPollingConversaciones();
+        }
     }
 
     function mostrarPerfil() {
@@ -1240,7 +1323,7 @@
                 guardarOneSignalId(currentUser.email);
                 await cargarConversaciones();
                 
-                // Polling para badge
+                // Iniciar polling para badge
                 setInterval(async () => {
                     await actualizarBadgeMensajes();
                 }, 10000);
