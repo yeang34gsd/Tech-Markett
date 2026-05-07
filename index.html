@@ -638,9 +638,8 @@
     async function reportarObjeto(id, motivo) { await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }); alert('Reporte enviado.'); }
     async function eliminarObjeto(id) { await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); objetos = objetos.filter(o => o.id !== id); renderFeed(); renderFavoritos(); renderMisCosas(); alert('Objeto eliminado'); }
 
-    // ========== CHAT FUNCTIONS CORREGIDAS ==========
+    // ========== CHAT FUNCTIONS ==========
     
-    // Función para enviar mensaje con reintentos
     async function enviarMensajeConReintento(objetoId, receptor, mensaje, intentos = 3) {
         for (let i = 0; i < intentos; i++) {
             try {
@@ -662,9 +661,6 @@
                     return { success: true, data };
                 }
                 
-                const errorText = await response.text();
-                console.error(`Intento ${i + 1} falló:`, errorText);
-                
                 if (i < intentos - 1) {
                     await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
                 }
@@ -678,7 +674,6 @@
         return { success: false, error: 'No se pudo enviar después de varios intentos' };
     }
 
-    // Procesar cola de mensajes pendientes
     async function procesarMensajesPendientes() {
         if (mensajesPendientes.length === 0 || enviandoMensaje) return;
         
@@ -695,7 +690,7 @@
                 const cacheKey = `${pendiente.objetoId}_${pendiente.receptor}`;
                 chatMensajesCache.delete(cacheKey);
                 await cargarMensajesChat();
-                await cargarConversaciones(); // Actualizar bandeja inmediatamente
+                await cargarConversaciones();
                 await actualizarBadgeMensajes();
             } else {
                 mostrarToast('Error al enviar mensaje. Reintentando...', true);
@@ -711,7 +706,6 @@
         }
     }
 
-    // Función principal para enviar mensaje
     async function enviarMensajeChat(texto) {
         if (!chatActual || !texto.trim()) {
             mostrarToast('No hay chat activo', true);
@@ -730,7 +724,6 @@
             timestamp: Date.now()
         });
         
-        // Mostrar mensaje temporal
         const container = document.getElementById('chatMessagesArea');
         if (container) {
             const mensajeTemp = `
@@ -750,7 +743,6 @@
         return true;
     }
 
-    // Detener polling del chat activo
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -758,7 +750,6 @@
         }
     }
 
-    // Detener polling de conversaciones
     function detenerPollingConversaciones() {
         if (conversacionesPollingInterval) {
             clearInterval(conversacionesPollingInterval);
@@ -766,7 +757,6 @@
         }
     }
 
-    // Iniciar polling del chat activo
     function iniciarPollingChat() {
         detenerPollingChat();
         chatPollingInterval = setInterval(async () => {
@@ -776,13 +766,14 @@
         }, 3000);
     }
 
-    // Iniciar polling de conversaciones (para actualizar la bandeja)
     function iniciarPollingConversaciones() {
         detenerPollingConversaciones();
         conversacionesPollingInterval = setInterval(async () => {
-            await cargarConversaciones();
-            await actualizarBadgeMensajes();
-        }, 5000); // Cada 5 segundos actualiza la bandeja
+            if (document.getElementById('conversationsList')) {
+                await cargarConversaciones();
+                await actualizarBadgeMensajes();
+            }
+        }, 3000);
     }
 
     async function cargarMensajesChat() {
@@ -811,7 +802,6 @@
                 await renderizarMensajes(mensajesArray);
             }
             
-            // Marcar como leídos
             let mensajesLeidos = false;
             for (const m of mensajesArray) {
                 if (m.emisor !== currentUser?.email && m.leido === 0) {
@@ -824,7 +814,7 @@
             }
             
             if (mensajesLeidos) {
-                await cargarConversaciones(); // Actualizar bandeja cuando hay mensajes leídos
+                await cargarConversaciones();
                 await actualizarBadgeMensajes();
             }
             
@@ -936,7 +926,7 @@
         
         iniciarPollingChat();
         openChatOnMobile();
-        await cargarConversaciones(); // Actualizar bandeja para quitar el badge
+        await cargarConversaciones();
     }
 
     function cerrarChat() {
@@ -970,7 +960,6 @@
         }
     }
 
-    // Función mejorada para cargar conversaciones con detección de cambios
     async function cargarConversaciones() {
         try {
             const response = await fetch(`${WORKER_URL}/mis-conversaciones`, {
@@ -982,11 +971,17 @@
             const conversaciones = await response.json();
             const conversacionesArray = Array.isArray(conversaciones) ? conversaciones : [];
             
-            // Verificar si hay cambios en las conversaciones
-            const cambiosDetectados = JSON.stringify(conversacionesArray.map(c => ({ id: c.id_objeto, otro: c.otroUsuario, no_leidos: c.no_leidos, ultimaFecha: c.ultimaFecha }))) !== 
-                                      JSON.stringify(ultimasConversaciones.map(c => ({ id: c.id_objeto, otro: c.otroUsuario, no_leidos: c.no_leidos, ultimaFecha: c.ultimaFecha })));
-            
-            if (!cambiosDetectados && ultimasConversaciones.length > 0) return;
+            const cambiosDetectados = JSON.stringify(conversacionesArray.map(c => ({ 
+                id: c.id_objeto, 
+                otro: c.otroUsuario, 
+                no_leidos: c.no_leidos, 
+                ultimaFecha: c.ultimaFecha 
+            }))) !== JSON.stringify(ultimasConversaciones.map(c => ({ 
+                id: c.id_objeto, 
+                otro: c.otroUsuario, 
+                no_leidos: c.no_leidos, 
+                ultimaFecha: c.ultimaFecha 
+            })));
             
             ultimasConversaciones = conversacionesArray;
             
@@ -998,7 +993,6 @@
                 return;
             }
             
-            // Ordenar por fecha más reciente
             conversacionesArray.sort((a, b) => new Date(b.ultimaFecha) - new Date(a.ultimaFecha));
             
             listaContainer.innerHTML = conversacionesArray.map(c => {
@@ -1008,7 +1002,6 @@
                                 chatActual.id_objeto === c.id_objeto && 
                                 chatActual.otroUsuario === c.otroUsuario;
                 
-                // Formatear fecha relativa
                 let fechaTexto = '';
                 if (c.ultimaFecha) {
                     const fecha = new Date(c.ultimaFecha);
@@ -1041,7 +1034,6 @@
                 `;
             }).join('');
             
-            // Efecto visual para nuevas conversaciones con mensajes no leídos
             if (cambiosDetectados) {
                 const nuevosItems = document.querySelectorAll('.conversation-item .badge-no-leidos');
                 nuevosItems.forEach(item => {
@@ -1072,7 +1064,6 @@
                 if (totalNoLeidos > 0) {
                     badge.style.display = 'inline-block';
                     badge.innerText = totalNoLeidos > 99 ? '99+' : totalNoLeidos;
-                    // Animación en el badge cuando llegan nuevos mensajes
                     badge.style.animation = 'pulse 0.5s ease';
                     setTimeout(() => badge.style.animation = '', 500);
                 } else {
@@ -1283,7 +1274,7 @@
         if(tabId==="mensajes") { 
             detenerPollingChat();
             cargarConversaciones();
-            iniciarPollingConversaciones(); // Iniciar polling para la bandeja
+            iniciarPollingConversaciones();
         } else {
             detenerPollingConversaciones();
         }
@@ -1323,7 +1314,6 @@
                 guardarOneSignalId(currentUser.email);
                 await cargarConversaciones();
                 
-                // Iniciar polling para badge
                 setInterval(async () => {
                     await actualizarBadgeMensajes();
                 }, 10000);
