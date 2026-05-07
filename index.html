@@ -300,6 +300,7 @@
             font-weight: 600;
         }
         .btn-enviar:hover { background: #047857; }
+        .btn-enviar:disabled { background: #9ac9b0; cursor: not-allowed; }
         .empty-chat {
             flex: 1;
             display: flex;
@@ -336,6 +337,31 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .mensaje-enviando {
+            opacity: 0.6;
+        }
+        .mensaje-error {
+            border-left: 3px solid #ef4444;
+        }
+        .toast-message {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ef4444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            animation: fadeOut 3s ease forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
     </style>
 </head>
 <body>
@@ -466,8 +492,30 @@
     let chatPollingInterval = null;
     let chatActual = null;
     let chatMensajesCache = new Map();
+    let enviandoMensaje = false;
+    let mensajesPendientes = []; // Cola de mensajes pendientes
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
+
+    // ========== UTILIDADES ==========
+    function mostrarToast(mensaje, esError = true) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.style.background = esError ? '#ef4444' : '#10b981';
+        toast.textContent = mensaje;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
 
     // ========== AUTENTICACIÓN ==========
     function getTokenFromURL() {
@@ -575,21 +623,125 @@
     async function quitarFavorito(id) { await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.delete(id); renderFeed(); renderFavoritos(); }
     async function reportarObjeto(id, motivo) { await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) }); alert('Reporte enviado.'); }
     async function eliminarObjeto(id) { await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); objetos = objetos.filter(o => o.id !== id); renderFeed(); renderFavoritos(); renderMisCosas(); alert('Objeto eliminado'); }
+
+    // ========== CHAT FUNCTIONS CORREGIDAS ==========
     
-    async function enviarMensaje(objetoId, receptor, mensaje) {
+    // Función para enviar mensaje con reintentos
+    async function enviarMensajeConReintento(objetoId, receptor, mensaje, intentos = 3) {
+        for (let i = 0; i < intentos; i++) {
+            try {
+                const response = await fetch(`${WORKER_URL}/mensaje`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        id_objeto: objetoId,
+                        receptor: receptor,
+                        mensaje: mensaje
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return { success: true, data };
+                }
+                
+                const errorText = await response.text();
+                console.error(`Intento ${i + 1} falló:`, errorText);
+                
+                if (i < intentos - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Espera progresiva
+                }
+            } catch (error) {
+                console.error(`Intento ${i + 1} error:`, error);
+                if (i < intentos - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                }
+            }
+        }
+        return { success: false, error: 'No se pudo enviar después de varios intentos' };
+    }
+
+    // Procesar cola de mensajes pendientes
+    async function procesarMensajesPendientes() {
+        if (mensajesPendientes.length === 0 || enviandoMensaje) return;
+        
+        const pendiente = mensajesPendientes[0];
+        enviandoMensaje = true;
+        
         try {
-            const data = await apiFetch('/mensaje', { 
-                method: 'POST', 
-                body: JSON.stringify({ id_objeto: objetoId, receptor, mensaje }) 
-            });
-            return data;
-        } catch(e) {
-            console.error('Error enviando mensaje:', e);
-            return null;
+            const resultado = await enviarMensajeConReintento(pendiente.objetoId, pendiente.receptor, pendiente.mensaje);
+            
+            if (resultado.success) {
+                mensajesPendientes.shift(); // Eliminar mensaje enviado
+                mostrarToast('Mensaje enviado', false);
+                
+                // Actualizar chat
+                const cacheKey = `${pendiente.objetoId}_${pendiente.receptor}`;
+                chatMensajesCache.delete(cacheKey);
+                await cargarMensajesChat();
+                await cargarConversaciones();
+                await actualizarBadgeMensajes();
+            } else {
+                mostrarToast('Error al enviar mensaje. Reintentando...', true);
+            }
+        } catch (error) {
+            console.error('Error procesando mensaje pendiente:', error);
+        } finally {
+            enviandoMensaje = false;
+            
+            // Procesar siguiente mensaje pendiente
+            if (mensajesPendientes.length > 0) {
+                setTimeout(() => procesarMensajesPendientes(), 1000);
+            }
         }
     }
 
-    // ========== CHAT FUNCTIONS ==========
+    // Función principal para enviar mensaje (usa cola)
+    async function enviarMensajeChat(texto) {
+        if (!chatActual || !texto.trim()) {
+            mostrarToast('No hay chat activo', true);
+            return false;
+        }
+        
+        const textoLimpio = texto.trim();
+        const input = document.getElementById('msgInputMobile');
+        
+        // Limpiar input inmediatamente para feedback
+        if (input) input.value = '';
+        
+        // Agregar a cola de pendientes
+        mensajesPendientes.push({
+            objetoId: chatActual.id_objeto,
+            receptor: chatActual.otroUsuario,
+            mensaje: textoLimpio,
+            timestamp: Date.now()
+        });
+        
+        // Mostrar mensaje temporal en el chat (optimista)
+        const container = document.getElementById('chatMessagesArea');
+        if (container) {
+            const mensajeTemp = `
+                <div class="mensaje emisor mensaje-enviando" data-temporal="true">
+                    <div>${escapeHtml(textoLimpio)}</div>
+                    <small>Enviando... <span class="loading-spinner" style="width:12px; height:12px;"></span></small>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', mensajeTemp);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Procesar cola
+        await procesarMensajesPendientes();
+        
+        // Eliminar mensajes temporales
+        document.querySelectorAll('.mensaje[data-temporal="true"]').forEach(el => el.remove());
+        
+        return true;
+    }
+
     function detenerPollingChat() {
         if (chatPollingInterval) {
             clearInterval(chatPollingInterval);
@@ -632,6 +784,7 @@
                 await renderizarMensajes(mensajesArray);
             }
             
+            // Marcar como leídos
             for (const m of mensajesArray) {
                 if (m.emisor !== currentUser?.email && m.leido === 0) {
                     await fetch(`${WORKER_URL}/mensaje/${m.id}?action=leer`, {
@@ -683,45 +836,6 @@
         }
     }
 
-    async function enviarMensajeChat(texto) {
-        if (!chatActual || !texto.trim()) return false;
-        
-        const input = document.getElementById('msgInputMobile');
-        const textoOriginal = texto.trim();
-        
-        if (input) input.value = '';
-        
-        try {
-            const response = await fetch(`${WORKER_URL}/mensaje`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify({
-                    id_objeto: chatActual.id_objeto,
-                    receptor: chatActual.otroUsuario,
-                    mensaje: textoOriginal
-                })
-            });
-            
-            if (!response.ok) throw new Error('Error al enviar');
-            
-            const cacheKey = `${chatActual.id_objeto}_${chatActual.otroUsuario}`;
-            chatMensajesCache.delete(cacheKey);
-            
-            await cargarMensajesChat();
-            await cargarConversaciones();
-            
-            return true;
-        } catch (error) {
-            console.error('Error:', error);
-            alert('No se pudo enviar el mensaje');
-            if (input) input.value = textoOriginal;
-            return false;
-        }
-    }
-
     async function abrirChatDirecto(objetoId, otroUsuario, titulo) {
         detenerPollingChat();
         
@@ -765,7 +879,9 @@
         if (sendBtn) {
             sendBtn.onclick = () => {
                 const texto = msgInput?.value || '';
-                enviarMensajeChat(texto);
+                if (texto.trim()) {
+                    enviarMensajeChat(texto);
+                }
             };
         }
         
@@ -773,7 +889,10 @@
             msgInput.onkeypress = (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    enviarMensajeChat(msgInput.value);
+                    const texto = msgInput.value;
+                    if (texto.trim()) {
+                        enviarMensajeChat(texto);
+                    }
                 }
             };
             setTimeout(() => msgInput.focus(), 100);
@@ -791,6 +910,7 @@
     function cerrarChat() {
         detenerPollingChat();
         chatActual = null;
+        mensajesPendientes = []; // Limpiar mensajes pendientes
         
         const chatContainer = document.getElementById('chat-active-container');
         if (chatContainer) {
@@ -1052,8 +1172,8 @@
             document.getElementById("previewModal").style.display = "none";
             await cargarObjetosDesdeAPI();
             limpiarForm();
-            alert("¡Objeto publicado!");
-        } catch(e) { alert("Error: " + e.message); } finally {
+            mostrarToast("¡Objeto publicado!", false);
+        } catch(e) { mostrarToast("Error: " + e.message, true); } finally {
             publicando = false;
             btn.disabled = false;
             btn.innerHTML = "Publicar";
@@ -1094,16 +1214,6 @@
         document.getElementById("fotoAmpliada").src = url;
         document.getElementById("fotoModal").style.display = "flex";
     };
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
 
     // Hacer funciones globales para onclick
     window.abrirChatDirecto = abrirChatDirecto;
