@@ -16,6 +16,36 @@
         .logo-area-mobile { display: flex; align-items: center; gap: 8px; }
         .logo-area-mobile i { font-size: 28px; color: #059669; background: #e8f5e9; padding: 6px; border-radius: 16px; }
         .logo-area-mobile h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, #059669, #10b981); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        
+        /* Contenedor para el botón de soporte y perfil */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        /* NUEVO: Botón de atención al cliente */
+        .support-btn {
+            background: #f0f2f0;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #059669;
+            font-size: 1.2rem;
+        }
+        .support-btn:hover {
+            background: #e8f5e9;
+            transform: scale(1.05);
+        }
+        .support-btn:active {
+            transform: scale(0.95);
+        }
+        
         .profile-top { cursor: pointer; display: flex; align-items: center; gap: 8px; background: #f0f2f0; padding: 4px 12px 4px 6px; border-radius: 40px; }
         .profile-top img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .profile-top span { font-weight: 500; font-size: 0.85rem; color: #2c3e2f; }
@@ -139,6 +169,88 @@
         }
         .custom-modal-btn.confirm:hover { background: #047857; }
         .custom-modal-btn.cancel:hover { background: #e2e8e4; }
+
+        /* NUEVO: Estilos para el modal de bienvenida */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            backdrop-filter: blur(5px);
+        }
+        .welcome-content {
+            background: white;
+            border-radius: 32px;
+            max-width: 85%;
+            width: 340px;
+            padding: 28px 24px;
+            text-align: center;
+            animation: modalPop 0.3s ease;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.2);
+        }
+        .welcome-content i {
+            font-size: 48px;
+            color: #059669;
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 60px;
+            margin-bottom: 16px;
+        }
+        .welcome-content h2 {
+            color: #1f2937;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+        .welcome-content p {
+            color: #5e6e64;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 12px 0;
+        }
+        .feature-list {
+            text-align: left;
+            margin: 20px 0;
+            background: #f8faf8;
+            padding: 12px 16px;
+            border-radius: 24px;
+        }
+        .feature-list div {
+            margin: 8px 0;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #2c3e2f;
+        }
+        .feature-list i {
+            font-size: 0.9rem;
+            background: none;
+            padding: 0;
+            margin: 0;
+            color: #059669;
+        }
+        .welcome-btn {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .welcome-btn:hover {
+            background: #047857;
+        }
 
         .form-mobile input, .form-mobile textarea, .form-mobile select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dde6e0; border-radius: 24px; font-size: 0.9rem; }
         .upload-zone { background: #fafdfa; border: 2px dashed #cbdcd2; border-radius: 20px; padding: 16px; text-align: center; cursor: pointer; margin: 12px 0; }
@@ -503,9 +615,15 @@
             <i class="fas fa-exchange-alt"></i>
             <h1>Intercambia</h1>
         </div>
-        <div id="profileTopBtn" class="profile-top">
-            <img id="topAvatar" src="" alt="perfil">
-            <span id="topUserName"></span>
+        <!-- NUEVO: Botón de atención al cliente y perfil -->
+        <div class="header-right">
+            <button id="supportBtn" class="support-btn" title="Atención al cliente">
+                <i class="fas fa-headset"></i>
+            </button>
+            <div id="profileTopBtn" class="profile-top">
+                <img id="topAvatar" src="" alt="perfil">
+                <span id="topUserName"></span>
+            </div>
         </div>
     </div>
 
@@ -572,6 +690,23 @@
         <button class="nav-bottom-item" data-tab="crear"><i class="fas fa-plus-circle"></i><span>Crear</span></button>
         <button class="nav-bottom-item" data-tab="misCosas"><i class="fas fa-box"></i><span>Mis cosas</span></button>
         <button class="nav-bottom-item" data-tab="mensajes" id="mensajesNavBtn"><i class="fas fa-comment-dots"></i><span>Mensajes</span><span id="mensajesBadge" class="badge-mensajes" style="display:none;">0</span></button>
+    </div>
+</div>
+
+<!-- NUEVO: Modal de bienvenida formal -->
+<div id="welcomeModal" class="welcome-modal">
+    <div class="welcome-content">
+        <i class="fas fa-exchange-alt"></i>
+        <h2>✨ Bienvenido a Intercambia</h2>
+        <p>La plataforma donde podrás dar una segunda vida a tus objetos mediante el trueque.</p>
+        <div class="feature-list">
+            <div><i class="fas fa-plus-circle"></i> Publica objetos que ya no uses</div>
+            <div><i class="fas fa-handshake"></i> Intercambia con otros usuarios</div>
+            <div><i class="fas fa-comment-dots"></i> Chatea y acuerda el trueque</div>
+            <div><i class="fas fa-map-marker-alt"></i> Encuentra objetos cerca de ti</div>
+        </div>
+        <p><strong>¿Cómo funciona?</strong><br>Explora, guarda tus favoritos, contacta al dueño y acuerda el intercambio.</p>
+        <button id="closeWelcomeBtn" class="welcome-btn">Entendido, continuar</button>
     </div>
 </div>
 
@@ -1740,6 +1875,37 @@
     window.eliminarFotoExtra = eliminarFotoExtra;
     window.mostrarConfirm = mostrarConfirm;
 
+    // NUEVO: Función para mostrar el modal de bienvenida
+    let welcomeModalMostrado = false;
+
+    function mostrarBienvenida() {
+        if (!welcomeModalMostrado && currentUser) {
+            const welcomeModal = document.getElementById('welcomeModal');
+            if (welcomeModal) {
+                welcomeModal.style.display = 'flex';
+                welcomeModalMostrado = true;
+                // Guardar en localStorage para no mostrar de nuevo
+                localStorage.setItem('welcome_shown', 'true');
+            }
+        }
+    }
+
+    // Cerrar modal de bienvenida
+    document.getElementById('closeWelcomeBtn')?.addEventListener('click', () => {
+        const welcomeModal = document.getElementById('welcomeModal');
+        if (welcomeModal) {
+            welcomeModal.style.display = 'none';
+        }
+    });
+
+    // NUEVO: Función para atención al cliente (abrir Gmail)
+    function abrirAtencionCliente() {
+        const correoSoporte = 'intercambioapp53@gmail.com';
+        const asunto = encodeURIComponent('Consulta / Soporte - Intercambia App');
+        const cuerpo = encodeURIComponent('Hola, tengo una consulta sobre la aplicación Intercambia:\n\n');
+        window.location.href = `mailto:${correoSoporte}?subject=${asunto}&body=${cuerpo}`;
+    }
+
     // ========== INICIALIZACIÓN ==========
     async function init() {
         const token = getTokenFromURL();
@@ -1753,10 +1919,25 @@
                 document.getElementById("topAvatar").src = currentUser.picture || 'https://ui-avatars.com/api/?background=059669&color=fff&name=' + encodeURIComponent(currentUser.name || currentUser.email);
                 document.getElementById("topUserName").innerHTML = currentUser.name?.split(' ')[0] || currentUser.email.split('@')[0];
                 document.getElementById("profileTopBtn").addEventListener("click", mostrarPerfil);
+                
+                // Agregar evento al botón de soporte
+                const supportBtn = document.getElementById('supportBtn');
+                if (supportBtn) {
+                    supportBtn.addEventListener('click', abrirAtencionCliente);
+                }
+                
                 await cargarObjetosDesdeAPI();
                 await cargarFavoritosDesdeAPI();
                 guardarOneSignalId(currentUser.email);
                 await cargarConversaciones();
+                
+                // Mostrar bienvenida si no se ha mostrado antes
+                const welcomeShown = localStorage.getItem('welcome_shown');
+                if (!welcomeShown) {
+                    setTimeout(() => {
+                        mostrarBienvenida();
+                    }, 500); // Pequeño delay para que cargue todo
+                }
                 
                 setInterval(async () => {
                     await actualizarBadgeMensajes();
