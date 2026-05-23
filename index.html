@@ -868,13 +868,12 @@
         } catch (e) { return null; }
     }
 
-    // MODIFICACIÓN SOLICITADA: Aquí se actualizó la función loginWithGoogle
-    // para detectar WebView y usar la URL fija en caso de ser una app Android.
+    // MODIFICACIÓN SOLICITADA: Nueva función loginWithGoogle con redirect condicional
     function loginWithGoogle() {
         const isAndroidApp = navigator.userAgent.includes('wv');
         const redirectUrl = isAndroidApp 
-            ? 'https://yeang34gsd.github.io/Tech-Markett/'
-            : window.location.href;
+            ? 'intercambia://callback'
+            : window.location.origin;
         window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
     }
 
@@ -1970,7 +1969,7 @@
         });
     }
     
-    // MODIFICACIÓN SOLICITADA: Aquí se actualizó el evento del botón de login
+    // MODIFICACIÓN SOLICITADA: Se actualiza el evento del botón de login con la nueva lógica
     document.getElementById("googleLoginBtn")?.addEventListener("click", loginWithGoogle);
     init();
 </script>
