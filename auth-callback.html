@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciando sesión...</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      margin: 0;
+      background: #f0fdf4;
+    }
+    .msg { text-align: center; color: #059669; }
+  </style>
+</head>
+<body>
+  <div class="msg">
+    <h2>✓ Sesión iniciada</h2>
+    <p>Volviendo a la app...</p>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      // Guardar token en localStorage
+      localStorage.setItem('auth_token', token);
+      // Cerrar esta ventana y volver a la app
+      window.close();
+      // Si window.close() no funciona, redirigir al inicio
+      setTimeout(() => {
+        window.location.href = 'https://yeang34gsd.github.io/Tech-Markett/';
+      }, 500);
+    } else {
+      window.location.href = 'https://yeang34gsd.github.io/Tech-Markett/';
+    }
+  </script>
+</body>
+</html>
