@@ -928,6 +928,7 @@
         return response.json();
     }
 
+    // ========== FUNCIÓN DE UBICACIÓN OPTIMIZADA PARA WEBVIEW ==========
     function limpiarUbicacion() {
         ubicacionSeleccionada = {
             lat: null,
@@ -961,91 +962,120 @@
             return;
         }
         
-        btnUbicar.innerHTML = '<span class="loading-spinner" style="width:16px; height:16px;"></span> Obteniendo...';
+        btnUbicar.innerHTML = '<span class="loading-spinner" style="width:16px; height:16px;"></span> Obteniendo ubicación...';
         btnUbicar.disabled = true;
         
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
+        // Función para procesar la ubicación exitosamente
+        const procesarExito = async (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            console.log("Ubicación obtenida:", lat, lng);
+            
+            ubicacionSeleccionada.lat = lat;
+            ubicacionSeleccionada.lng = lng;
+            document.getElementById("latMobile").value = lat;
+            document.getElementById("lngMobile").value = lng;
+            
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                const data = await response.json();
                 
-                ubicacionSeleccionada.lat = lat;
-                ubicacionSeleccionada.lng = lng;
-                document.getElementById("latMobile").value = lat;
-                document.getElementById("lngMobile").value = lng;
+                if (data && data.display_name) {
+                    const parts = data.display_name.split(',');
+                    let direccionCorta = parts.slice(0, 3).join(',');
+                    ubicacionSeleccionada.direccion = direccionCorta;
+                    document.getElementById("direccionMobile").value = direccionCorta;
+                }
+            } catch (error) {
+                console.error('Error obteniendo dirección:', error);
+                ubicacionSeleccionada.direccion = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+                document.getElementById("direccionMobile").value = ubicacionSeleccionada.direccion;
+            }
+            
+            const mapDiv = document.getElementById("mapaMobile");
+            mapDiv.style.display = "block";
+            
+            if (mapaTemp) mapaTemp.remove();
+            
+            mapaTemp = L.map('mapaMobile').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+            }).addTo(mapaTemp);
+            
+            const marker = L.marker([lat, lng], { draggable: true }).addTo(mapaTemp);
+            
+            marker.on('dragend', async function(e) {
+                const newPos = marker.getLatLng();
+                ubicacionSeleccionada.lat = newPos.lat;
+                ubicacionSeleccionada.lng = newPos.lng;
+                document.getElementById("latMobile").value = newPos.lat;
+                document.getElementById("lngMobile").value = newPos.lng;
                 
                 try {
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
-                    const data = await response.json();
-                    
-                    if (data && data.display_name) {
-                        const parts = data.display_name.split(',');
+                    const reverseResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${newPos.lat}&lon=${newPos.lng}&zoom=18`);
+                    const reverseData = await reverseResponse.json();
+                    if (reverseData && reverseData.display_name) {
+                        const parts = reverseData.display_name.split(',');
                         let direccionCorta = parts.slice(0, 3).join(',');
                         ubicacionSeleccionada.direccion = direccionCorta;
                         document.getElementById("direccionMobile").value = direccionCorta;
                     }
                 } catch (error) {
-                    console.error('Error obteniendo dirección:', error);
-                    ubicacionSeleccionada.direccion = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
-                    document.getElementById("direccionMobile").value = ubicacionSeleccionada.direccion;
+                    console.error('Error:', error);
                 }
+            });
+            
+            document.getElementById("limpiarUbicacionBtn").style.display = "block";
+            
+            setTimeout(() => {
+                mapDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+            
+            mostrarToast("📍 Ubicación obtenida correctamente", false);
+            
+            btnUbicar.innerHTML = originalText;
+            btnUbicar.disabled = false;
+        };
+        
+        // Función para manejar errores
+        const procesarError = (error) => {
+            console.error('Error de geolocalización:', error);
+            
+            if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
+                // Intentar de nuevo con menor precisión
+                mostrarToast("Intentando con menor precisión...", false);
                 
-                const mapDiv = document.getElementById("mapaMobile");
-                mapDiv.style.display = "block";
-                
-                if (mapaTemp) mapaTemp.remove();
-                
-                mapaTemp = L.map('mapaMobile').setView([lat, lng], 15);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-                }).addTo(mapaTemp);
-                
-                const marker = L.marker([lat, lng], { draggable: true }).addTo(mapaTemp);
-                
-                marker.on('dragend', async function(e) {
-                    const newPos = marker.getLatLng();
-                    ubicacionSeleccionada.lat = newPos.lat;
-                    ubicacionSeleccionada.lng = newPos.lng;
-                    document.getElementById("latMobile").value = newPos.lat;
-                    document.getElementById("lngMobile").value = newPos.lng;
-                    
-                    try {
-                        const reverseResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${newPos.lat}&lon=${newPos.lng}&zoom=18`);
-                        const reverseData = await reverseResponse.json();
-                        if (reverseData && reverseData.display_name) {
-                            const parts = reverseData.display_name.split(',');
-                            let direccionCorta = parts.slice(0, 3).join(',');
-                            ubicacionSeleccionada.direccion = direccionCorta;
-                            document.getElementById("direccionMobile").value = direccionCorta;
+                navigator.geolocation.getCurrentPosition(
+                    procesarExito,
+                    (err) => {
+                        console.error('Error en segundo intento:', err);
+                        let mensaje = "No se pudo obtener tu ubicación.";
+                        if (err.code === err.PERMISSION_DENIED) {
+                            mensaje = "Permiso denegado. Activa la ubicación en ajustes.";
                         }
-                    } catch (error) {
-                        console.error('Error:', error);
-                    }
-                });
-                
-                document.getElementById("limpiarUbicacionBtn").style.display = "block";
-                
-                setTimeout(() => {
-                    mapDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 500);
-                
-                mostrarToast("📍 Ubicación obtenida correctamente", false);
-                
+                        mostrarToast(mensaje, true);
+                        btnUbicar.innerHTML = originalText;
+                        btnUbicar.disabled = false;
+                    },
+                    { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+                );
+            } else if (error.code === error.PERMISSION_DENIED) {
+                mostrarToast("Permiso denegado. Activa la ubicación en ajustes de la app.", true);
                 btnUbicar.innerHTML = originalText;
                 btnUbicar.disabled = false;
-            },
-            (error) => {
-                console.error('Error de geolocalización:', error);
-                let mensaje = "No se pudo obtener tu ubicación.";
-                mostrarToast(mensaje, true);
+            } else {
+                mostrarToast("Error al obtener ubicación. Intenta de nuevo.", true);
                 btnUbicar.innerHTML = originalText;
                 btnUbicar.disabled = false;
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
             }
+        };
+        
+        // Primer intento con alta precisión
+        navigator.geolocation.getCurrentPosition(
+            procesarExito,
+            procesarError,
+            { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
         );
     }
 
@@ -1071,6 +1101,7 @@
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
     
+    // ========== CHAT FUNCTIONS ==========
     async function enviarMensajeConReintento(objetoId, receptor, mensaje, intentos = 3) {
         for (let i = 0; i < intentos; i++) {
             try {
@@ -1673,11 +1704,8 @@
         document.querySelectorAll('.btn-reportar').forEach(btn => btn.addEventListener('click', async (e) => { 
             e.stopPropagation(); 
             const id = parseInt(btn.dataset.id); 
-            const motivo = await mostrarConfirm('Por favor, explica el motivo del reporte:');
-            if (motivo) {
-                const inputMotivo = prompt('Motivo del reporte:');
-                if (inputMotivo) await reportarObjeto(id, inputMotivo);
-            }
+            const motivo = prompt('Motivo del reporte:');
+            if (motivo) await reportarObjeto(id, motivo);
         }));
         
         document.querySelectorAll('.btn-eliminar').forEach(btn => btn.addEventListener('click', async (e) => { 
@@ -1753,7 +1781,7 @@
         limpiarUbicacion();
     }
 
-    // Eventos de publicación con spinner
+    // Eventos de publicación
     document.getElementById("uploadMainMobile")?.addEventListener("click",()=>document.getElementById("fotoMainInput").click());
     document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ 
         if(e.target.files[0]){ 
@@ -1882,7 +1910,7 @@
     
     document.getElementById("cancelPreviewBtn")?.addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
 
-    // NUEVA FUNCIÓN switchTab modificada
+    // Función switchTab modificada para ocultar elementos en mensajes
     function switchTab(tabId) {
         document.getElementById("feedView").style.display = tabId==="feed" ? "block" : "none";
         document.getElementById("favoritosView").style.display = tabId==="favoritos" ? "block" : "none";
