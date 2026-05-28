@@ -10,7 +10,57 @@
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #ffffff; color: #111111; padding-bottom: 70px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #ffffff; color: #111111; padding-bottom: 70px; transition: background 0.3s, color 0.2s; }
+
+        /* Tema oscuro */
+        body.dark-mode {
+            background: #121212;
+            color: #f0f0f0;
+        }
+        body.dark-mode .mobile-header,
+        body.dark-mode .search-bar,
+        body.dark-mode .pin-card,
+        body.dark-mode .modal-marketplace,
+        body.dark-mode .modal-content,
+        body.dark-mode .custom-modal-content,
+        body.dark-mode .welcome-content,
+        body.dark-mode .chat-active,
+        body.dark-mode .conversations-list,
+        body.dark-mode .conversations-header,
+        body.dark-mode .chat-active-header,
+        body.dark-mode .chat-input-area,
+        body.dark-mode .bottom-nav {
+            background: #1e1e1e !important;
+            color: #e0e0e0 !important;
+            border-color: #333 !important;
+        }
+        body.dark-mode .cat-mobile,
+        body.dark-mode .btn-guardar.outline,
+        body.dark-mode .btn-intercambiar,
+        body.dark-mode .btn-modal-secondary,
+        body.dark-mode .conversation-item:hover,
+        body.dark-mode .profile-top {
+            background: #2c2c2c !important;
+            color: #ddd !important;
+        }
+        body.dark-mode .mensaje.receptor {
+            background: #2c2c2c !important;
+            color: #f0f0f0 !important;
+            border-color: #444 !important;
+        }
+        body.dark-mode .mensaje.emisor {
+            background: #0b5e42 !important;
+        }
+        body.dark-mode .chat-messages-area {
+            background: #1a1a1a !important;
+        }
+        body.dark-mode input,
+        body.dark-mode textarea,
+        body.dark-mode select {
+            background: #2a2a2a;
+            color: white;
+            border-color: #444;
+        }
 
         .mobile-header { position: sticky; top: 0; background: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eef2f0; z-index: 100; }
         .logo-area-mobile { display: flex; align-items: center; gap: 8px; }
@@ -22,7 +72,7 @@
             align-items: center;
             gap: 8px;
         }
-        .support-btn {
+        .support-btn, .dark-mode-toggle {
             background: #f0f2f0;
             border: none;
             width: 40px;
@@ -36,12 +86,9 @@
             color: #059669;
             font-size: 1.2rem;
         }
-        .support-btn:hover {
+        .support-btn:hover, .dark-mode-toggle:hover {
             background: #e8f5e9;
             transform: scale(1.05);
-        }
-        .support-btn:active {
-            transform: scale(0.95);
         }
         
         .profile-top { cursor: pointer; display: flex; align-items: center; gap: 8px; background: #f0f2f0; padding: 4px 12px 4px 6px; border-radius: 40px; }
@@ -73,7 +120,11 @@
         .btn-intercambiar { background: #2c553d; color: white; }
         .btn-reportar, .btn-eliminar { background: transparent; border: none; color: #8aa59a; font-size: 0.65rem; display: flex; align-items: center; gap: 4px; padding: 5px 0; width: 100%; cursor: pointer; }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.96); backdrop-filter: blur(10px); border-top: 1px solid #e0ece4; display: flex; justify-content: space-around; padding: 8px 12px 12px; z-index: 200; }
+        /* Bottom nav oculto en mensajes */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.96); backdrop-filter: blur(10px); border-top: 1px solid #e0ece4; display: flex; justify-content: space-around; padding: 8px 12px 12px; z-index: 200; transition: transform 0.3s ease; }
+        .bottom-nav.hide-nav {
+            transform: translateY(100%);
+        }
         .nav-bottom-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; font-size: 0.7rem; color: #8ba894; cursor: pointer; transition: 0.2s; padding: 4px 12px; border-radius: 30px; position: relative; }
         .nav-bottom-item i { font-size: 1.5rem; }
         .nav-bottom-item.active { color: #059669; font-weight: 500; }
@@ -91,32 +142,38 @@
             text-align: center;
         }
 
-        /* Spinner de carga de imagen estilo Messenger */
-        .img-upload-wrapper {
-            position: relative;
-            display: inline-block;
+        /* CHAT FULLSCREEN: ocupa toda la pantalla sin barras */
+        .mensajes-fullscreen .mobile-header,
+        .mensajes-fullscreen .search-bar,
+        .mensajes-fullscreen .categories-scroll {
+            display: none !important;
         }
-        .img-upload-spinner {
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .mensajes-fullscreen .bottom-nav {
+            display: none !important;
         }
-        .img-upload-spinner::after {
-            content: "";
-            width: 28px;
-            height: 28px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+        .mensajes-fullscreen #appContainer {
+            padding-bottom: 0 !important;
+        }
+        .mensajes-fullscreen .messenger-container {
+            height: 100vh !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: white;
+        }
+        body.dark-mode .mensajes-fullscreen .messenger-container {
+            background: #1e1e1e;
         }
 
+        .img-upload-wrapper { position: relative; display: inline-block; }
+        .img-upload-spinner { position: absolute; inset: 0; background: rgba(0,0,0,0.45); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .img-upload-spinner::after { content: ""; width: 28px; height: 28px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
         .modal-marketplace { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; overflow-y: auto; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .modal-header { position: sticky; top: 0; background: white; padding: 16px; display: flex; justify-content: space-between; border-bottom: 1px solid #eef2ef; }
         .close-modal { background: #eef2ef; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
         .modal-img-principal { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
@@ -124,1920 +181,135 @@
         .miniatura-modal { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; border: 2px solid transparent; cursor: pointer; }
         .miniatura-modal.active { border-color: #059669; }
         .modal-info { padding: 20px; }
-        .modal-titulo { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
-        .modal-categoria { color: #059669; font-weight: 600; margin-bottom: 12px; }
-        .modal-desc { color: #4a5b52; line-height: 1.4; margin-bottom: 16px; }
-        .modal-ubicacion, .modal-usuario { font-size: 0.85rem; color: #6b8a73; margin: 8px 0; }
-        .modal-acciones { display: flex; gap: 12px; margin-top: 24px; margin-bottom: 20px; }
         .btn-modal { flex: 1; padding: 14px; border-radius: 40px; font-weight: 600; border: none; cursor: pointer; }
         .btn-modal-primary { background: #059669; color: white; }
-        .btn-modal-secondary { background: #eef2ef; color: #2c4b35; }
-        .modal-modern { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); justify-content: center; align-items: center; z-index: 1100; }
-        .modal-content { background: white; border-radius: 28px; max-width: 90%; width: 400px; padding: 24px; max-height: 85vh; overflow-y: auto; }
-
-        .custom-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            backdrop-filter: blur(4px);
-        }
-        .custom-modal-content {
-            background: white;
-            border-radius: 32px;
-            width: 300px;
-            max-width: 85%;
-            padding: 24px 20px;
-            text-align: center;
-            animation: modalPop 0.2s ease;
-        }
-        @keyframes modalPop {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .custom-modal-content p {
-            margin-bottom: 24px;
-            font-size: 1rem;
-            color: #1f2937;
-        }
-        .custom-modal-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-        .custom-modal-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 40px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .custom-modal-btn.confirm {
-            background: #059669;
-            color: white;
-        }
-        .custom-modal-btn.cancel {
-            background: #eef2ef;
-            color: #2c4b35;
-        }
-        .custom-modal-btn.confirm:hover { background: #047857; }
-        .custom-modal-btn.cancel:hover { background: #e2e8e4; }
-
-        .welcome-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 3000;
-            backdrop-filter: blur(5px);
-        }
-        .welcome-content {
-            background: white;
-            border-radius: 32px;
-            max-width: 85%;
-            width: 340px;
-            padding: 28px 24px;
-            text-align: center;
-            animation: modalPop 0.3s ease;
-            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.2);
-        }
-        .welcome-content i {
-            font-size: 48px;
-            color: #059669;
-            background: #e8f5e9;
-            padding: 12px;
-            border-radius: 60px;
-            margin-bottom: 16px;
-        }
-        .welcome-content h2 {
-            color: #1f2937;
-            font-size: 1.5rem;
-            margin-bottom: 12px;
-        }
-        .welcome-content p {
-            color: #5e6e64;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin: 12px 0;
-        }
-        .feature-list {
-            text-align: left;
-            margin: 20px 0;
-            background: #f8faf8;
-            padding: 12px 16px;
-            border-radius: 24px;
-        }
-        .feature-list div {
-            margin: 8px 0;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #2c3e2f;
-        }
-        .feature-list i {
-            font-size: 0.9rem;
-            background: none;
-            padding: 0;
-            margin: 0;
-            color: #059669;
-        }
-        .welcome-btn {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 1rem;
-            margin-top: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .welcome-btn:hover {
-            background: #047857;
-        }
-
-        .form-mobile input, .form-mobile textarea, .form-mobile select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dde6e0; border-radius: 24px; font-size: 0.9rem; }
-        .upload-zone { background: #fafdfa; border: 2px dashed #cbdcd2; border-radius: 20px; padding: 16px; text-align: center; cursor: pointer; margin: 12px 0; }
+        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(4px); }
+        .custom-modal-content { background: white; border-radius: 32px; width: 300px; max-width: 85%; padding: 24px 20px; text-align: center; animation: modalPop 0.2s ease; }
+        .welcome-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(5px); }
+        .welcome-content { background: white; border-radius: 32px; max-width: 85%; width: 340px; padding: 28px 24px; text-align: center; }
         .btn-modern { background: #059669; color: white; border: none; padding: 12px; border-radius: 28px; font-weight: 600; width: 100%; cursor: pointer; transition: 0.2s; }
-        .btn-modern:hover { background: #047857; }
-        .btn-modern:disabled { background: #9ac9b0; cursor: not-allowed; }
 
-        .messenger-container {
-            display: flex;
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            margin: 12px;
-            height: calc(100vh - 180px);
-            min-height: 500px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            position: relative;
-        }
-
-        .conversations-list {
-            width: 35%;
-            background: #f8faf8;
-            border-right: 1px solid #eef2ef;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-        .conversations-header {
-            padding: 16px;
-            border-bottom: 1px solid #eef2ef;
-            background: white;
-        }
-        .conversations-header h3 { font-size: 1.1rem; font-weight: 600; color: #1f2937; }
-
-        .conversations-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px 0;
-        }
-
-        .conversation-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: 0.2s;
-            border-radius: 12px;
-            margin: 4px 8px;
-        }
-        .conversation-item:hover { background: #eef2ef; }
+        /* Messenger layout */
+        .messenger-container { display: flex; background: white; border-radius: 24px; overflow: hidden; margin: 12px; height: calc(100vh - 180px); min-height: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); position: relative; }
+        .conversations-list { width: 35%; background: #f8faf8; border-right: 1px solid #eef2ef; display: flex; flex-direction: column; overflow: hidden; transition: transform 0.3s ease; }
+        .conversations-header { padding: 16px; border-bottom: 1px solid #eef2ef; background: white; }
+        .conversations-scroll { flex: 1; overflow-y: auto; padding: 8px 0; }
+        .conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; transition: 0.2s; border-radius: 12px; margin: 4px 8px; }
         .conversation-item.active { background: #e8f5e9; }
-        .conversation-avatar {
-            width: 48px;
-            height: 48px;
-            background: #059669;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-        .conversation-info { flex: 1; min-width: 0; }
-        .conversation-name {
-            font-weight: 600;
-            color: #1f2937;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .conversation-last-message { 
-            font-size: 0.75rem; 
-            color: #8aa59a; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .conversation-last-message i { font-size: 0.65rem; }
-        .conversation-last-message .mensaje-preview {
-            font-weight: normal;
-            color: #6b8a73;
-        }
-        .conversation-last-message .mensaje-preview.no-leido {
-            color: #059669;
-            font-weight: 500;
-        }
-        .conversation-time { font-size: 0.7rem; color: #8aa59a; }
-        .badge-no-leidos {
-            background: #ef4444;
-            color: white;
-            font-size: 0.65rem;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 20px;
-            min-width: 20px;
-            text-align: center;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .chat-active {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            overflow: hidden;
-        }
-        .chat-active-header {
-            padding: 16px;
-            border-bottom: 1px solid #eef2ef;
-            background: white;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .chat-back-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #059669;
-            padding: 8px;
-            border-radius: 50%;
-        }
-        .chat-active-avatar {
-            width: 40px;
-            height: 40px;
-            background: #059669;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-        .chat-active-info { flex: 1; }
-        .chat-active-name { font-weight: 600; color: #1f2937; }
-        .chat-active-objeto { font-size: 0.7rem; color: #8aa59a; }
-        .chat-active-close {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #8aa59a;
-            padding: 8px;
-            border-radius: 50%;
-        }
-        .chat-active-close:hover { background: #eef2ef; color: #ef4444; }
-
-        .chat-messages-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            background: #f5f7f5;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .mensaje {
-            max-width: 75%;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            word-break: break-word;
-            white-space: normal;
-        }
-        .mensaje.emisor {
-            align-self: flex-end;
-            background: #059669;
-            color: white;
-            border-radius: 18px 18px 4px 18px;
-            padding: 10px 14px;
-        }
-        .mensaje.receptor {
-            align-self: flex-start;
-            background: white;
-            color: #1f2937;
-            border-radius: 18px 18px 18px 4px;
-            padding: 10px 14px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            border: 1px solid #eef2ef;
-        }
-        .mensaje.receptor strong {
-            color: #059669;
-            font-size: 0.7rem;
-            font-weight: 600;
-            display: block;
-            margin-bottom: 4px;
-        }
-        .mensaje small {
-            display: block;
-            font-size: 0.6rem;
-            opacity: 0.7;
-            margin-top: 4px;
-        }
-        .mensaje.emisor small { color: rgba(255,255,255,0.8); }
-        .mensaje.receptor small { color: #8aa59a; }
-        .mensaje-imagen { max-width: 150px; border-radius: 12px; margin-top: 8px; cursor: pointer; }
-
-        .chat-input-area {
-            padding: 16px;
-            border-top: 1px solid #eef2ef;
-            background: white;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .chat-input-area input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #eef2ef;
-            border-radius: 40px;
-            outline: none;
-            font-size: 0.9rem;
-        }
-        .chat-input-area input:focus { border-color: #059669; }
-        .btn-enviar {
-            background: #059669;
-            color: white;
-            border: none;
-            border-radius: 40px;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .btn-enviar:hover { background: #047857; }
-        .btn-enviar:disabled { background: #9ac9b0; cursor: not-allowed; }
-        .empty-chat {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #8aa59a;
-            gap: 16px;
-            text-align: center;
-            padding: 20px;
-        }
-        .empty-chat i { font-size: 48px; opacity: 0.5; }
+        .conversation-avatar { width: 48px; height: 48px; background: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; flex-shrink: 0; }
+        .badge-no-leidos { background: #ef4444; color: white; font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 20px; min-width: 20px; text-align: center; }
+        .chat-active { flex: 1; display: flex; flex-direction: column; background: white; overflow: hidden; }
+        .chat-active-header { padding: 16px; border-bottom: 1px solid #eef2ef; background: white; display: flex; align-items: center; gap: 12px; }
+        .chat-back-btn { display: none; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #059669; }
+        .chat-messages-area { flex: 1; overflow-y: auto; padding: 16px; background: #f5f7f5; display: flex; flex-direction: column; gap: 12px; }
+        .mensaje { max-width: 75%; font-size: 0.85rem; line-height: 1.4; word-break: break-word; }
+        .mensaje.emisor { align-self: flex-end; background: #059669; color: white; border-radius: 18px 18px 4px 18px; padding: 10px 14px; }
+        .mensaje.receptor { align-self: flex-start; background: white; border-radius: 18px 18px 18px 4px; padding: 10px 14px; border: 1px solid #eef2ef; }
+        .chat-input-area { padding: 16px; border-top: 1px solid #eef2ef; background: white; display: flex; gap: 8px; align-items: center; }
+        .chat-input-area input { flex: 1; padding: 12px 16px; border: 1px solid #eef2ef; border-radius: 40px; outline: none; }
+        .btn-enviar { background: #059669; color: white; border: none; border-radius: 40px; padding: 10px 20px; cursor: pointer; font-weight: 600; }
+        .empty-chat { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8aa59a; gap: 16px; text-align: center; }
 
         @media (max-width: 768px) {
             .messenger-container { height: calc(100vh - 160px); }
             .messenger-container.chat-open .conversations-list { transform: translateX(-100%); position: absolute; width: 100%; z-index: 1; height: 100%; }
             .messenger-container.chat-open .chat-active { width: 100%; }
-            .conversations-list { width: 100%; transition: transform 0.3s ease; }
-            .chat-active { width: 100%; }
             .chat-back-btn { display: flex; }
-            .messenger-container.chat-open .chat-back-btn { display: flex; }
         }
 
         .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 20px; text-align: center; }
         .google-btn { background: #4285f4; color: white; border: none; padding: 14px 28px; border-radius: 40px; font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; margin-top: 20px; }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.8s linear infinite;
-        }
+        .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .mensaje-enviando {
-            opacity: 0.6;
-        }
-        .toast-message {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #ef4444;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            z-index: 1000;
-            animation: fadeOut 3s ease forwards;
-            white-space: nowrap;
-            max-width: 90%;
-            white-space: normal;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            70% { opacity: 1; }
-            100% { opacity: 0; visibility: hidden; }
-        }
-        
-        .nuevo-mensaje-indicador {
-            animation: highlight 0.5s ease;
-        }
-        @keyframes highlight {
-            0% { background-color: #d1fae5; }
-            100% { background-color: transparent; }
-        }
-        
-        #mapaMobile {
-            height: 200px;
-            border-radius: 16px;
-            margin-top: 10px;
-            z-index: 1;
-        }
-
-        .custom-alert {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1f2937;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            z-index: 1000;
-            animation: fadeOut 3s ease forwards;
-            max-width: 90%;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
+        .toast-message { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; padding: 12px 20px; border-radius: 40px; z-index: 1000; animation: fadeOut 3s ease forwards; }
+        @keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
     </style>
 </head>
 <body>
-
 <div id="loginScreen" class="login-screen">
     <i class="fas fa-exchange-alt" style="font-size: 64px; color: #059669; margin-bottom: 20px;"></i>
-    <h2 style="color: #2c3e2f;">Intercambia</h2>
-    <p style="color: #5e6e64; margin: 16px 0;">Conecta, intercambia y reutiliza objetos</p>
-    <button id="googleLoginBtn" class="google-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-            <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Iniciar sesión con Google
-    </button>
+    <h2>Intercambia</h2>
+    <p>Conecta, intercambia y reutiliza objetos</p>
+    <button id="googleLoginBtn" class="google-btn"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Iniciar sesión con Google</button>
 </div>
 
 <div id="appContainer" style="display: none;">
-    <div class="mobile-header">
-        <div class="logo-area-mobile">
-            <i class="fas fa-exchange-alt"></i>
-            <h1>Intercambia</h1>
-        </div>
-        <div class="header-right">
-            <button id="supportBtn" class="support-btn" title="Atención al cliente">
-                <i class="fas fa-headset"></i>
-            </button>
-            <div id="profileTopBtn" class="profile-top">
-                <img id="topAvatar" src="" alt="perfil">
-                <span id="topUserName"></span>
-            </div>
-        </div>
-    </div>
-
-    <div class="search-bar">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchMobileInput" placeholder="Buscar objetos o personas...">
-    </div>
-
+    <div class="mobile-header"><div class="logo-area-mobile"><i class="fas fa-exchange-alt"></i><h1>Intercambia</h1></div><div class="header-right"><button id="darkModeToggleBtn" class="dark-mode-toggle"><i class="fas fa-moon"></i></button><button id="supportBtn" class="support-btn"><i class="fas fa-headset"></i></button><div id="profileTopBtn" class="profile-top"><img id="topAvatar" src=""><span id="topUserName"></span></div></div></div>
+    <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="searchMobileInput" placeholder="Buscar objetos o personas..."></div>
     <div class="categories-scroll" id="categoriesMobileContainer"></div>
-
     <div id="feedView"><div id="feedGrid" class="grid-pinterest">Cargando...</div></div>
     <div id="favoritosView" style="display:none;"><div id="favoritosGrid" class="grid-pinterest"></div></div>
-    <div id="crearView" style="display:none;">
-        <div style="background:white; margin:12px; border-radius:24px; padding:20px;">
-            <h3><i class="fas fa-plus-circle" style="color:#059669;"></i> Publicar objeto</h3>
-            <div class="form-mobile">
-                <input type="text" id="tituloMobile" placeholder="Título del objeto">
-                <select id="categoriaMobile">
-                    <option>Electrónica</option><option>Ropa</option><option>Libros</option><option>Mascotas</option><option>Hogar</option><option>Deportes</option>
-                </select>
-                <textarea id="descripcionMobile" rows="3" placeholder="Descripción, estado, qué buscas..."></textarea>
-                <div class="upload-zone" id="uploadMainMobile">📸 Foto principal (clic)</div>
-                <input type="file" id="fotoMainInput" accept="image/*" style="display:none;">
-                <div id="previewMainMobile" style="margin:8px 0;"></div>
-                <div class="upload-zone" id="uploadExtraMobile">📸 Fotos adicionales (máx 4)</div>
-                <input type="file" id="fotosExtraInput" accept="image/*" multiple style="display:none;">
-                <div id="previewExtraMobile" style="display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;"></div>
-                <div style="margin:16px 0;">
-                    <label>📍 Ubicación</label>
-                    <button type="button" id="ubicarBtnMobile" class="btn-modern" style="background:#059669; margin-bottom:12px;"><i class="fas fa-location-dot"></i> Usar mi ubicación</button>
-                    <input type="text" id="direccionMobile" placeholder="Dirección o referencia">
-                    <div id="mapaMobile" style="height: 200px; border-radius: 16px; margin-top: 10px; display: none;"></div>
-                    <input type="hidden" id="latMobile" value="">
-                    <input type="hidden" id="lngMobile" value="">
-                    <button type="button" id="limpiarUbicacionBtn" style="background:#eef2ef; color:#2c4b35; margin-top:8px; display:none;" class="btn-modern">🗑️ Limpiar ubicación</button>
-                </div>
-                <button id="previewMobileBtn" class="btn-modern">Vista previa</button>
-            </div>
-        </div>
-    </div>
+    <div id="crearView" style="display:none;"><div style="background:white; margin:12px; border-radius:24px; padding:20px;"><h3><i class="fas fa-plus-circle"></i> Publicar objeto</h3><div class="form-mobile"><input type="text" id="tituloMobile" placeholder="Título"><select id="categoriaMobile"><option>Electrónica</option><option>Ropa</option><option>Libros</option><option>Mascotas</option><option>Hogar</option><option>Deportes</option></select><textarea id="descripcionMobile" rows="3" placeholder="Descripción"></textarea><div class="upload-zone" id="uploadMainMobile">📸 Foto principal</div><input type="file" id="fotoMainInput" accept="image/*" style="display:none;"><div id="previewMainMobile"></div><div class="upload-zone" id="uploadExtraMobile">📸 Fotos extra</div><input type="file" id="fotosExtraInput" accept="image/*" multiple style="display:none;"><div id="previewExtraMobile" style="display:flex; gap:8px; flex-wrap:wrap;"></div><button type="button" id="ubicarBtnMobile" class="btn-modern"><i class="fas fa-location-dot"></i> Usar mi ubicación</button><input type="text" id="direccionMobile" placeholder="Dirección"><div id="mapaMobile" style="height:200px; border-radius:16px; margin-top:10px; display:none;"></div><button id="limpiarUbicacionBtn" style="display:none;" class="btn-modern">🗑️ Limpiar</button><button id="previewMobileBtn" class="btn-modern">Vista previa</button></div></div></div>
     <div id="misCosasView" style="display:none;"><div id="misCosasGrid" class="grid-pinterest"></div></div>
-    <div id="mensajesView" style="display:none;">
-        <div id="messengerContainer" class="messenger-container">
-            <div class="conversations-list">
-                <div class="conversations-header">
-                    <h3>Chats</h3>
-                </div>
-                <div class="conversations-scroll" id="conversationsList">
-                    <div style="text-align:center; padding:20px;">Cargando conversaciones...</div>
-                </div>
-            </div>
-            <div id="chat-active-container" class="chat-active">
-                <div class="empty-chat">
-                    <i class="fas fa-comment-dots"></i>
-                    <p>Selecciona una conversación para empezar a chatear</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <button class="nav-bottom-item active" data-tab="feed"><i class="fas fa-home"></i><span>Inicio</span></button>
-        <button class="nav-bottom-item" data-tab="favoritos"><i class="fas fa-bookmark"></i><span>Guardados</span></button>
-        <button class="nav-bottom-item" data-tab="crear"><i class="fas fa-plus-circle"></i><span>Crear</span></button>
-        <button class="nav-bottom-item" data-tab="misCosas"><i class="fas fa-box"></i><span>Mis cosas</span></button>
-        <button class="nav-bottom-item" data-tab="mensajes" id="mensajesNavBtn"><i class="fas fa-comment-dots"></i><span>Mensajes</span><span id="mensajesBadge" class="badge-mensajes" style="display:none;">0</span></button>
-    </div>
+    <div id="mensajesView" style="display:none;"><div id="messengerContainer" class="messenger-container"><div class="conversations-list"><div class="conversations-header"><h3>Chats</h3></div><div class="conversations-scroll" id="conversationsList"><div style="text-align:center; padding:20px;">Cargando...</div></div></div><div id="chat-active-container" class="chat-active"><div class="empty-chat"><i class="fas fa-comment-dots"></i><p>Selecciona un chat</p></div></div></div></div>
+    <div class="bottom-nav" id="bottomNav"><button class="nav-bottom-item active" data-tab="feed"><i class="fas fa-home"></i><span>Inicio</span></button><button class="nav-bottom-item" data-tab="favoritos"><i class="fas fa-bookmark"></i><span>Guardados</span></button><button class="nav-bottom-item" data-tab="crear"><i class="fas fa-plus-circle"></i><span>Crear</span></button><button class="nav-bottom-item" data-tab="misCosas"><i class="fas fa-box"></i><span>Mis cosas</span></button><button class="nav-bottom-item" data-tab="mensajes" id="mensajesNavBtn"><i class="fas fa-comment-dots"></i><span>Mensajes</span><span id="mensajesBadge" class="badge-mensajes" style="display:none;">0</span></button></div>
 </div>
-
-<div id="welcomeModal" class="welcome-modal">
-    <div class="welcome-content">
-        <i class="fas fa-exchange-alt"></i>
-        <h2>✨ Bienvenido a Intercambia</h2>
-        <p>La plataforma donde podrás dar una segunda vida a tus objetos mediante el trueque.</p>
-        <div class="feature-list">
-            <div><i class="fas fa-plus-circle"></i> Publica objetos que ya no uses</div>
-            <div><i class="fas fa-handshake"></i> Intercambia con otros usuarios</div>
-            <div><i class="fas fa-comment-dots"></i> Chatea y acuerda el trueque</div>
-            <div><i class="fas fa-map-marker-alt"></i> Encuentra objetos cerca de ti</div>
-        </div>
-        <p><strong>¿Cómo funciona?</strong><br>Explora, guarda tus favoritos, contacta al dueño y acuerda el intercambio.</p>
-        <button id="closeWelcomeBtn" class="welcome-btn">Entendido, continuar</button>
-    </div>
-</div>
-
-<div id="customConfirmModal" class="custom-modal">
-    <div class="custom-modal-content">
-        <p id="confirmMessage">¿Estás seguro?</p>
-        <div class="custom-modal-buttons">
-            <button class="custom-modal-btn cancel" id="confirmCancelBtn">Cancelar</button>
-            <button class="custom-modal-btn confirm" id="confirmOkBtn">Aceptar</button>
-        </div>
-    </div>
-</div>
-
-<div id="detailModal" class="modal-marketplace">
-    <div class="modal-header">
-        <h3>Detalle del objeto</h3>
-        <button class="close-modal" id="closeDetailModal"><i class="fas fa-times"></i></button>
-    </div>
-    <img id="modalMainImg" class="modal-img-principal" src="" alt="principal">
-    <div id="modalThumbnails" class="miniaturas-modal"></div>
-    <div class="modal-info">
-        <div class="modal-titulo" id="modalTitulo"></div>
-        <div class="modal-categoria" id="modalCategoria"></div>
-        <div class="modal-desc" id="modalDesc"></div>
-        <div class="modal-ubicacion"><i class="fas fa-map-marker-alt"></i> <span id="modalUbicacion"></span></div>
-        <div class="modal-usuario"><i class="fas fa-user"></i> <span id="modalUsuario"></span></div>
-        <div class="modal-acciones" id="modalAcciones"></div>
-    </div>
-</div>
-
-<div id="previewModal" class="modal-modern"><div class="modal-content"><h3>Confirmar publicación</h3><img id="previewImgModal" style="width:100%; border-radius: 16px;"><p id="previewTextModal" style="margin:12px 0;"></p><button id="confirmarPublicarBtn" class="btn-modern">Publicar</button><button id="cancelPreviewBtn" style="background:#ccc; margin-top:12px;" class="btn-modern">Cancelar</button></div></div>
-<div id="fotoModal" class="modal-modern"><div class="modal-content"><img id="fotoAmpliada" style="width:100%; border-radius: 16px;"><button onclick="document.getElementById('fotoModal').style.display='none'" style="margin-top:12px;" class="btn-modern">Cerrar</button></div></div>
+<div id="welcomeModal" class="welcome-modal"><div class="welcome-content"><i class="fas fa-exchange-alt"></i><h2>Bienvenido</h2><p>Publica, intercambia y chatea</p><button id="closeWelcomeBtn" class="welcome-btn">Continuar</button></div></div>
+<div id="customConfirmModal" class="custom-modal"><div class="custom-modal-content"><p id="confirmMessage">¿Estás seguro?</p><div class="custom-modal-buttons"><button class="custom-modal-btn cancel" id="confirmCancelBtn">Cancelar</button><button class="custom-modal-btn confirm" id="confirmOkBtn">Aceptar</button></div></div></div>
+<div id="detailModal" class="modal-marketplace"><div class="modal-header"><h3>Detalle</h3><button class="close-modal" id="closeDetailModal"><i class="fas fa-times"></i></button></div><img id="modalMainImg" class="modal-img-principal"><div id="modalThumbnails" class="miniaturas-modal"></div><div class="modal-info"><div class="modal-titulo" id="modalTitulo"></div><div class="modal-categoria" id="modalCategoria"></div><div class="modal-desc" id="modalDesc"></div><div class="modal-ubicacion"><i class="fas fa-map-marker-alt"></i> <span id="modalUbicacion"></span></div><div class="modal-usuario"><i class="fas fa-user"></i> <span id="modalUsuario"></span></div><div class="modal-acciones" id="modalAcciones"></div></div></div>
+<div id="previewModal" class="modal-modern" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);justify-content:center;align-items:center;z-index:1100;"><div class="modal-content" style="background:white; border-radius:28px; max-width:90%; padding:24px;"><img id="previewImgModal" style="width:100%;border-radius:16px;"><p id="previewTextModal" style="margin:12px 0;"></p><button id="confirmarPublicarBtn" class="btn-modern">Publicar</button><button id="cancelPreviewBtn" class="btn-modern" style="margin-top:12px;">Cancelar</button></div></div>
+<div id="fotoModal" class="modal-modern" style="display:none;"><div class="modal-content"><img id="fotoAmpliada" style="width:100%;"><button onclick="document.getElementById('fotoModal').style.display='none'" class="btn-modern">Cerrar</button></div></div>
 
 <script>
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
-    
-    let currentUser = null;
-    let authToken = null;
-    let objetos = [];
-    let favoritosIds = new Set();
-    let fotoPrincipalData = null;
-    let fotosExtraSeleccionadas = [];
-    let mapaTemp = null;
-    
-    let ubicacionSeleccionada = {
-        lat: null,
-        lng: null,
-        direccion: ''
-    };
-    
-    let chatPollingInterval = null;
-    let conversacionesPollingInterval = null;
-    let chatActual = null;
-    let chatMensajesCache = new Map();
-    let enviandoMensaje = false;
-    let mensajesPendientes = [];
-    let ultimasConversaciones = [];
-    let ultimosMensajesCache = new Map();
-    
-    let confirmResolve = null;
+    let currentUser = null, authToken = null, objetos = [], favoritosIds = new Set();
+    let fotoPrincipalData = null, fotosExtraSeleccionadas = [];
+    let mapaTemp = null, ubicacionSeleccionada = { lat: null, lng: null, direccion: '' };
+    let chatActual = null, chatPollingInterval = null, conversacionesPollingInterval = null;
+    let mensajesPendientes = [], enviandoMensaje = false;
+    let ultimasConversaciones = [], ultimosMensajesCache = new Map(), chatMensajesCache = new Map();
 
-    const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
+    function mostrarToast(msg, error=false) { let t=document.createElement('div'); t.className='toast-message'; t.style.background=error?'#ef4444':'#10b981'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+    function mostrarConfirm(msg) { return new Promise(r=>{ let modal=document.getElementById('customConfirmModal'); document.getElementById('confirmMessage').innerText=msg; modal.style.display='flex'; let ok=()=>{ modal.style.display='none'; document.getElementById('confirmOkBtn').removeEventListener('click',ok); document.getElementById('confirmCancelBtn').removeEventListener('click',cancel); r(true); }; let cancel=()=>{ modal.style.display='none'; r(false); }; document.getElementById('confirmOkBtn').addEventListener('click',ok,{once:true}); document.getElementById('confirmCancelBtn').addEventListener('click',cancel,{once:true}); }); }
+    function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g, m=> m==='&'?'&amp;': m==='<'?'&lt;':'&gt;'); }
 
-    function mostrarConfirm(mensaje) {
-        return new Promise((resolve) => {
-            confirmResolve = resolve;
-            const modal = document.getElementById('customConfirmModal');
-            const messageEl = document.getElementById('confirmMessage');
-            messageEl.textContent = mensaje;
-            modal.style.display = 'flex';
-        });
-    }
+    async function apiFetch(path, options={}){ let headers=options.headers||{}; if(authToken) headers['Authorization']=`Bearer ${authToken}`; let res=await fetch(`${WORKER_URL}${path}`,{...options,headers}); if(!res.ok){ if(res.status===401) logout(); throw new Error(await res.text()); } return res.json(); }
+    function getTokenFromURL(){ let token=new URLSearchParams(location.search).get('token'); if(token){ localStorage.setItem('auth_token',token); history.replaceState({},'',location.pathname); return token; } return localStorage.getItem('auth_token'); }
+    async function verifyToken(token){ try{ let res=await fetch(`${WORKER_URL}/auth/me`,{headers:{'Authorization':`Bearer ${token}`}}); if(!res.ok) return null; return (await res.json()).user; }catch(e){ return null; } }
+    function loginWithGoogle(){ window.location.href=`${WORKER_URL}/auth/google?redirect=${encodeURIComponent(window.location.origin)}`; }
+    function logout(){ localStorage.removeItem('auth_token'); currentUser=null; authToken=null; detenerPolling(); document.getElementById('loginScreen').style.display='flex'; document.getElementById('appContainer').style.display='none'; }
+    async function cargarObjetos(){ let data=await apiFetch('/objetos'); objetos=data.map(o=>({id:o.id, titulo:o.titulo, categoria:o.descripcion?.split('|')[0]?.trim()||'General', descripcion:o.descripcion?.split('|')[1]?.trim()||o.descripcion||'', fotoPrincipal:o.url, fotos:o.fotos_extra?.map(f=>f.url)||[], userId:o.usuario, userNombre:o.usuario?.split('@')[0]||'Usuario', ubicacionTexto:o.direccion||'Sin ubicación', intercambiado:o.intercambiado===1 })); renderFeed(); renderFavoritos(); renderMisCosas(); }
+    async function cargarFavoritos(){ let data=await apiFetch('/favoritos'); favoritosIds=new Set(data.map(f=>f.id)); }
+    async function agregarFavorito(id){ await apiFetch('/favoritos',{method:'POST',body:JSON.stringify({id_objeto:id})}); favoritosIds.add(id); renderFeed(); renderFavoritos(); }
+    async function quitarFavorito(id){ await apiFetch('/favoritos',{method:'DELETE',body:JSON.stringify({id_objeto:id})}); favoritosIds.delete(id); renderFeed(); renderFavoritos(); }
+    async function eliminarObjeto(id){ await apiFetch(`/objeto/${id}`,{method:'DELETE'}); objetos=objetos.filter(o=>o.id!==id); renderFeed(); renderFavoritos(); renderMisCosas(); mostrarToast('Objeto eliminado',false); }
 
-    function ocultarConfirm() {
-        const modal = document.getElementById('customConfirmModal');
-        modal.style.display = 'none';
-        if (confirmResolve) {
-            confirmResolve(null);
-            confirmResolve = null;
-        }
-    }
+    function renderFeed(){ let term=document.getElementById("searchMobileInput")?.value.toLowerCase()||""; let cat=document.querySelector('.cat-mobile.active')?.dataset.cat||'all'; let filtered=objetos.filter(o=>!o.intercambiado); if(cat!=="all") filtered=filtered.filter(o=>o.categoria===cat); if(term) filtered=filtered.filter(o=>o.titulo.toLowerCase().includes(term)||o.userNombre.toLowerCase().includes(term)); let container=document.getElementById("feedGrid"); if(!container) return; if(!filtered.length){ container.innerHTML='<div style="grid-column:span2; text-align:center; padding:40px;">No hay objetos</div>'; return; } container.innerHTML=filtered.map(obj=>`<div class="pin-card" data-id="${obj.id}" data-obj='${JSON.stringify(obj)}'><img class="pin-img" src="${obj.fotoPrincipal}"><div class="pin-info"><div class="pin-category">${escapeHtml(obj.categoria)}</div><div class="pin-title">${escapeHtml(obj.titulo)}</div><div class="pin-desc">${escapeHtml(obj.descripcion.substring(0,80))}</div><div class="ubicacion-user"><span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(obj.ubicacionTexto)}</span><div><i class="fas fa-user"></i> ${escapeHtml(obj.userNombre)}</div></div><div class="acciones-botones"><button class="btn-guardar ${favoritosIds.has(obj.id)?'':'outline'}" data-id="${obj.id}"><i class="fas fa-heart"></i> ${favoritosIds.has(obj.id)?'Guardado':'Guardar'}</button>${obj.userId!==currentUser?.email?`<button class="btn-intercambiar" data-id="${obj.id}" data-usuario="${obj.userId}" data-titulo="${escapeHtml(obj.titulo)}"><i class="fas fa-handshake"></i> Intercambiar</button>`:''}</div>${obj.userId!==currentUser?.email?`<button class="btn-reportar" data-id="${obj.id}"><i class="fas fa-flag"></i> Reportar</button>`:`<button class="btn-eliminar" data-id="${obj.id}"><i class="fas fa-trash"></i> Eliminar</button>`}</div></div>`).join(''); attachEvents(); }
+    function attachEvents(){ document.querySelectorAll('.btn-guardar').forEach(btn=>btn.onclick=async(e)=>{ e.stopPropagation(); let id=parseInt(btn.dataset.id); favoritosIds.has(id)?await quitarFavorito(id):await agregarFavorito(id); renderFeed(); renderFavoritos(); }); document.querySelectorAll('.btn-intercambiar').forEach(btn=>btn.onclick=(e)=>{ e.stopPropagation(); let id=parseInt(btn.dataset.id); let usuario=btn.dataset.usuario; let titulo=btn.dataset.titulo; abrirChatDirecto(id,usuario,titulo); switchTab('mensajes'); }); document.querySelectorAll('.btn-reportar').forEach(btn=>btn.onclick=async(e)=>{ e.stopPropagation(); let motivo=prompt('Motivo del reporte:'); if(motivo) await apiFetch('/reporte',{method:'POST',body:JSON.stringify({id_objeto:parseInt(btn.dataset.id),motivo})}); }); document.querySelectorAll('.btn-eliminar').forEach(btn=>btn.onclick=async(e)=>{ e.stopPropagation(); if(await mostrarConfirm('¿Eliminar?')) await eliminarObjeto(parseInt(btn.dataset.id)); }); document.querySelectorAll('.pin-card').forEach(card=>card.addEventListener('click',(e)=>{ if(e.target.closest('button')) return; let obj=JSON.parse(card.dataset.obj); abrirDetalleModal(obj); })); }
+    function renderFavoritos(){ let favs=objetos.filter(o=>favoritosIds.has(o.id)&&!o.intercambiado); document.getElementById("favoritosGrid").innerHTML=favs.length?favs.map(o=>`<div class="pin-card" data-obj='${JSON.stringify(o)}'>...</div>`).join(''):'<div style="grid-column:span2;text-align:center;">Sin favoritos</div>'; attachEvents(); }
+    function renderMisCosas(){ let mis=objetos.filter(o=>o.userId===currentUser?.email); document.getElementById("misCosasGrid").innerHTML=mis.length?mis.map(o=>`<div class="pin-card" data-obj='${JSON.stringify(o)}'>...</div>`).join(''):'<div style="grid-column:span2;text-align:center;">No has publicado</div>'; attachEvents(); }
+    function abrirDetalleModal(obj){ let fotos=[obj.fotoPrincipal,...(obj.fotos||[])]; document.getElementById("modalMainImg").src=fotos[0]; document.getElementById("modalTitulo").innerText=obj.titulo; document.getElementById("modalCategoria").innerText=obj.categoria; document.getElementById("modalDesc").innerText=obj.descripcion; document.getElementById("modalUbicacion").innerText=obj.ubicacionTexto; document.getElementById("modalUsuario").innerHTML=obj.userNombre; let thumbContainer=document.getElementById("modalThumbnails"); thumbContainer.innerHTML=fotos.map((f,i)=>`<img class="miniatura-modal ${i===0?'active':''}" src="${f}" data-index="${i}">`).join(''); document.querySelectorAll('.miniatura-modal').forEach(t=>t.onclick=()=>{ document.querySelectorAll('.miniatura-modal').forEach(t2=>t2.classList.remove('active')); t.classList.add('active'); document.getElementById("modalMainImg").src=t.src; }); document.getElementById("modalAcciones").innerHTML=`<button id="modalGuardarBtn" class="btn-modal btn-modal-secondary"><i class="fas fa-heart"></i> ${favoritosIds.has(obj.id)?'Guardado':'Guardar'}</button>${obj.userId!==currentUser?.email?`<button id="modalIntercambiarBtn" class="btn-modal btn-modal-primary">Intercambiar</button>`:`<button id="modalEliminarBtn" class="btn-modal btn-modal-primary">Eliminar</button>`}`; document.getElementById("modalGuardarBtn")?.onclick=async()=>{ favoritosIds.has(obj.id)?await quitarFavorito(obj.id):await agregarFavorito(obj.id); document.getElementById("detailModal").style.display="none"; renderFeed(); }; document.getElementById("modalIntercambiarBtn")?.onclick=()=>{ abrirChatDirecto(obj.id,obj.userId,obj.titulo); document.getElementById("detailModal").style.display="none"; switchTab('mensajes'); }; document.getElementById("modalEliminarBtn")?.onclick=async()=>{ if(await mostrarConfirm('Eliminar?')){ await eliminarObjeto(obj.id); document.getElementById("detailModal").style.display="none"; } }; document.getElementById("detailModal").style.display="block"; }
 
-    function mostrarAlert(mensaje, esError = false) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'custom-alert';
-        alertDiv.style.background = esError ? '#ef4444' : '#10b981';
-        alertDiv.textContent = mensaje;
-        document.body.appendChild(alertDiv);
-        setTimeout(() => alertDiv.remove(), 3000);
-    }
+    // Funciones de chat con pantalla completa
+    async function abrirChatDirecto(objetoId, otroUsuario, titulo){ detenerPollingChat(); let objeto=objetos.find(o=>o.id===parseInt(objetoId)); let otroNombre=objeto?.userNombre||otroUsuario?.split('@')[0]||'Usuario'; chatActual={id_objeto:parseInt(objetoId), otroUsuario, titulo, otroNombre}; let container=document.getElementById('chat-active-container'); if(!container) return; container.innerHTML=`<div class="chat-active"><div class="chat-active-header"><button class="chat-back-btn" onclick="cerrarChatCompletamente()"><i class="fas fa-arrow-left"></i></button><div class="chat-active-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div><div class="chat-active-info"><div class="chat-active-name">${escapeHtml(otroNombre)}</div><div class="chat-active-objeto">📦 ${escapeHtml(titulo)}</div></div><button class="chat-active-close" onclick="cerrarChatCompletamente()"><i class="fas fa-times"></i></button></div><div id="chatMessagesArea" class="chat-messages-area"><div style="text-align:center;padding:20px;">Cargando...</div></div><div class="chat-input-area"><input type="text" id="msgInputMobile" placeholder="Escribe un mensaje..."><button class="btn-enviar" id="sendMsgMobileBtn">Enviar</button></div></div>`; document.getElementById('sendMsgMobileBtn').onclick=()=>{ let texto=document.getElementById('msgInputMobile')?.value; if(texto.trim()) enviarMensajeChat(texto); }; document.getElementById('msgInputMobile')?.addEventListener('keypress',e=>{ if(e.key==='Enter'){ let texto=e.target.value; if(texto.trim()) enviarMensajeChat(texto); } }); await cargarMensajesChat(); iniciarPollingChat(); openChatOnMobile(); }
+    function cerrarChatCompletamente(){ detenerPollingChat(); chatActual=null; document.getElementById('chat-active-container').innerHTML='<div class="empty-chat"><i class="fas fa-comment-dots"></i><p>Selecciona un chat</p></div>'; closeChatOnMobile(); cargarConversaciones(); }
+    async function enviarMensajeChat(texto){ if(!chatActual) return; let response=await fetch(`${WORKER_URL}/mensaje`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${authToken}`},body:JSON.stringify({id_objeto:chatActual.id_objeto,receptor:chatActual.otroUsuario,mensaje:texto})}); if(response.ok){ document.getElementById('msgInputMobile').value=''; await cargarMensajesChat(); await cargarConversaciones(); } else mostrarToast('Error al enviar',true); }
+    async function cargarMensajesChat(){ if(!chatActual) return; let res=await fetch(`${WORKER_URL}/mensajes?id_objeto=${chatActual.id_objeto}&otro=${encodeURIComponent(chatActual.otroUsuario)}`,{headers:{'Authorization':`Bearer ${authToken}`}}); if(!res.ok) return; let mensajes=await res.json(); let container=document.getElementById('chatMessagesArea'); if(!container) return; if(!mensajes.length){ container.innerHTML='<div style="text-align:center;padding:20px;">💬 Sin mensajes, envía uno.</div>'; return; } container.innerHTML=mensajes.map(m=>`<div class="mensaje ${m.emisor===currentUser?.email?'emisor':'receptor'}"><div>${escapeHtml(m.mensaje||'')}</div><small>${new Date(m.fecha).toLocaleTimeString()}</small></div>`).join(''); container.scrollTop=container.scrollHeight; for(let m of mensajes){ if(m.emisor!==currentUser?.email && m.leido===0) await fetch(`${WORKER_URL}/mensaje/${m.id}?action=leer`,{method:'PATCH',headers:{'Authorization':`Bearer ${authToken}`}}); } }
+    async function cargarConversaciones(){ let res=await fetch(`${WORKER_URL}/mis-conversaciones`,{headers:{'Authorization':`Bearer ${authToken}`}}); if(!res.ok) return; let convs=await res.json(); let lista=document.getElementById('conversationsList'); if(!lista) return; if(!convs.length){ lista.innerHTML='<div style="text-align:center;padding:20px;">Sin conversaciones</div>'; return; } lista.innerHTML=convs.map(c=>`<div class="conversation-item ${chatActual?.id_objeto===c.id_objeto&&chatActual?.otroUsuario===c.otroUsuario?'active':''}" onclick="abrirChatDirecto(${c.id_objeto},'${c.otroUsuario}','${escapeHtml(c.titulo).replace(/'/g,"\\'")}')"><div class="conversation-avatar">${(c.otroUsuario?.split('@')[0]?.charAt(0)||'U').toUpperCase()}</div><div class="conversation-info"><div class="conversation-name">${escapeHtml(c.otroUsuario?.split('@')[0]||'Usuario')}${c.no_leidos>0?`<span class="badge-no-leidos">${c.no_leidos}</span>`:''}</div></div></div>`).join(''); }
+    function iniciarPollingChat(){ detenerPollingChat(); chatPollingInterval=setInterval(()=>{ if(chatActual) cargarMensajesChat(); },3000); }
+    function detenerPollingChat(){ if(chatPollingInterval) clearInterval(chatPollingInterval); chatPollingInterval=null; }
+    function detenerPolling(){ detenerPollingChat(); if(conversacionesPollingInterval) clearInterval(conversacionesPollingInterval); }
+    function openChatOnMobile(){ let container=document.getElementById('messengerContainer'); if(container&&window.innerWidth<=768) container.classList.add('chat-open'); }
+    function closeChatOnMobile(){ let container=document.getElementById('messengerContainer'); if(container) container.classList.remove('chat-open'); }
 
-    function mostrarToast(mensaje, esError = true) {
-        const toastAnterior = document.querySelector('.toast-message');
-        if (toastAnterior) toastAnterior.remove();
-        
-        const toast = document.createElement('div');
-        toast.className = 'toast-message';
-        toast.style.background = esError ? '#ef4444' : '#10b981';
-        toast.textContent = mensaje;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            if (toast && toast.remove) toast.remove();
-        }, 3000);
-    }
+    // Modo oscuro y barra inferior oculta
+    function toggleDarkMode(){ document.body.classList.toggle('dark-mode'); localStorage.setItem('darkMode',document.body.classList.contains('dark-mode')); }
+    function initDarkMode(){ if(localStorage.getItem('darkMode')==='true') document.body.classList.add('dark-mode'); document.getElementById('darkModeToggleBtn')?.addEventListener('click',toggleDarkMode); }
+    function switchTab(tabId){ document.getElementById("feedView").style.display=tabId==="feed"?"block":"none"; document.getElementById("favoritosView").style.display=tabId==="favoritos"?"block":"none"; document.getElementById("crearView").style.display=tabId==="crear"?"block":"none"; document.getElementById("misCosasView").style.display=tabId==="misCosas"?"block":"none"; document.getElementById("mensajesView").style.display=tabId==="mensajes"?"block":"none"; let body=document.body; let bottomNav=document.getElementById('bottomNav'); if(tabId==="mensajes"){ body.classList.add('mensajes-fullscreen'); if(bottomNav) bottomNav.classList.add('hide-nav'); detenerPollingChat(); cargarConversaciones(); setInterval(()=>cargarConversaciones(),5000); } else { body.classList.remove('mensajes-fullscreen'); if(bottomNav) bottomNav.classList.remove('hide-nav'); detenerPolling(); } document.querySelectorAll(".nav-bottom-item").forEach(b=>b.classList.remove("active")); document.querySelector(`.nav-bottom-item[data-tab="${tabId}"]`)?.classList.add("active"); if(tabId==="favoritos") renderFavoritos(); if(tabId==="misCosas") renderMisCosas(); }
+    function abrirAtencionCliente(){ window.location.href='mailto:intercambioapp53@gmail.com?subject=Soporte%20Intercambia'; }
 
-    document.getElementById('confirmOkBtn')?.addEventListener('click', () => {
-        if (confirmResolve) {
-            confirmResolve(true);
-            confirmResolve = null;
-        }
-        ocultarConfirm();
-    });
-    
-    document.getElementById('confirmCancelBtn')?.addEventListener('click', () => {
-        if (confirmResolve) {
-            confirmResolve(false);
-            confirmResolve = null;
-        }
-        ocultarConfirm();
-    });
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    function getTokenFromURL() {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
-        if (token) {
-            localStorage.setItem('auth_token', token);
-            window.history.replaceState({}, document.title, window.location.pathname);
-            return token;
-        }
-        return localStorage.getItem('auth_token');
-    }
-
-    async function verifyToken(token) {
-        try {
-            const response = await fetch(`${WORKER_URL}/auth/me`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) return null;
-            const data = await response.json();
-            return data.user;
-        } catch (e) { return null; }
-    }
-
-    function loginWithGoogle() {
-        const isAndroidApp = navigator.userAgent.includes('wv');
-        const redirectUrl = isAndroidApp 
-            ? 'intercambia://callback'
-            : window.location.origin;
-        window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
-    }
-
-    function logout() {
-        localStorage.removeItem('auth_token');
-        currentUser = null;
-        authToken = null;
-        detenerPollingChat();
-        detenerPollingConversaciones();
-        document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('appContainer').style.display = 'none';
-    }
-
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-            appId: "68491021-9c85-423d-9e50-ddcffa0c2d63",
-            notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' },
-        });
-    });
-
-    async function guardarOneSignalId(email) {
-        try {
-            const OneSignal = window.OneSignal;
-            const userId = await OneSignal.User.getPushSubscriptionId();
-            if (userId) {
-                await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                    body: JSON.stringify({ onesignal_id: userId })
-                });
-            }
-        } catch(e) { console.error('Error:', e); }
-    }
-
-    async function apiFetch(path, options = {}) {
-        const headers = options.headers || {};
-        if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-        const response = await fetch(`${WORKER_URL}${path}`, { ...options, headers });
-        if (!response.ok) {
-            if (response.status === 401) { logout(); throw new Error('Sesión expirada'); }
-            throw new Error(await response.text());
-        }
-        return response.json();
-    }
-
-    // ========== FUNCIÓN DE UBICACIÓN OPTIMIZADA PARA WEBVIEW ==========
-    function limpiarUbicacion() {
-        ubicacionSeleccionada = {
-            lat: null,
-            lng: null,
-            direccion: ''
-        };
-        document.getElementById("latMobile").value = "";
-        document.getElementById("lngMobile").value = "";
-        document.getElementById("direccionMobile").value = "";
-        
-        const mapDiv = document.getElementById("mapaMobile");
-        const limpiarBtn = document.getElementById("limpiarUbicacionBtn");
-        
-        if (mapDiv) {
-            mapDiv.style.display = "none";
-            if (mapaTemp) {
-                mapaTemp.remove();
-                mapaTemp = null;
-            }
-        }
-        
-        if (limpiarBtn) limpiarBtn.style.display = "none";
-    }
-
-    function obtenerUbicacionActual() {
-        const btnUbicar = document.getElementById("ubicarBtnMobile");
-        const originalText = btnUbicar.innerHTML;
-        
-        if (!navigator.geolocation) {
-            mostrarToast("Tu navegador no soporta geolocalización", true);
-            return;
-        }
-        
-        btnUbicar.innerHTML = '<span class="loading-spinner" style="width:16px; height:16px;"></span> Obteniendo ubicación...';
-        btnUbicar.disabled = true;
-        
-        // Función para procesar la ubicación exitosamente
-        const procesarExito = async (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            
-            console.log("Ubicación obtenida:", lat, lng);
-            
-            ubicacionSeleccionada.lat = lat;
-            ubicacionSeleccionada.lng = lng;
-            document.getElementById("latMobile").value = lat;
-            document.getElementById("lngMobile").value = lng;
-            
-            try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
-                const data = await response.json();
-                
-                if (data && data.display_name) {
-                    const parts = data.display_name.split(',');
-                    let direccionCorta = parts.slice(0, 3).join(',');
-                    ubicacionSeleccionada.direccion = direccionCorta;
-                    document.getElementById("direccionMobile").value = direccionCorta;
-                }
-            } catch (error) {
-                console.error('Error obteniendo dirección:', error);
-                ubicacionSeleccionada.direccion = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
-                document.getElementById("direccionMobile").value = ubicacionSeleccionada.direccion;
-            }
-            
-            const mapDiv = document.getElementById("mapaMobile");
-            mapDiv.style.display = "block";
-            
-            if (mapaTemp) mapaTemp.remove();
-            
-            mapaTemp = L.map('mapaMobile').setView([lat, lng], 15);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-            }).addTo(mapaTemp);
-            
-            const marker = L.marker([lat, lng], { draggable: true }).addTo(mapaTemp);
-            
-            marker.on('dragend', async function(e) {
-                const newPos = marker.getLatLng();
-                ubicacionSeleccionada.lat = newPos.lat;
-                ubicacionSeleccionada.lng = newPos.lng;
-                document.getElementById("latMobile").value = newPos.lat;
-                document.getElementById("lngMobile").value = newPos.lng;
-                
-                try {
-                    const reverseResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${newPos.lat}&lon=${newPos.lng}&zoom=18`);
-                    const reverseData = await reverseResponse.json();
-                    if (reverseData && reverseData.display_name) {
-                        const parts = reverseData.display_name.split(',');
-                        let direccionCorta = parts.slice(0, 3).join(',');
-                        ubicacionSeleccionada.direccion = direccionCorta;
-                        document.getElementById("direccionMobile").value = direccionCorta;
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            });
-            
-            document.getElementById("limpiarUbicacionBtn").style.display = "block";
-            
-            setTimeout(() => {
-                mapDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 500);
-            
-            mostrarToast("📍 Ubicación obtenida correctamente", false);
-            
-            btnUbicar.innerHTML = originalText;
-            btnUbicar.disabled = false;
-        };
-        
-        // Función para manejar errores
-        const procesarError = (error) => {
-            console.error('Error de geolocalización:', error);
-            
-            if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
-                // Intentar de nuevo con menor precisión
-                mostrarToast("Intentando con menor precisión...", false);
-                
-                navigator.geolocation.getCurrentPosition(
-                    procesarExito,
-                    (err) => {
-                        console.error('Error en segundo intento:', err);
-                        let mensaje = "No se pudo obtener tu ubicación.";
-                        if (err.code === err.PERMISSION_DENIED) {
-                            mensaje = "Permiso denegado. Activa la ubicación en ajustes.";
-                        }
-                        mostrarToast(mensaje, true);
-                        btnUbicar.innerHTML = originalText;
-                        btnUbicar.disabled = false;
-                    },
-                    { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
-                );
-            } else if (error.code === error.PERMISSION_DENIED) {
-                mostrarToast("Permiso denegado. Activa la ubicación en ajustes de la app.", true);
-                btnUbicar.innerHTML = originalText;
-                btnUbicar.disabled = false;
-            } else {
-                mostrarToast("Error al obtener ubicación. Intenta de nuevo.", true);
-                btnUbicar.innerHTML = originalText;
-                btnUbicar.disabled = false;
-            }
-        };
-        
-        // Primer intento con alta precisión
-        navigator.geolocation.getCurrentPosition(
-            procesarExito,
-            procesarError,
-            { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
-        );
-    }
-
-    async function publicarObjetoConUbicacion(titulo, descripcion, categoria, fotos, direccionManual) {
-        const form = new FormData();
-        form.append('titulo', titulo);
-        form.append('descripcion', `${categoria} | ${descripcion}`);
-        
-        const lat = ubicacionSeleccionada.lat || document.getElementById("latMobile").value || '';
-        const lng = ubicacionSeleccionada.lng || document.getElementById("lngMobile").value || '';
-        const direccion = direccionManual || ubicacionSeleccionada.direccion || document.getElementById("direccionMobile").value || '';
-        
-        form.append('latitud', lat);
-        form.append('longitud', lng);
-        form.append('direccion', direccion);
-        
-        for (let i = 0; i < Math.min(fotos.length, 5); i++) {
-            form.append(`foto_${i}`, fotos[i]);
-        }
-        
-        console.log('Publicando con ubicación:', { lat, lng, direccion });
-        
-        return await apiFetch('/objeto', { method: 'POST', body: form });
-    }
-    
-    // ========== CHAT FUNCTIONS ==========
-    async function enviarMensajeConReintento(objetoId, receptor, mensaje, intentos = 3) {
-        for (let i = 0; i < intentos; i++) {
-            try {
-                const response = await fetch(`${WORKER_URL}/mensaje`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        id_objeto: objetoId,
-                        receptor: receptor,
-                        mensaje: mensaje
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    return { success: true, data };
-                }
-                
-                if (i < intentos - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
-                }
-            } catch (error) {
-                console.error(`Intento ${i + 1} error:`, error);
-                if (i < intentos - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
-                }
-            }
-        }
-        return { success: false, error: 'No se pudo enviar después de varios intentos' };
-    }
-
-    async function procesarMensajesPendientes() {
-        if (mensajesPendientes.length === 0 || enviandoMensaje) return;
-        
-        const pendiente = mensajesPendientes[0];
-        enviandoMensaje = true;
-        
-        try {
-            const resultado = await enviarMensajeConReintento(pendiente.objetoId, pendiente.receptor, pendiente.mensaje);
-            
-            if (resultado.success) {
-                mensajesPendientes.shift();
-                mostrarToast('Mensaje enviado', false);
-                
-                const cacheKey = `${pendiente.objetoId}_${pendiente.receptor}`;
-                chatMensajesCache.delete(cacheKey);
-                ultimosMensajesCache.delete(`${pendiente.objetoId}_${pendiente.receptor}`);
-                await cargarMensajesChat();
-                await cargarConversaciones();
-                await actualizarBadgeMensajes();
-            } else {
-                mostrarToast('Error al enviar mensaje. Reintentando...', true);
-            }
-        } catch (error) {
-            console.error('Error procesando mensaje pendiente:', error);
-        } finally {
-            enviandoMensaje = false;
-            
-            if (mensajesPendientes.length > 0) {
-                setTimeout(() => procesarMensajesPendientes(), 1000);
-            }
-        }
-    }
-
-    async function enviarMensajeChat(texto) {
-        if (!chatActual || !texto.trim()) {
-            mostrarToast('No hay chat activo', true);
-            return false;
-        }
-        
-        const textoLimpio = texto.trim();
-        const input = document.getElementById('msgInputMobile');
-        
-        if (input) input.value = '';
-        
-        mensajesPendientes.push({
-            objetoId: chatActual.id_objeto,
-            receptor: chatActual.otroUsuario,
-            mensaje: textoLimpio,
-            timestamp: Date.now()
-        });
-        
-        const container = document.getElementById('chatMessagesArea');
-        if (container) {
-            const mensajeTemp = `
-                <div class="mensaje emisor mensaje-enviando" data-temporal="true">
-                    <div>${escapeHtml(textoLimpio)}</div>
-                    <small>Enviando... <span class="loading-spinner" style="width:12px; height:12px;"></span></small>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', mensajeTemp);
-            container.scrollTop = container.scrollHeight;
-        }
-        
-        await procesarMensajesPendientes();
-        
-        document.querySelectorAll('.mensaje[data-temporal="true"]').forEach(el => el.remove());
-        
-        return true;
-    }
-
-    function detenerPollingChat() {
-        if (chatPollingInterval) {
-            clearInterval(chatPollingInterval);
-            chatPollingInterval = null;
-        }
-    }
-
-    function detenerPollingConversaciones() {
-        if (conversacionesPollingInterval) {
-            clearInterval(conversacionesPollingInterval);
-            conversacionesPollingInterval = null;
-        }
-    }
-
-    function iniciarPollingChat() {
-        detenerPollingChat();
-        chatPollingInterval = setInterval(async () => {
-            if (chatActual && document.getElementById('chatMessagesArea')) {
-                await cargarMensajesChat();
-            }
-        }, 3000);
-    }
-
-    function iniciarPollingConversaciones() {
-        detenerPollingConversaciones();
-        conversacionesPollingInterval = setInterval(async () => {
-            if (document.getElementById('conversationsList')) {
-                await cargarConversaciones();
-                await actualizarBadgeMensajes();
-            }
-        }, 3000);
-    }
-
-    async function cargarMensajesChat() {
-        if (!chatActual || !chatActual.id_objeto || !chatActual.otroUsuario) return;
-        
-        const cacheKey = `${chatActual.id_objeto}_${chatActual.otroUsuario}`;
-        
-        try {
-            const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${chatActual.id_objeto}&otro=${encodeURIComponent(chatActual.otroUsuario)}`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            
-            if (!response.ok) return;
-            
-            const mensajes = await response.json();
-            const mensajesArray = Array.isArray(mensajes) ? mensajes : [];
-            
-            const cacheActual = chatMensajesCache.get(cacheKey) || [];
-            const hayCambios = JSON.stringify(mensajesArray.map(m => m.id)) !== JSON.stringify(cacheActual.map(m => m.id));
-            
-            if (!hayCambios && cacheActual.length > 0) return;
-            
-            chatMensajesCache.set(cacheKey, mensajesArray);
-            
-            if (chatActual && chatActual.id_objeto === chatActual.id_objeto && chatActual.otroUsuario === chatActual.otroUsuario) {
-                await renderizarMensajes(mensajesArray);
-            }
-            
-            let mensajesLeidos = false;
-            for (const m of mensajesArray) {
-                if (m.emisor !== currentUser?.email && m.leido === 0) {
-                    await fetch(`${WORKER_URL}/mensaje/${m.id}?action=leer`, {
-                        method: 'PATCH',
-                        headers: { 'Authorization': `Bearer ${authToken}` }
-                    }).catch(e => console.error('Error:', e));
-                    mensajesLeidos = true;
-                }
-            }
-            
-            if (mensajesLeidos) {
-                ultimosMensajesCache.delete(cacheKey);
-                await cargarConversaciones();
-                await actualizarBadgeMensajes();
-            }
-            
-        } catch (error) {
-            console.error('Error cargando mensajes:', error);
-        }
-    }
-
-    async function renderizarMensajes(mensajes) {
-        const container = document.getElementById('chatMessagesArea');
-        if (!container) return;
-        
-        const estabaAlFondo = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-        
-        if (!mensajes || mensajes.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay mensajes aún. ¡Envía el primero!</div>';
-            return;
-        }
-        
-        const html = mensajes.map(m => {
-            const esMio = m.emisor === currentUser?.email;
-            const nombre = esMio ? 'Tú' : (m.emisor?.split('@')[0] || 'Usuario');
-            return `
-                <div class="mensaje ${esMio ? 'emisor' : 'receptor'}" data-id="${m.id}">
-                    ${!esMio ? `<strong>${escapeHtml(nombre)}</strong>` : ''}
-                    <div>${escapeHtml(m.mensaje || '')}</div>
-                    ${m.archivo_url ? `<img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')">` : ''}
-                    <small>${new Date(m.fecha).toLocaleTimeString()}</small>
-                </div>
-            `;
-        }).join('');
-        
-        if (container.innerHTML !== html) {
-            container.innerHTML = html;
-        }
-        
-        if (estabaAlFondo) {
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-            }, 50);
-        }
-    }
-
-    async function abrirChatDirecto(objetoId, otroUsuario, titulo) {
-        detenerPollingChat();
-        
-        const objeto = objetos.find(o => o.id === parseInt(objetoId));
-        const otroNombre = objeto?.userNombre || otroUsuario?.split('@')[0] || 'Usuario';
-        
-        chatActual = {
-            id_objeto: parseInt(objetoId),
-            otroUsuario: otroUsuario,
-            titulo: titulo,
-            otroNombre: otroNombre
-        };
-        
-        const chatContainer = document.getElementById('chat-active-container');
-        if (!chatContainer) return;
-        
-        chatContainer.innerHTML = `
-            <div class="chat-active">
-                <div class="chat-active-header">
-                    <button class="chat-back-btn" onclick="cerrarChatCompletamente()"><i class="fas fa-arrow-left"></i></button>
-                    <div class="chat-active-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
-                    <div class="chat-active-info">
-                        <div class="chat-active-name">${escapeHtml(otroNombre)}</div>
-                        <div class="chat-active-objeto">📦 ${escapeHtml(titulo)}</div>
-                    </div>
-                    <button class="chat-active-close" onclick="cerrarChatCompletamente()"><i class="fas fa-times"></i></button>
-                </div>
-                <div id="chatMessagesArea" class="chat-messages-area">
-                    <div style="text-align:center; padding:20px;">Cargando mensajes...</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje..." autocomplete="off">
-                    <button class="btn-enviar" id="sendMsgMobileBtn">Enviar</button>
-                </div>
-            </div>
-        `;
-        
-        const sendBtn = document.getElementById('sendMsgMobileBtn');
-        const msgInput = document.getElementById('msgInputMobile');
-        
-        if (sendBtn) {
-            sendBtn.onclick = () => {
-                const texto = msgInput?.value || '';
-                if (texto.trim()) {
-                    enviarMensajeChat(texto);
-                }
-            };
-        }
-        
-        if (msgInput) {
-            msgInput.onkeypress = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const texto = msgInput.value;
-                    if (texto.trim()) {
-                        enviarMensajeChat(texto);
-                    }
-                }
-            };
-            setTimeout(() => msgInput.focus(), 100);
-        }
-        
-        const cacheKey = `${chatActual.id_objeto}_${chatActual.otroUsuario}`;
-        chatMensajesCache.delete(cacheKey);
-        await cargarMensajesChat();
-        
-        iniciarPollingChat();
-        openChatOnMobile();
-        await cargarConversaciones();
-    }
-    
-    function cerrarChatCompletamente() {
-        detenerPollingChat();
-        chatActual = null;
-        mensajesPendientes = [];
-        
-        const chatContainer = document.getElementById('chat-active-container');
-        if (chatContainer) {
-            chatContainer.innerHTML = `
-                <div class="empty-chat">
-                    <i class="fas fa-comment-dots"></i>
-                    <p>Selecciona una conversación para empezar a chatear</p>
-                </div>
-            `;
-        }
-        
-        document.querySelectorAll('.conversation-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        
-        closeChatOnMobile();
-        
-        setTimeout(() => {
-            cargarConversaciones();
-            actualizarBadgeMensajes();
-        }, 100);
-    }
-
-    function closeChatOnMobile() {
-        const container = document.getElementById('messengerContainer');
-        if (container && window.innerWidth <= 768) {
-            container.classList.remove('chat-open');
-        }
-    }
-
-    function openChatOnMobile() {
-        const container = document.getElementById('messengerContainer');
-        if (container && window.innerWidth <= 768 && chatActual) {
-            container.classList.add('chat-open');
-        }
-    }
-
-    async function obtenerUltimoMensaje(objetoId, otroUsuario) {
-        try {
-            const cacheKey = `${objetoId}_${otroUsuario}`;
-            if (ultimosMensajesCache.has(cacheKey)) {
-                return ultimosMensajesCache.get(cacheKey);
-            }
-            
-            const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            if (!response.ok) return null;
-            const mensajes = await response.json();
-            const mensajesArray = Array.isArray(mensajes) ? mensajes : [];
-            if (mensajesArray.length === 0) return null;
-            const ultimo = mensajesArray[mensajesArray.length - 1];
-            ultimosMensajesCache.set(cacheKey, ultimo);
-            return ultimo;
-        } catch (error) {
-            console.error('Error obteniendo último mensaje:', error);
-            return null;
-        }
-    }
-
-    async function cargarConversaciones() {
-        try {
-            const response = await fetch(`${WORKER_URL}/mis-conversaciones`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            
-            if (!response.ok) return;
-            
-            const conversaciones = await response.json();
-            const conversacionesArray = Array.isArray(conversaciones) ? conversaciones : [];
-            
-            const conversacionesConMensajes = await Promise.all(conversacionesArray.map(async (conv) => {
-                const ultimoMensaje = await obtenerUltimoMensaje(conv.id_objeto, conv.otroUsuario);
-                return { ...conv, ultimoMensaje };
-            }));
-            
-            const cambiosDetectados = JSON.stringify(conversacionesConMensajes.map(c => ({ 
-                id: c.id_objeto, 
-                otro: c.otroUsuario, 
-                no_leidos: c.no_leidos, 
-                ultimaFecha: c.ultimaFecha,
-                ultimoMensajeId: c.ultimoMensaje?.id
-            }))) !== JSON.stringify(ultimasConversaciones.map(c => ({ 
-                id: c.id_objeto, 
-                otro: c.otroUsuario, 
-                no_leidos: c.no_leidos, 
-                ultimaFecha: c.ultimaFecha,
-                ultimoMensajeId: c.ultimoMensaje?.id
-            })));
-            
-            ultimasConversaciones = conversacionesConMensajes;
-            
-            const listaContainer = document.getElementById('conversationsList');
-            if (!listaContainer) return;
-            
-            if (!conversacionesConMensajes || conversacionesConMensajes.length === 0) {
-                listaContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>';
-                return;
-            }
-            
-            conversacionesConMensajes.sort((a, b) => new Date(b.ultimaFecha) - new Date(a.ultimaFecha));
-            
-            listaContainer.innerHTML = conversacionesConMensajes.map(c => {
-                const otroNombre = c.otroUsuario?.split('@')[0] || 'Usuario';
-                const noLeidos = c.no_leidos || 0;
-                const isActive = chatActual && 
-                                chatActual.id_objeto === c.id_objeto && 
-                                chatActual.otroUsuario === c.otroUsuario;
-                
-                let fechaTexto = '';
-                if (c.ultimaFecha) {
-                    const fecha = new Date(c.ultimaFecha);
-                    const hoy = new Date();
-                    const ayer = new Date(hoy);
-                    ayer.setDate(ayer.getDate() - 1);
-                    
-                    if (fecha.toDateString() === hoy.toDateString()) {
-                        fechaTexto = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    } else if (fecha.toDateString() === ayer.toDateString()) {
-                        fechaTexto = 'Ayer';
-                    } else {
-                        fechaTexto = fecha.toLocaleDateString();
-                    }
-                }
-                
-                let previewMensaje = '';
-                if (c.ultimoMensaje) {
-                    const esMio = c.ultimoMensaje.emisor === currentUser?.email;
-                    const textoPreview = c.ultimoMensaje.mensaje || '📎 Archivo adjunto';
-                    const previewCortado = textoPreview.length > 35 ? textoPreview.substring(0, 35) + '...' : textoPreview;
-                    previewMensaje = `
-                        <div class="conversation-last-message">
-                            <i class="fas ${esMio ? 'fa-reply' : 'fa-comment'}"></i>
-                            <span class="mensaje-preview ${noLeidos > 0 && !esMio ? 'no-leido' : 'leido'}">
-                                ${esMio ? 'Tú: ' : ''}${escapeHtml(previewCortado)}
-                            </span>
-                        </div>
-                    `;
-                } else {
-                    previewMensaje = `<div class="conversation-last-message">📦 ${escapeHtml(c.titulo || 'Objeto')}</div>`;
-                }
-                
-                return `
-                    <div class="conversation-item ${isActive ? 'active' : ''}" 
-                         onclick="abrirChatDirecto(${c.id_objeto}, '${c.otroUsuario || ''}', '${escapeHtml(c.titulo || '').replace(/'/g, "\\'")}')">
-                        <div class="conversation-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
-                        <div class="conversation-info">
-                            <div class="conversation-name">
-                                ${escapeHtml(otroNombre)}
-                                ${noLeidos > 0 ? `<span class="badge-no-leidos">${noLeidos}</span>` : ''}
-                            </div>
-                            ${previewMensaje}
-                        </div>
-                        <div class="conversation-time">${fechaTexto}</div>
-                    </div>
-                `;
-            }).join('');
-            
-            if (cambiosDetectados) {
-                const nuevosItems = document.querySelectorAll('.conversation-item .badge-no-leidos');
-                nuevosItems.forEach(item => {
-                    const parent = item.closest('.conversation-item');
-                    if (parent && !parent.classList.contains('active')) {
-                        parent.classList.add('nuevo-mensaje-indicador');
-                        setTimeout(() => parent.classList.remove('nuevo-mensaje-indicador'), 1000);
-                    }
-                });
-            }
-            
-        } catch (error) {
-            console.error('Error cargando conversaciones:', error);
-        }
-    }
-
-    async function actualizarBadgeMensajes() {
-        if (!currentUser) return;
-        try {
-            const response = await fetch(`${WORKER_URL}/mis-conversaciones`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            if (!response.ok) return;
-            const conversaciones = await response.json();
-            const totalNoLeidos = (conversaciones || []).reduce((acc, c) => acc + (c.no_leidos || 0), 0);
-            const badge = document.getElementById('mensajesBadge');
-            if (badge) {
-                if (totalNoLeidos > 0) {
-                    badge.style.display = 'inline-block';
-                    badge.innerText = totalNoLeidos > 99 ? '99+' : totalNoLeidos;
-                    badge.style.animation = 'pulse 0.5s ease';
-                    setTimeout(() => badge.style.animation = '', 500);
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-        } catch(e) { console.error('Error:', e); }
-    }
-
-    async function cargarObjetosDesdeAPI() {
-        try {
-            const data = await apiFetch('/objetos');
-            objetos = data.map(obj => ({
-                id: obj.id,
-                titulo: obj.titulo,
-                categoria: obj.descripcion?.split('|')[0]?.trim() || 'General',
-                descripcion: obj.descripcion?.split('|')[1]?.trim() || obj.descripcion || '',
-                fotoPrincipal: obj.url,
-                fotos: obj.fotos_extra?.map(f => f.url) || [],
-                userId: obj.usuario,
-                userNombre: obj.usuario?.split('@')[0] || obj.usuario || 'Usuario',
-                ubicacionTexto: obj.direccion || 'Sin ubicación',
-                lat: obj.latitud,
-                lng: obj.longitud,
-                intercambiado: obj.intercambiado === 1,
-                sospechoso: obj.sospechoso === 1
-            }));
-            renderFeed();
-            renderFavoritos();
-            renderMisCosas();
-        } catch(e) { console.error('Error:', e); }
-    }
-
-    async function cargarFavoritosDesdeAPI() {
-        try {
-            const data = await apiFetch('/favoritos');
-            favoritosIds = new Set(data.map(f => f.id));
-        } catch(e) { console.error('Error:', e); }
-    }
-
-    async function agregarFavorito(id) { await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.add(id); renderFeed(); renderFavoritos(); }
-    async function quitarFavorito(id) { await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.delete(id); renderFeed(); renderFavoritos(); }
-    
-    async function reportarObjeto(id, motivo) { 
-        if (!motivo) return;
-        await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
-        mostrarAlert('Reporte enviado. Gracias por ayudarnos a mantener la comunidad segura.', false);
-    }
-    
-    async function eliminarObjeto(id) { 
-        await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); 
-        objetos = objetos.filter(o => o.id !== id); 
-        renderFeed(); 
-        renderFavoritos(); 
-        renderMisCosas(); 
-        mostrarAlert('Objeto eliminado correctamente', false);
-    }
-
-    function renderCategorias() {
-        const container = document.getElementById("categoriesMobileContainer");
-        if(!container) return;
-        container.innerHTML = `<div class="categories-flex"><button class="cat-mobile active" data-cat="all">Todos</button>${categorias.map(c => `<button class="cat-mobile" data-cat="${c}">${c}</button>`).join('')}</div>`;
-        document.querySelectorAll('.cat-mobile').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.cat-mobile').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderFeed();
-            });
-        });
-    }
-
-    function getActiveCat() {
-        const active = document.querySelector('.cat-mobile.active');
-        return active ? active.dataset.cat : 'all';
-    }
-
-    function renderFeed() {
-        const term = document.getElementById("searchMobileInput")?.value.toLowerCase() || "";
-        const cat = getActiveCat();
-        let filtered = objetos.filter(o => !o.intercambiado);
-        if(cat !== "all") filtered = filtered.filter(o => o.categoria === cat);
-        if(term) filtered = filtered.filter(o => o.titulo.toLowerCase().includes(term) || o.userNombre.toLowerCase().includes(term));
-        const container = document.getElementById("feedGrid");
-        if(!container) return;
-        if(filtered.length===0){ container.innerHTML = '<div style="grid-column:span 2; text-align:center; padding:40px;">No hay objetos</div>'; return;}
-        container.innerHTML = filtered.map(obj => renderPinCard(obj)).join('');
-        attachCardEvents();
-    }
-
-    function renderPinCard(obj) {
-        const esFav = favoritosIds.has(obj.id);
-        return `<div class="pin-card" data-id="${obj.id}" data-obj='${JSON.stringify(obj)}'>
-                    <img class="pin-img" src="${obj.fotoPrincipal}">
-                    <div class="pin-info">
-                        <div class="pin-category">${escapeHtml(obj.categoria)}</div>
-                        <div class="pin-title">${escapeHtml(obj.titulo)}</div>
-                        <div class="pin-desc">${escapeHtml(obj.descripcion.substring(0, 80))}${obj.descripcion.length>80 ? '...' : ''}</div>
-                        <div class="ubicacion-user"><span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(obj.ubicacionTexto)}</span><div><i class="fas fa-user"></i> ${escapeHtml(obj.userNombre)}</div></div>
-                        <div class="acciones-botones">
-                            <button class="btn-guardar ${esFav ? '' : 'outline'}" data-id="${obj.id}"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
-                            ${obj.userId !== currentUser?.email ? `<button class="btn-intercambiar" data-id="${obj.id}" data-usuario="${obj.userId}" data-titulo="${escapeHtml(obj.titulo)}"><i class="fas fa-handshake"></i> Intercambiar</button>` : ''}
-                        </div>
-                        ${obj.userId !== currentUser?.email ? `<button class="btn-reportar" data-id="${obj.id}"><i class="fas fa-flag"></i> Reportar</button>` : `<button class="btn-eliminar" data-id="${obj.id}"><i class="fas fa-trash"></i> Eliminar</button>`}
-                    </div>
-                </div>`;
-    }
-
-    function attachCardEvents() {
-        document.querySelectorAll('.btn-guardar').forEach(btn => {
-            btn.removeEventListener('click', favHandler);
-            btn.addEventListener('click', favHandler);
-        });
-        async function favHandler(e) { e.stopPropagation(); const id = parseInt(this.dataset.id); if(favoritosIds.has(id)) await quitarFavorito(id); else await agregarFavorito(id); renderFeed(); renderFavoritos(); }
-        
-        document.querySelectorAll('.btn-intercambiar').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); const usuario = btn.dataset.usuario; const titulo = btn.dataset.titulo; abrirChatDirecto(id, usuario, titulo); switchTab('mensajes'); }));
-        
-        document.querySelectorAll('.btn-reportar').forEach(btn => btn.addEventListener('click', async (e) => { 
-            e.stopPropagation(); 
-            const id = parseInt(btn.dataset.id); 
-            const motivo = prompt('Motivo del reporte:');
-            if (motivo) await reportarObjeto(id, motivo);
-        }));
-        
-        document.querySelectorAll('.btn-eliminar').forEach(btn => btn.addEventListener('click', async (e) => { 
-            e.stopPropagation(); 
-            const id = parseInt(btn.dataset.id); 
-            const confirmado = await mostrarConfirm('¿Estás seguro de que quieres eliminar este objeto? Esta acción no se puede deshacer.');
-            if (confirmado) await eliminarObjeto(id); 
-        }));
-        
-        document.querySelectorAll('.pin-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                if(e.target.closest('button')) return;
-                const objData = JSON.parse(card.dataset.obj);
-                abrirDetalleModal(objData);
-            });
-        });
-    }
-
-    function renderFavoritos() { 
-        const favs = objetos.filter(o => favoritosIds.has(o.id) && !o.intercambiado); 
-        document.getElementById("favoritosGrid").innerHTML = favs.length ? favs.map(o=>renderPinCard(o)).join('') : '<div style="grid-column:span 2; text-align:center; padding:40px;">Sin favoritos</div>'; 
-        attachCardEvents(); 
-    }
-    
-    function renderMisCosas() { 
-        const mis = objetos.filter(o => o.userId === currentUser?.email); 
-        document.getElementById("misCosasGrid").innerHTML = mis.length ? mis.map(o=>renderPinCard(o)).join('') : '<div style="grid-column:span 2; text-align:center; padding:40px;">No has publicado nada</div>'; 
-        attachCardEvents(); 
-    }
-
-    function abrirDetalleModal(obj) {
-        const allPhotos = [obj.fotoPrincipal, ...(obj.fotos || [])].filter(p => p);
-        document.getElementById("modalMainImg").src = allPhotos[0];
-        document.getElementById("modalTitulo").innerText = obj.titulo;
-        document.getElementById("modalCategoria").innerText = obj.categoria;
-        document.getElementById("modalDesc").innerText = obj.descripcion;
-        document.getElementById("modalUbicacion").innerText = obj.ubicacionTexto;
-        document.getElementById("modalUsuario").innerHTML = obj.userNombre;
-        
-        const thumbContainer = document.getElementById("modalThumbnails");
-        thumbContainer.innerHTML = allPhotos.map((photo, idx) => `<img class="miniatura-modal ${idx===0 ? 'active' : ''}" src="${photo}" data-index="${idx}">`).join('');
-        document.querySelectorAll('.miniatura-modal').forEach(thumb => {
-            thumb.addEventListener('click', () => {
-                document.querySelectorAll('.miniatura-modal').forEach(t => t.classList.remove('active'));
-                thumb.classList.add('active');
-                document.getElementById("modalMainImg").src = thumb.src;
-            });
-        });
-        
-        const accionesDiv = document.getElementById("modalAcciones");
-        const esFav = favoritosIds.has(obj.id);
-        accionesDiv.innerHTML = `
-            <button id="modalGuardarBtn" class="btn-modal btn-modal-secondary"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
-            ${obj.userId !== currentUser?.email ? `<button id="modalIntercambiarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-handshake"></i> Intercambiar</button>` : `<button id="modalEliminarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-trash"></i> Eliminar</button>`}
-        `;
-        document.getElementById("modalGuardarBtn")?.addEventListener("click", async () => { if(favoritosIds.has(obj.id)) await quitarFavorito(obj.id); else await agregarFavorito(obj.id); document.getElementById("detailModal").style.display = "none"; renderFeed(); renderFavoritos(); });
-        document.getElementById("modalIntercambiarBtn")?.addEventListener("click", () => { abrirChatDirecto(obj.id, obj.userId, obj.titulo); document.getElementById("detailModal").style.display = "none"; switchTab('mensajes'); });
-        document.getElementById("modalEliminarBtn")?.addEventListener("click", async () => { const confirmado = await mostrarConfirm('¿Eliminar este objeto permanentemente?'); if(confirmado){ await eliminarObjeto(obj.id); document.getElementById("detailModal").style.display = "none"; } });
-        
-        document.getElementById("detailModal").style.display = "block";
-    }
-
-    let publicando = false;
-
-    function limpiarFormPublicacion() {
-        document.getElementById("tituloMobile").value = "";
-        document.getElementById("descripcionMobile").value = "";
-        document.getElementById("categoriaMobile").value = "Electrónica";
-        fotoPrincipalData = null;
-        fotosExtraSeleccionadas = [];
-        document.getElementById("previewMainMobile").innerHTML = "";
-        document.getElementById("previewExtraMobile").innerHTML = "";
-        limpiarUbicacion();
-    }
-
-    // Eventos de publicación
+    async function init(){ let token=getTokenFromURL(); if(token){ authToken=token; let user=await verifyToken(token); if(user){ currentUser=user; document.getElementById('loginScreen').style.display='none'; document.getElementById('appContainer').style.display='block'; document.getElementById("topAvatar").src=user.picture||'https://ui-avatars.com/api/?background=059669&color=fff&name='+encodeURIComponent(user.name||user.email); document.getElementById("topUserName").innerHTML=user.name?.split(' ')[0]||user.email.split('@')[0]; document.getElementById("profileTopBtn").addEventListener("click",()=>mostrarToast(`👤 ${user.name||user.email}`,false)); document.getElementById("supportBtn").addEventListener("click",abrirAtencionCliente); await cargarObjetos(); await cargarFavoritos(); await cargarConversaciones(); let welcomeShown=localStorage.getItem('welcome_shown'); if(!welcomeShown){ setTimeout(()=>{ document.getElementById('welcomeModal').style.display='flex'; localStorage.setItem('welcome_shown','true'); },500); } document.getElementById('closeWelcomeBtn').onclick=()=>document.getElementById('welcomeModal').style.display='none'; } else logout(); } else { document.getElementById('loginScreen').style.display='flex'; } renderCategorias(); document.getElementById("searchMobileInput")?.addEventListener("input",()=>renderFeed()); document.getElementById("closeDetailModal")?.addEventListener("click",()=>document.getElementById("detailModal").style.display="none"); document.querySelectorAll(".nav-bottom-item").forEach(btn=>btn.addEventListener("click",()=>switchTab(btn.dataset.tab))); initDarkMode(); }
+    function renderCategorias(){ let container=document.getElementById("categoriesMobileContainer"); if(!container) return; container.innerHTML=`<div class="categories-flex"><button class="cat-mobile active" data-cat="all">Todos</button>${["Electrónica","Ropa","Libros","Mascotas","Hogar","Deportes"].map(c=>`<button class="cat-mobile" data-cat="${c}">${c}</button>`).join('')}</div>`; document.querySelectorAll('.cat-mobile').forEach(btn=>btn.onclick=()=>{ document.querySelectorAll('.cat-mobile').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderFeed(); }); }
+    document.getElementById("googleLoginBtn")?.addEventListener("click",loginWithGoogle);
     document.getElementById("uploadMainMobile")?.addEventListener("click",()=>document.getElementById("fotoMainInput").click());
-    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ 
-        if(e.target.files[0]){ 
-            fotoPrincipalData = e.target.files[0]; 
-            const preview = document.getElementById("previewMainMobile");
-            preview.innerHTML = `<div class="img-upload-wrapper"><div style="width:80px;height:80px;border-radius:16px;background:#e5e7eb;"></div><div class="img-upload-spinner"></div></div>`;
-            const reader = new FileReader(); 
-            reader.onload = ev => { 
-                setTimeout(() => {
-                    preview.innerHTML = `<div class="img-upload-wrapper"><img src="${ev.target.result}" style="width:80px; height:80px; border-radius:16px; object-fit:cover;"></div>`;
-                }, 600);
-            }; 
-            reader.readAsDataURL(e.target.files[0]); 
-        } 
-    });
-    
+    document.getElementById("fotoMainInput")?.addEventListener("change",e=>{ if(e.target.files[0]) fotoPrincipalData=e.target.files[0]; });
     document.getElementById("uploadExtraMobile")?.addEventListener("click",()=>document.getElementById("fotosExtraInput").click());
-    document.getElementById("fotosExtraInput")?.addEventListener("change",(e)=>{ 
-        const nuevasFotos = Array.from(e.target.files);
-        fotosExtraSeleccionadas.push(...nuevasFotos);
-        if (fotosExtraSeleccionadas.length > 4) fotosExtraSeleccionadas = fotosExtraSeleccionadas.slice(0,4);
-        const container = document.getElementById("previewExtraMobile");
-        
-        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => 
-            `<div class="img-upload-wrapper" id="extra-wrap-${idx}">
-                <div style="width:60px;height:60px;border-radius:12px;background:#e5e7eb;"></div>
-                <div class="img-upload-spinner" style="border-radius:12px;"></div>
-            </div>`
-        ).join('');
-        
-        fotosExtraSeleccionadas.forEach((f, idx) => {
-            const reader = new FileReader();
-            reader.onload = ev => {
-                setTimeout(() => {
-                    const wrap = document.getElementById(`extra-wrap-${idx}`);
-                    if(wrap) wrap.outerHTML = `<div style="position:relative;" class="img-upload-wrapper">
-                        <img src="${ev.target.result}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;">
-                        <button onclick="eliminarFotoExtra(${idx})" style="position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; border-radius:50%; width:20px; height:20px; border:none; cursor:pointer;">✕</button>
-                    </div>`;
-                }, 500 + idx * 150);
-            };
-            reader.readAsDataURL(f);
-        });
-        
-        e.target.value = '';
-    });
-    
-    document.getElementById("ubicarBtnMobile")?.addEventListener("click", obtenerUbicacionActual);
-    document.getElementById("limpiarUbicacionBtn")?.addEventListener("click", limpiarUbicacion);
-    
-    window.eliminarFotoExtra = function(idx) {
-        fotosExtraSeleccionadas.splice(idx, 1);
-        const container = document.getElementById("previewExtraMobile");
-        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => `<div style="position:relative;"><img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;"><button onclick="eliminarFotoExtra(${idx})" style="position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; border-radius:50%; width:20px; height:20px; border:none; cursor:pointer;">✕</button></div>`).join('');
-    };
-    
-    document.getElementById("previewMobileBtn")?.addEventListener("click", () => {
-        if (!fotoPrincipalData) {
-            mostrarToast("Foto principal requerida", true);
-            return;
-        }
-        
-        const titulo = document.getElementById("tituloMobile").value;
-        const descripcion = document.getElementById("descripcionMobile").value;
-        const categoria = document.getElementById("categoriaMobile").value;
-        const direccion = document.getElementById("direccionMobile").value || "Sin dirección especificada";
-        
-        if (!titulo || !descripcion) {
-            mostrarToast("Título y descripción son requeridos", true);
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = e => {
-            document.getElementById("previewImgModal").src = e.target.result;
-            document.getElementById("previewTextModal").innerHTML = `
-                <strong>${escapeHtml(titulo)}</strong><br>
-                ${escapeHtml(descripcion)}<br>
-                <i class="fas fa-tag"></i> ${escapeHtml(categoria)}<br>
-                <i class="fas fa-map-marker-alt"></i> ${escapeHtml(direccion)}
-                ${ubicacionSeleccionada.lat ? `<br><small>📍 Coordenadas: ${ubicacionSeleccionada.lat.toFixed(4)}, ${ubicacionSeleccionada.lng.toFixed(4)}</small>` : ''}
-            `;
-            document.getElementById("previewModal").style.display = "flex";
-        };
-        reader.readAsDataURL(fotoPrincipalData);
-    });
-    
-    document.getElementById("confirmarPublicarBtn").onclick = async () => {
-        if (publicando) return;
-        publicando = true;
-        const btn = document.getElementById("confirmarPublicarBtn");
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="loading-spinner"></span> Publicando...';
-        
-        try {
-            const titulo = document.getElementById("tituloMobile").value;
-            const descripcion = document.getElementById("descripcionMobile").value;
-            const categoria = document.getElementById("categoriaMobile").value;
-            const direccion = document.getElementById("direccionMobile").value;
-            
-            await publicarObjetoConUbicacion(
-                titulo,
-                descripcion,
-                categoria,
-                [fotoPrincipalData, ...fotosExtraSeleccionadas],
-                direccion
-            );
-            
-            document.getElementById("previewModal").style.display = "none";
-            await cargarObjetosDesdeAPI();
-            limpiarFormPublicacion();
-            mostrarAlert("¡Objeto publicado correctamente!", false);
-            
-            document.querySelector('.nav-bottom-item[data-tab="feed"]').click();
-            
-        } catch(error) {
-            console.error('Error al publicar:', error);
-            mostrarAlert("Error al publicar: " + (error.message || "Intenta de nuevo"), true);
-        } finally {
-            publicando = false;
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    };
-    
-    document.getElementById("cancelPreviewBtn")?.addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
-
-    // Función switchTab modificada para ocultar elementos en mensajes
-    function switchTab(tabId) {
-        document.getElementById("feedView").style.display = tabId==="feed" ? "block" : "none";
-        document.getElementById("favoritosView").style.display = tabId==="favoritos" ? "block" : "none";
-        document.getElementById("crearView").style.display = tabId==="crear" ? "block" : "none";
-        document.getElementById("misCosasView").style.display = tabId==="misCosas" ? "block" : "none";
-        document.getElementById("mensajesView").style.display = tabId==="mensajes" ? "block" : "none";
-
-        // Ocultar header, buscador y categorías en mensajes
-        const header = document.querySelector('.mobile-header');
-        const searchBar = document.querySelector('.search-bar');
-        const categoriesScroll = document.querySelector('.categories-scroll');
-        const esMensajes = tabId === "mensajes";
-        if (header) header.style.display = esMensajes ? "none" : "";
-        if (searchBar) searchBar.style.display = esMensajes ? "none" : "";
-        if (categoriesScroll) categoriesScroll.style.display = esMensajes ? "none" : "";
-
-        if(tabId==="favoritos") renderFavoritos();
-        if(tabId==="misCosas") renderMisCosas();
-        if(tabId==="mensajes") { 
-            detenerPollingChat();
-            cargarConversaciones();
-            iniciarPollingConversaciones();
-        } else {
-            detenerPollingConversaciones();
-        }
-    }
-
-    function mostrarPerfil() {
-        mostrarAlert(`👤 ${currentUser.name || currentUser.email}\n📧 ${currentUser.email}`, false);
-    }
-
-    window.verFotoAmpliada = function(url) {
-        document.getElementById("fotoAmpliada").src = url;
-        document.getElementById("fotoModal").style.display = "flex";
-    };
-
-    window.abrirChatDirecto = abrirChatDirecto;
-    window.cerrarChatCompletamente = cerrarChatCompletamente;
-    window.closeChatOnMobile = closeChatOnMobile;
-    window.verFotoAmpliada = verFotoAmpliada;
-    window.eliminarFotoExtra = eliminarFotoExtra;
-    window.mostrarConfirm = mostrarConfirm;
-
-    let welcomeModalMostrado = false;
-
-    function mostrarBienvenida() {
-        if (!welcomeModalMostrado && currentUser) {
-            const welcomeModal = document.getElementById('welcomeModal');
-            if (welcomeModal) {
-                welcomeModal.style.display = 'flex';
-                welcomeModalMostrado = true;
-                localStorage.setItem('welcome_shown', 'true');
-            }
-        }
-    }
-
-    document.getElementById('closeWelcomeBtn')?.addEventListener('click', () => {
-        const welcomeModal = document.getElementById('welcomeModal');
-        if (welcomeModal) {
-            welcomeModal.style.display = 'none';
-        }
-    });
-
-    function abrirAtencionCliente() {
-        const correoSoporte = 'intercambioapp53@gmail.com';
-        const asunto = encodeURIComponent('Consulta / Soporte - Intercambia App');
-        const cuerpo = encodeURIComponent('Hola, tengo una consulta sobre la aplicación Intercambia:\n\n');
-        window.location.href = `mailto:${correoSoporte}?subject=${asunto}&body=${cuerpo}`;
-    }
-
-    async function init() {
-        const token = getTokenFromURL();
-        if (token) {
-            authToken = token;
-            const user = await verifyToken(token);
-            if (user) {
-                currentUser = user;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'block';
-                document.getElementById("topAvatar").src = currentUser.picture || 'https://ui-avatars.com/api/?background=059669&color=fff&name=' + encodeURIComponent(currentUser.name || currentUser.email);
-                document.getElementById("topUserName").innerHTML = currentUser.name?.split(' ')[0] || currentUser.email.split('@')[0];
-                document.getElementById("profileTopBtn").addEventListener("click", mostrarPerfil);
-                
-                const supportBtn = document.getElementById('supportBtn');
-                if (supportBtn) {
-                    supportBtn.addEventListener('click', abrirAtencionCliente);
-                }
-                
-                await cargarObjetosDesdeAPI();
-                await cargarFavoritosDesdeAPI();
-                guardarOneSignalId(currentUser.email);
-                await cargarConversaciones();
-                
-                const welcomeShown = localStorage.getItem('welcome_shown');
-                if (!welcomeShown) {
-                    setTimeout(() => {
-                        mostrarBienvenida();
-                    }, 500);
-                }
-                
-                setInterval(async () => {
-                    await actualizarBadgeMensajes();
-                }, 10000);
-            } else {
-                localStorage.removeItem('auth_token');
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('appContainer').style.display = 'none';
-            }
-        } else {
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('appContainer').style.display = 'none';
-        }
-        renderCategorias();
-        document.getElementById("searchMobileInput")?.addEventListener("input", () => renderFeed());
-        document.getElementById("closeDetailModal")?.addEventListener("click", () => document.getElementById("detailModal").style.display = "none");
-        
-        document.querySelectorAll(".nav-bottom-item").forEach(btn => {
-            btn.addEventListener("click", () => {
-                document.querySelectorAll(".nav-bottom-item").forEach(b=>b.classList.remove("active"));
-                btn.classList.add("active");
-                switchTab(btn.dataset.tab);
-            });
-        });
-    }
-    
-    document.getElementById("googleLoginBtn")?.addEventListener("click", loginWithGoogle);
+    document.getElementById("fotosExtraInput")?.addEventListener("change",e=>{ fotosExtraSeleccionadas=[...e.target.files]; });
+    document.getElementById("previewMobileBtn")?.addEventListener("click",()=>{ if(fotoPrincipalData){ document.getElementById("previewModal").style.display="flex"; document.getElementById("previewTextModal").innerHTML="Vista previa"; } else mostrarToast("Selecciona foto principal",true); });
+    document.getElementById("confirmarPublicarBtn")?.addEventListener("click",async()=>{ if(!fotoPrincipalData) return; let fd=new FormData(); fd.append('titulo',document.getElementById("tituloMobile").value); fd.append('descripcion',document.getElementById("categoriaMobile").value+"|"+document.getElementById("descripcionMobile").value); fd.append('latitud',ubicacionSeleccionada.lat||''); fd.append('longitud',ubicacionSeleccionada.lng||''); fd.append('direccion',document.getElementById("direccionMobile").value); fd.append(`foto_0`,fotoPrincipalData); fotosExtraSeleccionadas.forEach((f,i)=>fd.append(`foto_${i+1}`,f)); await apiFetch('/objeto',{method:'POST',body:fd}); document.getElementById("previewModal").style.display="none"; await cargarObjetos(); mostrarToast("Publicado!",false); });
+    document.getElementById("ubicarBtnMobile")?.addEventListener("click",()=>{ navigator.geolocation.getCurrentPosition(pos=>{ ubicacionSeleccionada.lat=pos.coords.latitude; ubicacionSeleccionada.lng=pos.coords.longitude; mostrarToast("Ubicación obtenida",false); },err=>mostrarToast("Error ubicación",true)); });
     init();
+    window.abrirChatDirecto=abrirChatDirecto; window.cerrarChatCompletamente=cerrarChatCompletamente;
 </script>
 </body>
 </html>
