@@ -17,13 +17,11 @@
         .logo-area-mobile i { font-size: 28px; color: #059669; background: #e8f5e9; padding: 6px; border-radius: 16px; }
         .logo-area-mobile h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, #059669, #10b981); background-clip: text; -webkit-background-clip: text; color: transparent; }
         
-        /* Contenedor para el botón de soporte y perfil */
         .header-right {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        /* NUEVO: Botón de atención al cliente */
         .support-btn {
             background: #f0f2f0;
             border: none;
@@ -93,6 +91,30 @@
             text-align: center;
         }
 
+        /* Spinner de carga de imagen estilo Messenger */
+        .img-upload-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .img-upload-spinner {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .img-upload-spinner::after {
+            content: "";
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
         .modal-marketplace { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; overflow-y: auto; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .modal-header { position: sticky; top: 0; background: white; padding: 16px; display: flex; justify-content: space-between; border-bottom: 1px solid #eef2ef; }
@@ -113,7 +135,6 @@
         .modal-modern { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); justify-content: center; align-items: center; z-index: 1100; }
         .modal-content { background: white; border-radius: 28px; max-width: 90%; width: 400px; padding: 24px; max-height: 85vh; overflow-y: auto; }
 
-        /* Modal de confirmación personalizado */
         .custom-modal {
             display: none;
             position: fixed;
@@ -170,7 +191,6 @@
         .custom-modal-btn.confirm:hover { background: #047857; }
         .custom-modal-btn.cancel:hover { background: #e2e8e4; }
 
-        /* NUEVO: Estilos para el modal de bienvenida */
         .welcome-modal {
             display: none;
             position: fixed;
@@ -258,7 +278,6 @@
         .btn-modern:hover { background: #047857; }
         .btn-modern:disabled { background: #9ac9b0; cursor: not-allowed; }
 
-        /* Chat Styles */
         .messenger-container {
             display: flex;
             background: white;
@@ -573,7 +592,6 @@
             z-index: 1;
         }
 
-        /* Alert personalizado */
         .custom-alert {
             position: fixed;
             bottom: 100px;
@@ -615,7 +633,6 @@
             <i class="fas fa-exchange-alt"></i>
             <h1>Intercambia</h1>
         </div>
-        <!-- NUEVO: Botón de atención al cliente y perfil -->
         <div class="header-right">
             <button id="supportBtn" class="support-btn" title="Atención al cliente">
                 <i class="fas fa-headset"></i>
@@ -693,7 +710,6 @@
     </div>
 </div>
 
-<!-- NUEVO: Modal de bienvenida formal -->
 <div id="welcomeModal" class="welcome-modal">
     <div class="welcome-content">
         <i class="fas fa-exchange-alt"></i>
@@ -710,7 +726,6 @@
     </div>
 </div>
 
-<!-- Modal de confirmación personalizado -->
 <div id="customConfirmModal" class="custom-modal">
     <div class="custom-modal-content">
         <p id="confirmMessage">¿Estás seguro?</p>
@@ -752,14 +767,12 @@
     let fotosExtraSeleccionadas = [];
     let mapaTemp = null;
     
-    // Ubicación
     let ubicacionSeleccionada = {
         lat: null,
         lng: null,
         direccion: ''
     };
     
-    // Chat variables
     let chatPollingInterval = null;
     let conversacionesPollingInterval = null;
     let chatActual = null;
@@ -769,12 +782,10 @@
     let ultimasConversaciones = [];
     let ultimosMensajesCache = new Map();
     
-    // Confirmación personalizada
     let confirmResolve = null;
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
-    // ========== MODALES PERSONALIZADOS ==========
     function mostrarConfirm(mensaje) {
         return new Promise((resolve) => {
             confirmResolve = resolve;
@@ -818,7 +829,6 @@
         }, 3000);
     }
 
-    // Eventos del modal de confirmación
     document.getElementById('confirmOkBtn')?.addEventListener('click', () => {
         if (confirmResolve) {
             confirmResolve(true);
@@ -845,7 +855,6 @@
         });
     }
 
-    // ========== AUTENTICACIÓN ==========
     function getTokenFromURL() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
@@ -868,7 +877,6 @@
         } catch (e) { return null; }
     }
 
-    // MODIFICACIÓN SOLICITADA: Nueva función loginWithGoogle con redirect condicional
     function loginWithGoogle() {
         const isAndroidApp = navigator.userAgent.includes('wv');
         const redirectUrl = isAndroidApp 
@@ -887,7 +895,6 @@
         document.getElementById('appContainer').style.display = 'none';
     }
 
-    // ========== ONESIGNAL ==========
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
@@ -910,7 +917,6 @@
         } catch(e) { console.error('Error:', e); }
     }
 
-    // ========== API ==========
     async function apiFetch(path, options = {}) {
         const headers = options.headers || {};
         if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
@@ -922,7 +928,6 @@
         return response.json();
     }
 
-    // ========== UBICACIÓN ==========
     function limpiarUbicacion() {
         ubicacionSeleccionada = {
             lat: null,
@@ -1065,8 +1070,6 @@
         
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
-
-    // ========== CHAT FUNCTIONS ==========
     
     async function enviarMensajeConReintento(objetoId, receptor, mensaje, intentos = 3) {
         for (let i = 0; i < intentos; i++) {
@@ -1560,7 +1563,6 @@
         } catch(e) { console.error('Error:', e); }
     }
 
-    // ========== RENDER UI ==========
     async function cargarObjetosDesdeAPI() {
         try {
             const data = await apiFetch('/objetos');
@@ -1738,7 +1740,6 @@
         document.getElementById("detailModal").style.display = "block";
     }
 
-    // ========== PUBLICAR OBJETO ==========
     let publicando = false;
 
     function limpiarFormPublicacion() {
@@ -1752,15 +1753,51 @@
         limpiarUbicacion();
     }
 
-    // Eventos de publicación
+    // Eventos de publicación con spinner
     document.getElementById("uploadMainMobile")?.addEventListener("click",()=>document.getElementById("fotoMainInput").click());
-    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ if(e.target.files[0]){ fotoPrincipalData = e.target.files[0]; const reader = new FileReader(); reader.onload = ev => { document.getElementById("previewMainMobile").innerHTML = `<img src="${ev.target.result}" style="width:80px; height:80px; border-radius:16px; object-fit:cover;">`; }; reader.readAsDataURL(e.target.files[0]); } });
+    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ 
+        if(e.target.files[0]){ 
+            fotoPrincipalData = e.target.files[0]; 
+            const preview = document.getElementById("previewMainMobile");
+            preview.innerHTML = `<div class="img-upload-wrapper"><div style="width:80px;height:80px;border-radius:16px;background:#e5e7eb;"></div><div class="img-upload-spinner"></div></div>`;
+            const reader = new FileReader(); 
+            reader.onload = ev => { 
+                setTimeout(() => {
+                    preview.innerHTML = `<div class="img-upload-wrapper"><img src="${ev.target.result}" style="width:80px; height:80px; border-radius:16px; object-fit:cover;"></div>`;
+                }, 600);
+            }; 
+            reader.readAsDataURL(e.target.files[0]); 
+        } 
+    });
+    
     document.getElementById("uploadExtraMobile")?.addEventListener("click",()=>document.getElementById("fotosExtraInput").click());
     document.getElementById("fotosExtraInput")?.addEventListener("change",(e)=>{ 
-        fotosExtraSeleccionadas.push(...Array.from(e.target.files));
+        const nuevasFotos = Array.from(e.target.files);
+        fotosExtraSeleccionadas.push(...nuevasFotos);
         if (fotosExtraSeleccionadas.length > 4) fotosExtraSeleccionadas = fotosExtraSeleccionadas.slice(0,4);
         const container = document.getElementById("previewExtraMobile");
-        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => `<div style="position:relative;"><img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;"><button onclick="eliminarFotoExtra(${idx})" style="position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; border-radius:50%; width:20px; height:20px; border:none; cursor:pointer;">✕</button></div>`).join('');
+        
+        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => 
+            `<div class="img-upload-wrapper" id="extra-wrap-${idx}">
+                <div style="width:60px;height:60px;border-radius:12px;background:#e5e7eb;"></div>
+                <div class="img-upload-spinner" style="border-radius:12px;"></div>
+            </div>`
+        ).join('');
+        
+        fotosExtraSeleccionadas.forEach((f, idx) => {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                setTimeout(() => {
+                    const wrap = document.getElementById(`extra-wrap-${idx}`);
+                    if(wrap) wrap.outerHTML = `<div style="position:relative;" class="img-upload-wrapper">
+                        <img src="${ev.target.result}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;">
+                        <button onclick="eliminarFotoExtra(${idx})" style="position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; border-radius:50%; width:20px; height:20px; border:none; cursor:pointer;">✕</button>
+                    </div>`;
+                }, 500 + idx * 150);
+            };
+            reader.readAsDataURL(f);
+        });
+        
         e.target.value = '';
     });
     
@@ -1845,13 +1882,23 @@
     
     document.getElementById("cancelPreviewBtn")?.addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
 
-    // ========== NAVEGACIÓN ==========
+    // NUEVA FUNCIÓN switchTab modificada
     function switchTab(tabId) {
         document.getElementById("feedView").style.display = tabId==="feed" ? "block" : "none";
         document.getElementById("favoritosView").style.display = tabId==="favoritos" ? "block" : "none";
         document.getElementById("crearView").style.display = tabId==="crear" ? "block" : "none";
         document.getElementById("misCosasView").style.display = tabId==="misCosas" ? "block" : "none";
         document.getElementById("mensajesView").style.display = tabId==="mensajes" ? "block" : "none";
+
+        // Ocultar header, buscador y categorías en mensajes
+        const header = document.querySelector('.mobile-header');
+        const searchBar = document.querySelector('.search-bar');
+        const categoriesScroll = document.querySelector('.categories-scroll');
+        const esMensajes = tabId === "mensajes";
+        if (header) header.style.display = esMensajes ? "none" : "";
+        if (searchBar) searchBar.style.display = esMensajes ? "none" : "";
+        if (categoriesScroll) categoriesScroll.style.display = esMensajes ? "none" : "";
+
         if(tabId==="favoritos") renderFavoritos();
         if(tabId==="misCosas") renderMisCosas();
         if(tabId==="mensajes") { 
@@ -1872,7 +1919,6 @@
         document.getElementById("fotoModal").style.display = "flex";
     };
 
-    // Hacer funciones globales para onclick
     window.abrirChatDirecto = abrirChatDirecto;
     window.cerrarChatCompletamente = cerrarChatCompletamente;
     window.closeChatOnMobile = closeChatOnMobile;
@@ -1880,7 +1926,6 @@
     window.eliminarFotoExtra = eliminarFotoExtra;
     window.mostrarConfirm = mostrarConfirm;
 
-    // NUEVO: Función para mostrar el modal de bienvenida
     let welcomeModalMostrado = false;
 
     function mostrarBienvenida() {
@@ -1889,13 +1934,11 @@
             if (welcomeModal) {
                 welcomeModal.style.display = 'flex';
                 welcomeModalMostrado = true;
-                // Guardar en localStorage para no mostrar de nuevo
                 localStorage.setItem('welcome_shown', 'true');
             }
         }
     }
 
-    // Cerrar modal de bienvenida
     document.getElementById('closeWelcomeBtn')?.addEventListener('click', () => {
         const welcomeModal = document.getElementById('welcomeModal');
         if (welcomeModal) {
@@ -1903,7 +1946,6 @@
         }
     });
 
-    // NUEVO: Función para atención al cliente (abrir Gmail)
     function abrirAtencionCliente() {
         const correoSoporte = 'intercambioapp53@gmail.com';
         const asunto = encodeURIComponent('Consulta / Soporte - Intercambia App');
@@ -1911,7 +1953,6 @@
         window.location.href = `mailto:${correoSoporte}?subject=${asunto}&body=${cuerpo}`;
     }
 
-    // ========== INICIALIZACIÓN ==========
     async function init() {
         const token = getTokenFromURL();
         if (token) {
@@ -1925,7 +1966,6 @@
                 document.getElementById("topUserName").innerHTML = currentUser.name?.split(' ')[0] || currentUser.email.split('@')[0];
                 document.getElementById("profileTopBtn").addEventListener("click", mostrarPerfil);
                 
-                // Agregar evento al botón de soporte
                 const supportBtn = document.getElementById('supportBtn');
                 if (supportBtn) {
                     supportBtn.addEventListener('click', abrirAtencionCliente);
@@ -1936,12 +1976,11 @@
                 guardarOneSignalId(currentUser.email);
                 await cargarConversaciones();
                 
-                // Mostrar bienvenida si no se ha mostrado antes
                 const welcomeShown = localStorage.getItem('welcome_shown');
                 if (!welcomeShown) {
                     setTimeout(() => {
                         mostrarBienvenida();
-                    }, 500); // Pequeño delay para que cargue todo
+                    }, 500);
                 }
                 
                 setInterval(async () => {
@@ -1969,7 +2008,6 @@
         });
     }
     
-    // MODIFICACIÓN SOLICITADA: Se actualiza el evento del botón de login con la nueva lógica
     document.getElementById("googleLoginBtn")?.addEventListener("click", loginWithGoogle);
     init();
 </script>
