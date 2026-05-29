@@ -786,6 +786,25 @@
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
+    // Función guardarOneSignalId REEMPLAZADA
+    async function guardarOneSignalId(email) {
+        try {
+            // Si estamos en la app Android, usar el bridge nativo
+            if (window.AndroidBridge && window.onesignalId) {
+                await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${authToken}` 
+                    },
+                    body: JSON.stringify({ onesignal_id: window.onesignalId })
+                });
+            }
+        } catch(e) { 
+            console.error('Error guardando OneSignal ID:', e); 
+        }
+    }
+
     function mostrarConfirm(mensaje) {
         return new Promise((resolve) => {
             confirmResolve = resolve;
@@ -902,20 +921,6 @@
             notifyButton: { enable: true, position: 'bottom-right', theme: 'inverse' },
         });
     });
-
-    async function guardarOneSignalId(email) {
-        try {
-            const OneSignal = window.OneSignal;
-            const userId = await OneSignal.User.getPushSubscriptionId();
-            if (userId) {
-                await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                    body: JSON.stringify({ onesignal_id: userId })
-                });
-            }
-        } catch(e) { console.error('Error:', e); }
-    }
 
     async function apiFetch(path, options = {}) {
         const headers = options.headers || {};
