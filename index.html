@@ -786,11 +786,17 @@
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
-    // Función guardarOneSignalId REEMPLAZADA
+    // ========== FUNCIÓN guardarOneSignalId REEMPLAZADA ==========
     async function guardarOneSignalId(email) {
         try {
-            // Si estamos en la app Android, usar el bridge nativo
-            if (window.AndroidBridge && window.onesignalId) {
+            // Esperar hasta que el onesignalId esté disponible
+            let intentos = 0;
+            while (!window.onesignalId && intentos < 10) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                intentos++;
+            }
+            
+            if (window.onesignalId) {
                 await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
                     method: 'POST',
                     headers: { 
@@ -799,6 +805,9 @@
                     },
                     body: JSON.stringify({ onesignal_id: window.onesignalId })
                 });
+                console.log('OneSignal ID guardado:', window.onesignalId);
+            } else {
+                console.error('No se pudo obtener OneSignal ID');
             }
         } catch(e) { 
             console.error('Error guardando OneSignal ID:', e); 
