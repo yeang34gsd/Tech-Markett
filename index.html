@@ -91,7 +91,6 @@
             text-align: center;
         }
 
-        /* Spinner de carga de imagen estilo Messenger */
         .img-upload-wrapper {
             position: relative;
             display: inline-block;
@@ -786,18 +785,31 @@
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
 
-    // ========== FUNCIÓN guardarOneSignalId REEMPLAZADA ==========
+    // ========== FUNCIÓN guardarOneSignalId CON MÁS LOGS ==========
     async function guardarOneSignalId(email) {
         try {
-            // Esperar hasta que el onesignalId esté disponible
+            console.log('=== INICIANDO GUARDADO DE ONESIGNAL ID ===');
+            console.log('Email usuario:', email);
+            console.log('authToken existe?', authToken ? 'SI' : 'NO');
+            
             let intentos = 0;
             while (!window.onesignalId && intentos < 10) {
+                console.log(`Intento ${intentos + 1}/10: Esperando window.onesignalId...`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 intentos++;
             }
             
+            console.log('window.onesignalId después de espera:', window.onesignalId);
+            
             if (window.onesignalId) {
-                await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
+                console.log('Token:', authToken ? 'existe' : 'NULL');
+                console.log('OnesignalId:', window.onesignalId);
+                console.log('OnesignalId tipo:', typeof window.onesignalId);
+                console.log('OnesignalId length:', window.onesignalId.length);
+                
+                console.log('Enviando petición a:', `${WORKER_URL}/guardar-onesignal-id`);
+                
+                const response = await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json', 
@@ -805,12 +817,27 @@
                     },
                     body: JSON.stringify({ onesignal_id: window.onesignalId })
                 });
-                console.log('OneSignal ID guardado:', window.onesignalId);
+                
+                console.log('Respuesta status:', response.status);
+                console.log('Respuesta OK?', response.ok);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Respuesta data:', data);
+                    console.log('✅ OneSignal ID guardado exitosamente');
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Error en respuesta:', response.status, errorText);
+                }
             } else {
-                console.error('No se pudo obtener OneSignal ID');
+                console.log('❌ No se obtuvo onesignalId después de 10 intentos');
+                console.log('window.onesignalId es:', window.onesignalId);
             }
+            
+            console.log('=== FIN GUARDADO DE ONESIGNAL ID ===');
         } catch(e) { 
-            console.error('Error guardando OneSignal ID:', e); 
+            console.error('❌ Error guardando OneSignal ID:', e);
+            console.error('Stack trace:', e.stack);
         }
     }
 
@@ -979,7 +1006,6 @@
         btnUbicar.innerHTML = '<span class="loading-spinner" style="width:16px; height:16px;"></span> Obteniendo ubicación...';
         btnUbicar.disabled = true;
         
-        // Función para procesar la ubicación exitosamente
         const procesarExito = async (position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
@@ -1052,12 +1078,10 @@
             btnUbicar.disabled = false;
         };
         
-        // Función para manejar errores
         const procesarError = (error) => {
             console.error('Error de geolocalización:', error);
             
             if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
-                // Intentar de nuevo con menor precisión
                 mostrarToast("Intentando con menor precisión...", false);
                 
                 navigator.geolocation.getCurrentPosition(
@@ -1085,7 +1109,6 @@
             }
         };
         
-        // Primer intento con alta precisión
         navigator.geolocation.getCurrentPosition(
             procesarExito,
             procesarError,
@@ -1924,7 +1947,6 @@
     
     document.getElementById("cancelPreviewBtn")?.addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
 
-    // Función switchTab modificada para ocultar elementos en mensajes
     function switchTab(tabId) {
         document.getElementById("feedView").style.display = tabId==="feed" ? "block" : "none";
         document.getElementById("favoritosView").style.display = tabId==="favoritos" ? "block" : "none";
@@ -1932,7 +1954,6 @@
         document.getElementById("misCosasView").style.display = tabId==="misCosas" ? "block" : "none";
         document.getElementById("mensajesView").style.display = tabId==="mensajes" ? "block" : "none";
 
-        // Ocultar header, buscador y categorías en mensajes
         const header = document.querySelector('.mobile-header');
         const searchBar = document.querySelector('.search-bar');
         const categoriesScroll = document.querySelector('.categories-scroll');
