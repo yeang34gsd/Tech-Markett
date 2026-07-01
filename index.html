@@ -30,7 +30,7 @@
             --highlight: #f02849;
             --highlight-soft: #fde2e5;
             --modal-overlay: rgba(0,0,0,0.6);
-            --bottom-nav-height: calc(60px + env(safe-area-inset-bottom));
+            --bottom-nav-height: calc(78px + env(safe-area-inset-bottom));
             --radius-sm: 8px;
             --radius-md: 10px;
             --radius-lg: 14px;
@@ -87,7 +87,7 @@
             *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
         }
 
-        .mobile-header { position: sticky; top: 0; background: var(--nav-bg); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); z-index: 100; transition: transform 0.25s var(--ease-soft), box-shadow 0.25s var(--ease-soft); }
+        .mobile-header { position: sticky; top: 0; background: var(--nav-bg); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); padding: calc(11px + env(safe-area-inset-top)) 16px 11px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); z-index: 100; transition: transform 0.25s var(--ease-soft), box-shadow 0.25s var(--ease-soft); }
         .logo-area-mobile { display: flex; align-items: center; gap: 8px; }
         .logo-area-mobile i { font-size: 18px; color: white; background: var(--accent-gradient); padding: 8px; border-radius: 13px; box-shadow: none; }
         .logo-area-mobile h1 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; color: var(--accent); }
@@ -126,7 +126,7 @@
         .settings-menu {
             display: none;
             position: absolute;
-            top: 54px;
+            top: calc(58px + env(safe-area-inset-top));
             right: 16px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -219,6 +219,10 @@
         .pin-category { font-size: 0.64rem; font-weight: 800; text-transform: uppercase; color: var(--accent); letter-spacing: 0.06em; margin-bottom: 6px; }
         .pin-title { font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; margin-bottom: 6px; line-height: 1.3; letter-spacing: -0.01em; }
         .pin-desc { font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .pin-label { font-weight: 700; color: var(--text-muted); text-transform: none; letter-spacing: 0; }
+        .pin-category .pin-label { color: var(--text-muted); }
+        .pin-title .pin-label { font-weight: 700; color: var(--text-secondary); font-size: 0.8rem; }
+        .pin-desc .pin-label { color: var(--text-muted); }
         .ubicacion-user { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-secondary); margin: 8px 0; }
         .acciones-botones { display: flex; gap: 8px; margin: 12px 0 6px; }
         .btn-guardar, .btn-intercambiar { flex: 1; padding: 9px 0; border-radius: var(--radius-sm); font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: transform 0.2s var(--ease-elegant), box-shadow 0.2s var(--ease-elegant), filter 0.2s; border: none; }
@@ -230,7 +234,7 @@
         .btn-reportar, .btn-eliminar { background: transparent; border: none; color: var(--text-muted); font-size: 0.65rem; display: flex; align-items: center; gap: 4px; padding: 5px 0; width: 100%; cursor: pointer; transition: color 0.2s var(--ease-soft); }
         .btn-reportar:hover, .btn-eliminar:hover { color: #ef4444; }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: flex-start; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); z-index: 200; transition: transform 0.4s var(--ease-elegant); }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: flex-start; padding: 8px 8px calc(22px + env(safe-area-inset-bottom)); z-index: 200; transition: transform 0.4s var(--ease-elegant); }
         .bottom-nav.nav-hidden { transform: translateY(100%); }
         .nav-bottom-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; transition: 0.25s var(--ease-elegant); padding: 4px 10px; border-radius: 30px; position: relative; }
         .nav-bottom-item i { font-size: 1.5rem; transition: transform 0.25s var(--ease-elegant); }
@@ -2143,10 +2147,9 @@
         return `<div class="pin-card" data-id="${obj.id}" data-obj='${JSON.stringify(obj)}'>
                     <img class="pin-img" src="${obj.fotoPrincipal}" loading="lazy" onload="this.style.animation='none';this.style.background='none'">
                     <div class="pin-info">
-                        <div class="pin-category">${escapeHtml(obj.categoria)}</div>
-                        <div class="pin-title">${escapeHtml(obj.titulo)}</div>
-                        <div class="pin-desc">${escapeHtml(obj.descripcion.substring(0, 80))}${obj.descripcion.length>80 ? '...' : ''}</div>
-                        <div class="ubicacion-user"><span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(obj.ubicacionTexto)}</span><div><i class="fas fa-user"></i> ${escapeHtml(obj.userNombre)}</div></div>
+                        <div class="pin-category"><span class="pin-label">Categoría:</span> ${escapeHtml(obj.categoria)}</div>
+                        <div class="pin-title"><span class="pin-label">Título:</span> ${escapeHtml(obj.titulo)}</div>
+                        <div class="pin-desc"><span class="pin-label">Descripción:</span> ${escapeHtml(obj.descripcion.substring(0, 80))}${obj.descripcion.length>80 ? '...' : ''}</div>
                         <div class="acciones-botones">
                             <button class="btn-guardar ${esFav ? '' : 'outline'}" data-id="${obj.id}"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
                             ${obj.userId !== currentUser?.email ? `<button class="btn-intercambiar" data-id="${obj.id}" data-usuario="${obj.userId}" data-titulo="${escapeHtml(obj.titulo)}"><i class="fas fa-handshake"></i> Intercambiar</button>` : ''}
