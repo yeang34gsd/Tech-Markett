@@ -70,6 +70,7 @@
         }
         body { font-family: var(--font-body); background: var(--bg-color); color: var(--text-color); padding-bottom: var(--bottom-nav-height); -webkit-font-smoothing: antialiased; }
         body.chat-fullscreen { padding-bottom: 0; }
+        body.chat-fullscreen .mobile-header { display: none; }
 
         ::selection { background: var(--accent-light); color: #fff; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -238,7 +239,11 @@
         .bottom-nav.nav-hidden { transform: translateY(100%); }
         .nav-bottom-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; transition: 0.25s var(--ease-elegant); padding: 4px 10px; border-radius: 30px; position: relative; }
         .nav-bottom-item i { font-size: 1.5rem; transition: transform 0.25s var(--ease-elegant); }
-        .nav-bottom-item:active i { transform: scale(0.85); }
+        .icon-inline { width: 15px; height: 15px; object-fit: contain; vertical-align: -2px; }
+        .icon-inline-lg { width: 20px; height: 20px; object-fit: contain; vertical-align: -4px; }
+        .nav-icon-img { width: 24px; height: 24px; object-fit: contain; transition: transform 0.25s var(--ease-elegant); opacity: 0.65; }
+        .nav-bottom-item.active .nav-icon-img { opacity: 1; }
+        .nav-bottom-item:active i, .nav-bottom-item:active .nav-icon-img { transform: scale(0.85); }
         .nav-avatar-icon { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; transition: border-color 0.25s var(--ease-soft); }
         .nav-bottom-item[data-tab="perfil"].active .nav-avatar-icon { border-color: var(--accent); }
         .nav-fab-item { transform: translateY(-14px); padding: 0; }
@@ -261,6 +266,37 @@
         .perfil-email { font-size: 0.8rem; color: var(--text-secondary); }
         .perfil-seccion { padding: 16px 4px 4px; }
         .perfil-seccion h3 { font-family: var(--font-display); font-weight: 700; padding: 0 12px 12px; font-size: 1rem; color: var(--text-color); }
+
+        .perfil-toggle {
+            display: flex;
+            gap: 10px;
+            padding: 14px 12px 4px;
+            position: sticky;
+            top: 0;
+            background: var(--bg-color);
+            z-index: 5;
+        }
+        .perfil-toggle-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 10px 12px;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            box-shadow: var(--shadow-elegant);
+            transition: background 0.2s var(--ease-soft), color 0.2s var(--ease-soft), border-color 0.2s var(--ease-soft);
+        }
+        .perfil-toggle-btn img { width: 16px; height: 16px; object-fit: contain; }
+        .perfil-toggle-btn i { font-size: 0.9rem; }
+        .perfil-toggle-btn:hover { background: var(--surface-color); }
+        .perfil-toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
         #games-container {
             background: var(--bg-color);
@@ -540,12 +576,8 @@
         .messenger-container {
             display: flex;
             background: var(--card-bg);
-            border-radius: 24px;
             overflow: hidden;
-            margin: 12px;
-            height: calc(100vh - var(--bottom-nav-height) - 24px);
-            min-height: 500px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            height: calc(100vh - var(--bottom-nav-height) - 52px);
             position: relative;
         }
 
@@ -708,28 +740,28 @@
         }
         .mensaje {
             max-width: 75%;
-            font-size: 0.85rem;
-            line-height: 1.4;
+            font-size: 0.9rem;
+            line-height: 1.35;
             word-break: break-word;
             white-space: normal;
-            animation: fadeInUp 0.3s var(--ease-elegant);
+            animation: fadeInUp 0.25s var(--ease-elegant);
         }
         .mensaje.emisor {
             align-self: flex-end;
-            background: var(--accent-gradient);
+            background: var(--accent);
             color: white;
-            border-radius: 18px 18px 4px 18px;
-            padding: 10px 14px;
+            border-radius: 18px;
+            padding: 8px 14px;
             box-shadow: none;
         }
         .mensaje.receptor {
             align-self: flex-start;
-            background: var(--card-bg);
+            background: var(--surface-color);
             color: var(--text-color);
-            border-radius: 18px 18px 18px 4px;
-            padding: 10px 14px;
-            box-shadow: var(--shadow-elegant);
-            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 8px 14px;
+            box-shadow: none;
+            border: none;
         }
         .mensaje.receptor strong {
             color: var(--accent);
@@ -746,43 +778,109 @@
         }
         .mensaje.emisor small { color: rgba(255,255,255,0.85); }
         .mensaje.receptor small { color: var(--text-muted); }
-        .mensaje-imagen { max-width: 150px; border-radius: 12px; margin-top: 8px; cursor: pointer; transition: transform 0.2s var(--ease-elegant); }
+        .mensaje-imagen { max-width: 200px; width: 100%; border-radius: 14px; margin-top: 4px; cursor: pointer; transition: transform 0.2s var(--ease-elegant); display: block; }
         .mensaje-imagen:hover { transform: scale(1.03); }
 
         .chat-input-area {
-            padding: 16px;
+            padding: 10px 12px;
             border-top: 1px solid var(--border-color);
             background: var(--card-bg);
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
         }
+        .chat-icon-btn {
+            background: none;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.2s var(--ease-soft);
+        }
+        .chat-icon-btn:hover { background: var(--accent-soft); }
+        .chat-icon-btn:active { transform: scale(0.9); }
+        .chat-input-pill {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--surface-color);
+            border-radius: var(--radius-pill);
+            padding: 2px 4px 2px 16px;
+            transition: box-shadow 0.25s var(--ease-soft);
+        }
+        .chat-input-pill:focus-within { box-shadow: 0 0 0 3px var(--accent-soft); }
         .chat-input-area input {
             flex: 1;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-pill);
+            padding: 10px 4px;
+            border: none;
             outline: none;
             font-size: 0.9rem;
-            background: var(--surface-color);
+            background: transparent;
             color: var(--text-color);
-            transition: border-color 0.25s var(--ease-soft), box-shadow 0.25s var(--ease-soft);
         }
-        .chat-input-area input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+        .chat-emoji-btn {
+            background: none;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .chat-emoji-btn:hover { background: var(--border-color); }
         .btn-enviar {
-            background: var(--accent-gradient);
+            background: var(--accent);
             color: white;
             border: none;
-            border-radius: var(--radius-pill);
-            padding: 10px 20px;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            font-weight: 700;
-            transition: transform 0.2s var(--ease-elegant), box-shadow 0.2s var(--ease-elegant);
+            font-size: 0.95rem;
+            transition: background 0.2s var(--ease-soft);
             box-shadow: none;
+            flex-shrink: 0;
         }
         .btn-enviar:hover { background: var(--accent-dark); }
-        .btn-enviar:active { transform: scale(0.95); }
+        .btn-enviar:active { transform: scale(0.9); }
         .btn-enviar:disabled { background: #9ac9b0; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .emoji-picker {
+            display: none;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            padding: 10px 12px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            max-height: 160px;
+            overflow-y: auto;
+        }
+        .emoji-picker.show { display: grid; }
+        .emoji-item {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            padding: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s var(--ease-soft);
+        }
+        .emoji-item:hover { background: var(--surface-color); }
         .empty-chat {
             flex: 1;
             display: flex;
@@ -797,10 +895,10 @@
         .empty-chat i { font-size: 48px; opacity: 0.5; }
 
         @media (max-width: 768px) {
-            .messenger-container { height: calc(100vh - var(--bottom-nav-height) - 24px); }
+            .messenger-container { height: calc(100vh - var(--bottom-nav-height) - 52px); }
             .messenger-container.chat-open .conversations-list { transform: translateX(-100%); position: absolute; width: 100%; z-index: 1; height: 100%; }
             .messenger-container.chat-open .chat-active { width: 100%; }
-            .messenger-container.chat-open { height: calc(100vh - 24px); }
+            .messenger-container.chat-open { height: 100vh; }
             .conversations-list { width: 100%; transition: transform 0.3s ease; }
             .chat-active { width: 100%; }
             .chat-back-btn { display: flex; }
@@ -946,19 +1044,21 @@
     <div id="feedView"><div id="feedGrid" class="grid-pinterest">Cargando...</div></div>
     <div id="perfilView" style="display:none;">
         <div class="perfil-header">
-            <button id="perfilBackBtn" class="chat-back-btn" style="display:flex;"><i class="fas fa-arrow-left"></i></button>
+            <button id="perfilBackBtn" class="chat-back-btn" style="display:flex;"><img class="icon-inline-lg" src="https://cdn-icons-png.flaticon.com/128/3916/3916912.png" alt=""></button>
             <img id="perfilAvatar" class="perfil-avatar" src="" alt="perfil">
             <div>
                 <div class="perfil-nombre" id="perfilNombre">👤</div>
                 <div class="perfil-email" id="perfilEmail">📧</div>
             </div>
         </div>
-        <div class="perfil-seccion">
-            <h3>📦 Mis publicaciones</h3>
+        <div class="perfil-toggle">
+            <button class="perfil-toggle-btn active" data-perfil-tab="publicaciones"><i class="fas fa-box"></i> Mis publicaciones</button>
+            <button class="perfil-toggle-btn" data-perfil-tab="guardados"><img src="https://cdn-icons-png.flaticon.com/128/3916/3916593.png" alt=""> Guardados</button>
+        </div>
+        <div class="perfil-seccion" data-perfil-panel="publicaciones">
             <div id="misCosasGrid" class="grid-pinterest"></div>
         </div>
-        <div class="perfil-seccion">
-            <h3>🔖 Guardados</h3>
+        <div class="perfil-seccion" data-perfil-panel="guardados" style="display:none;">
             <div id="favoritosGrid" class="grid-pinterest"></div>
         </div>
     </div>
@@ -982,15 +1082,15 @@
                     <option>Electrónica</option><option>Ropa</option><option>Libros</option><option>Mascotas</option><option>Hogar</option><option>Deportes</option>
                 </select>
                 <textarea id="descripcionMobile" rows="3" placeholder="Descripción, estado, qué buscas..."></textarea>
-                <div class="upload-zone" id="uploadMainMobile">📸 Foto principal (clic)</div>
+                <div class="upload-zone" id="uploadMainMobile"><img class="icon-inline-lg" src="https://cdn-icons-png.flaticon.com/128/3917/3917317.png" alt=""> Foto principal (clic)</div>
                 <input type="file" id="fotoMainInput" accept="image/*" style="display:none;">
                 <div id="previewMainMobile" style="margin:8px 0;"></div>
-                <div class="upload-zone" id="uploadExtraMobile">📸 Fotos adicionales (máx 4)</div>
+                <div class="upload-zone" id="uploadExtraMobile"><img class="icon-inline-lg" src="https://cdn-icons-png.flaticon.com/128/13727/13727342.png" alt=""> Fotos adicionales (máx 4)</div>
                 <input type="file" id="fotosExtraInput" accept="image/*" multiple style="display:none;">
                 <div id="previewExtraMobile" style="display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;"></div>
                 <div style="margin:16px 0;">
-                    <label>📍 Ubicación</label>
-                    <button type="button" id="ubicarBtnMobile" class="btn-modern" style="background:var(--accent); margin-bottom:12px;"><i class="fas fa-location-dot"></i> Usar mi ubicación</button>
+                    <label><img class="icon-inline" src="https://cdn-icons-png.flaticon.com/128/3916/3916880.png" alt=""> Ubicación</label>
+                    <button type="button" id="ubicarBtnMobile" class="btn-modern" style="background:var(--accent); margin-bottom:12px;"><img class="icon-inline" src="https://cdn-icons-png.flaticon.com/128/3916/3916880.png" alt=""> Usar mi ubicación</button>
                     <input type="text" id="direccionMobile" placeholder="Dirección o referencia">
                     <div id="mapaMobile" style="height: 200px; border-radius: 16px; margin-top: 10px; display: none;"></div>
                     <input type="hidden" id="latMobile" value="">
@@ -1022,10 +1122,10 @@
 
     <div class="bottom-nav" id="bottomNav">
         <button class="nav-bottom-item" data-tab="perfil"><img id="navAvatarImg" class="nav-avatar-icon" src="" alt="perfil"><span>(tú)</span></button>
-        <button class="nav-bottom-item active" data-tab="feed"><i class="fas fa-home"></i><span>Inicio</span></button>
+        <button class="nav-bottom-item active" data-tab="feed"><img class="nav-icon-img" src="https://cdn-icons-png.flaticon.com/128/3917/3917033.png" alt="inicio"><span>Inicio</span></button>
         <button class="nav-bottom-item nav-fab-item" data-tab="crear"><span class="nav-fab"><i class="fas fa-plus"></i></span></button>
-        <button class="nav-bottom-item" data-tab="juegos"><span style="font-size:1.5rem; line-height:1;">🎮</span><span>Juegos</span></button>
-        <button class="nav-bottom-item" data-tab="mensajes" id="mensajesNavBtn"><i class="fas fa-comment-dots"></i><span>Mensajes</span><span id="mensajesBadge" class="badge-mensajes" style="display:none;">0</span></button>
+        <button class="nav-bottom-item" data-tab="juegos"><img class="nav-icon-img" src="https://cdn-icons-png.flaticon.com/128/17589/17589142.png" alt="juegos"><span>Juegos</span></button>
+        <button class="nav-bottom-item" data-tab="mensajes" id="mensajesNavBtn"><img class="nav-icon-img" src="https://cdn-icons-png.flaticon.com/128/3917/3917270.png" alt="mensajes"><span>Mensajes</span><span id="mensajesBadge" class="badge-mensajes" style="display:none;">0</span></button>
     </div>
 </div>
 
@@ -1038,7 +1138,7 @@
             <div><i class="fas fa-plus-circle"></i> Publica objetos que ya no uses</div>
             <div><i class="fas fa-handshake"></i> Intercambia con otros usuarios</div>
             <div><i class="fas fa-comment-dots"></i> Chatea y acuerda el trueque</div>
-            <div><i class="fas fa-map-marker-alt"></i> Encuentra objetos cerca de ti</div>
+            <div><img class="icon-inline" src="https://cdn-icons-png.flaticon.com/128/3916/3916880.png" alt=""> Encuentra objetos cerca de ti</div>
         </div>
         <p><strong>¿Cómo funciona?</strong><br>Explora, guarda tus favoritos, contacta al dueño y acuerda el intercambio.</p>
         <button id="closeWelcomeBtn" class="welcome-btn">Entendido, continuar</button>
@@ -1066,7 +1166,7 @@
         <div class="modal-titulo" id="modalTitulo"></div>
         <div class="modal-categoria" id="modalCategoria"></div>
         <div class="modal-desc" id="modalDesc"></div>
-        <div class="modal-ubicacion"><i class="fas fa-map-marker-alt"></i> <span id="modalUbicacion"></span></div>
+        <div class="modal-ubicacion"><img class="icon-inline" src="https://cdn-icons-png.flaticon.com/128/3916/3916880.png" alt=""> <span id="modalUbicacion"></span></div>
         <div class="modal-usuario"><i class="fas fa-user"></i> <span id="modalUsuario"></span></div>
         <div class="modal-acciones" id="modalAcciones"></div>
     </div>
@@ -1556,20 +1656,22 @@
     }
     
     // ========== CHAT FUNCTIONS ==========
-    async function enviarMensajeConReintento(objetoId, receptor, mensaje, intentos = 3) {
+    async function enviarMensajeConReintento(objetoId, receptor, mensaje, archivoUrl = null, intentos = 3) {
         for (let i = 0; i < intentos; i++) {
             try {
+                const body = {
+                    id_objeto: objetoId,
+                    receptor: receptor,
+                    mensaje: mensaje
+                };
+                if (archivoUrl) body.archivo_url = archivoUrl;
                 const response = await fetch(`${WORKER_URL}/mensaje`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`
                     },
-                    body: JSON.stringify({
-                        id_objeto: objetoId,
-                        receptor: receptor,
-                        mensaje: mensaje
-                    })
+                    body: JSON.stringify(body)
                 });
                 
                 if (response.ok) {
@@ -1597,7 +1699,7 @@
         enviandoMensaje = true;
         
         try {
-            const resultado = await enviarMensajeConReintento(pendiente.objetoId, pendiente.receptor, pendiente.mensaje);
+            const resultado = await enviarMensajeConReintento(pendiente.objetoId, pendiente.receptor, pendiente.mensaje, pendiente.archivoUrl || null);
             
             if (resultado.success) {
                 mensajesPendientes.shift();
@@ -1657,6 +1759,46 @@
         
         document.querySelectorAll('.mensaje[data-temporal="true"]').forEach(el => el.remove());
         
+        return true;
+    }
+
+    async function enviarImagenChat(file) {
+        if (!chatActual || !file) {
+            mostrarToast('No hay chat activo', true);
+            return false;
+        }
+
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        mensajesPendientes.push({
+            objetoId: chatActual.id_objeto,
+            receptor: chatActual.otroUsuario,
+            mensaje: '',
+            archivoUrl: dataUrl,
+            timestamp: Date.now()
+        });
+
+        const container = document.getElementById('chatMessagesArea');
+        if (container) {
+            const mensajeTemp = `
+                <div class="mensaje emisor mensaje-enviando" data-temporal="true">
+                    <img src="${dataUrl}" class="mensaje-imagen">
+                    <small>Enviando... <span class="loading-spinner" style="width:12px; height:12px;"></span></small>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', mensajeTemp);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        await procesarMensajesPendientes();
+
+        document.querySelectorAll('.mensaje[data-temporal="true"]').forEach(el => el.remove());
+
         return true;
     }
 
@@ -1795,7 +1937,7 @@
         chatContainer.innerHTML = `
             <div class="chat-active">
                 <div class="chat-active-header">
-                    <button class="chat-back-btn" onclick="cerrarChatCompletamente()"><i class="fas fa-arrow-left"></i></button>
+                    <button class="chat-back-btn" onclick="cerrarChatCompletamente()"><img class="icon-inline-lg" src="https://cdn-icons-png.flaticon.com/128/3916/3916912.png" alt=""></button>
                     <div class="chat-active-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
                     <div class="chat-active-info">
                         <div class="chat-active-name">${escapeHtml(otroNombre)}</div>
@@ -1806,9 +1948,17 @@
                 <div id="chatMessagesArea" class="chat-messages-area">
                     <div style="text-align:center; padding:20px;">Cargando mensajes...</div>
                 </div>
+                <div class="emoji-picker" id="emojiPicker"></div>
                 <div class="chat-input-area">
-                    <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje..." autocomplete="off">
-                    <button class="btn-enviar" id="sendMsgMobileBtn">Enviar</button>
+                    <input type="file" id="chatGalleryInput" accept="image/*" style="display:none;">
+                    <input type="file" id="chatCameraInput" accept="image/*" capture="environment" style="display:none;">
+                    <button type="button" class="chat-icon-btn" id="chatGalleryBtn" title="Enviar foto de galería"><i class="fas fa-image"></i></button>
+                    <button type="button" class="chat-icon-btn" id="chatCameraBtn" title="Tomar foto"><i class="fas fa-camera"></i></button>
+                    <div class="chat-input-pill">
+                        <input type="text" id="msgInputMobile" placeholder="Escribe un mensaje..." autocomplete="off">
+                        <button type="button" class="chat-emoji-btn" id="chatEmojiBtn" title="Emoji"><i class="fas fa-face-smile"></i></button>
+                    </div>
+                    <button class="btn-enviar" id="sendMsgMobileBtn"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         `;
@@ -1836,6 +1986,43 @@
                 }
             };
             setTimeout(() => msgInput.focus(), 100);
+        }
+
+        const galleryBtn = document.getElementById('chatGalleryBtn');
+        const cameraBtn = document.getElementById('chatCameraBtn');
+        const galleryInput = document.getElementById('chatGalleryInput');
+        const cameraInput = document.getElementById('chatCameraInput');
+        const emojiBtn = document.getElementById('chatEmojiBtn');
+        const emojiPicker = document.getElementById('emojiPicker');
+
+        if (galleryBtn && galleryInput) {
+            galleryBtn.onclick = () => galleryInput.click();
+            galleryInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) enviarImagenChat(file);
+                galleryInput.value = '';
+            };
+        }
+        if (cameraBtn && cameraInput) {
+            cameraBtn.onclick = () => cameraInput.click();
+            cameraInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) enviarImagenChat(file);
+                cameraInput.value = '';
+            };
+        }
+        if (emojiBtn && emojiPicker) {
+            const emojis = ['😀','😂','😍','😊','😉','😘','😢','😮','😡','👍','👎','🙏','👏','🎉','❤️','🔥','😅','😎','🤔','😴','🙌','🤝','✅','💬'];
+            emojiPicker.innerHTML = emojis.map(em => `<button type="button" class="emoji-item">${em}</button>`).join('');
+            emojiPicker.querySelectorAll('.emoji-item').forEach(btn => {
+                btn.onclick = () => {
+                    msgInput.value += btn.textContent;
+                    msgInput.focus();
+                };
+            });
+            emojiBtn.onclick = () => {
+                emojiPicker.classList.toggle('show');
+            };
         }
         
         const cacheKey = `${chatActual.id_objeto}_${chatActual.otroUsuario}`;
@@ -2151,7 +2338,7 @@
                         <div class="pin-title"><span class="pin-label">Título:</span> ${escapeHtml(obj.titulo)}</div>
                         <div class="pin-desc"><span class="pin-label">Descripción:</span> ${escapeHtml(obj.descripcion.substring(0, 80))}${obj.descripcion.length>80 ? '...' : ''}</div>
                         <div class="acciones-botones">
-                            <button class="btn-guardar ${esFav ? '' : 'outline'}" data-id="${obj.id}"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
+                            <button class="btn-guardar ${esFav ? '' : 'outline'}" data-id="${obj.id}"><img class="icon-inline" src="https://cdn-icons-png.flaticon.com/128/3916/3916593.png" alt=""> ${esFav ? 'Guardado' : 'Guardar'}</button>
                             ${obj.userId !== currentUser?.email ? `<button class="btn-intercambiar" data-id="${obj.id}" data-usuario="${obj.userId}" data-titulo="${escapeHtml(obj.titulo)}"><i class="fas fa-handshake"></i> Intercambiar</button>` : ''}
                         </div>
                         ${obj.userId !== currentUser?.email ? `<button class="btn-reportar" data-id="${obj.id}"><i class="fas fa-flag"></i> Reportar</button>` : `<button class="btn-eliminar" data-id="${obj.id}"><i class="fas fa-trash"></i> Eliminar</button>`}
@@ -2225,7 +2412,7 @@
         const accionesDiv = document.getElementById("modalAcciones");
         const esFav = favoritosIds.has(obj.id);
         accionesDiv.innerHTML = `
-            <button id="modalGuardarBtn" class="btn-modal btn-modal-secondary"><i class="fas fa-heart"></i> ${esFav ? 'Guardado' : 'Guardar'}</button>
+            <button id="modalGuardarBtn" class="btn-modal btn-modal-secondary"><img class="icon-inline" src="https://cdn-icons-png.flaticon.com/128/3916/3916593.png" alt=""> ${esFav ? 'Guardado' : 'Guardar'}</button>
             ${obj.userId !== currentUser?.email ? `<button id="modalIntercambiarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-handshake"></i> Intercambiar</button>` : `<button id="modalEliminarBtn" class="btn-modal btn-modal-primary"><i class="fas fa-trash"></i> Eliminar</button>`}
         `;
         document.getElementById("modalGuardarBtn")?.addEventListener("click", async () => { if(favoritosIds.has(obj.id)) await quitarFavorito(obj.id); else await agregarFavorito(obj.id); document.getElementById("detailModal").style.display = "none"; renderFeed(); renderFavoritos(); });
@@ -2328,7 +2515,7 @@
                 <strong>${escapeHtml(titulo)}</strong><br>
                 ${escapeHtml(descripcion)}<br>
                 <i class="fas fa-tag"></i> ${escapeHtml(categoria)}<br>
-                <i class="fas fa-map-marker-alt"></i> ${escapeHtml(direccion)}
+                <img class="icon-inline" src="https://cdn-icons-png.flaticon.com/128/3916/3916880.png" alt=""> ${escapeHtml(direccion)}
                 ${ubicacionSeleccionada.lat ? `<br><small>📍 Coordenadas: ${ubicacionSeleccionada.lat.toFixed(4)}, ${ubicacionSeleccionada.lng.toFixed(4)}</small>` : ''}
             `;
             document.getElementById("previewModal").style.display = "flex";
@@ -2406,6 +2593,17 @@
         renderMisCosas();
         renderFavoritos();
     }
+
+    document.querySelectorAll('.perfil-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.perfilTab;
+            document.querySelectorAll('.perfil-toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('[data-perfil-panel]').forEach(panel => {
+                panel.style.display = panel.dataset.perfilPanel === tab ? 'block' : 'none';
+            });
+        });
+    });
 
     function cerrarPerfil() {
         document.querySelector('.nav-bottom-item[data-tab="feed"]').click();
