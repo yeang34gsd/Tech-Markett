@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <meta name="color-scheme" content="light dark">
     <title>Intercambia - Trueque de objetos | Marketplace</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -31,8 +30,8 @@
             --highlight: #f02849;
             --highlight-soft: #fde2e5;
             --modal-overlay: rgba(0,0,0,0.6);
-            --top-header-height: calc(60px + env(safe-area-inset-top));
-            --bottom-nav-height: calc(92px + env(safe-area-inset-bottom));
+            --bottom-nav-height: calc(58px + max(14px, env(safe-area-inset-bottom)));
+            --top-nav-height: calc(52px + max(10px, env(safe-area-inset-top)));
             --radius-sm: 8px;
             --radius-md: 10px;
             --radius-lg: 14px;
@@ -90,25 +89,11 @@
             *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
         }
 
-        .mobile-header {
-            position: sticky;
-            top: 0;
-            background: var(--nav-bg);
-            backdrop-filter: blur(16px) saturate(1.4);
-            -webkit-backdrop-filter: blur(16px) saturate(1.4);
-            padding: calc(16px + env(safe-area-inset-top)) 16px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-soft);
-            z-index: 100;
-            min-height: var(--top-header-height);
-            transition: transform 0.25s var(--ease-soft), box-shadow 0.25s var(--ease-soft);
-        }
+        .mobile-header { position: sticky; top: 0; background: var(--nav-bg); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); padding: max(10px, env(safe-area-inset-top)) 16px 10px; min-height: var(--top-nav-height); box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); z-index: 100; transition: transform 0.25s var(--ease-soft), box-shadow 0.25s var(--ease-soft); }
         .logo-area-mobile { display: flex; align-items: center; gap: 8px; }
-        .logo-area-mobile i { font-size: 18px; color: white; background: var(--accent-gradient); padding: 8px; border-radius: 13px; box-shadow: none; }
-        .logo-area-mobile h1 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; color: var(--accent); }
-
+        .logo-area-mobile i { font-size: 16px; color: white; background: var(--accent-gradient); padding: 7px; border-radius: 12px; box-shadow: none; }
+        .logo-area-mobile h1 { font-family: var(--font-display); font-size: 1.08rem; font-weight: 800; letter-spacing: -0.01em; color: var(--accent); }
+        
         .header-right {
             display: flex;
             align-items: center;
@@ -134,7 +119,7 @@
         .support-btn:active {
             transform: scale(0.95);
         }
-
+        
         .profile-top { cursor: pointer; display: flex; align-items: center; gap: 8px; background: var(--surface-color); padding: 4px 12px 4px 6px; border-radius: 40px; transition: background 0.25s var(--ease-soft), transform 0.2s var(--ease-elegant); }
         .profile-top:hover { background: var(--border-color); }
         .profile-top img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--card-bg); box-shadow: 0 2px 6px var(--shadow-color); }
@@ -143,7 +128,7 @@
         .settings-menu {
             display: none;
             position: absolute;
-            top: calc(58px + env(safe-area-inset-top));
+            top: var(--top-nav-height);
             right: 16px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -186,7 +171,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: calc(16px + env(safe-area-inset-top)) 14px 10px;
+            padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
             position: sticky;
             top: 0;
             background: var(--bg-color);
@@ -230,7 +215,7 @@
         .pin-card:active { transform: scale(0.98) translateY(-2px); }
 
         .pin-img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; transition: transform 0.6s var(--ease-elegant); background: linear-gradient(100deg, var(--surface-color) 8%, var(--border-soft) 18%, var(--surface-color) 33%); background-size: 600px 100%; animation: shimmer 1.6s infinite linear; }
-
+        
 
         .pin-info { padding: 13px 14px 12px; }
         .pin-category { font-size: 0.64rem; font-weight: 800; text-transform: uppercase; color: var(--accent); letter-spacing: 0.06em; margin-bottom: 6px; }
@@ -251,25 +236,10 @@
         .btn-reportar, .btn-eliminar { background: transparent; border: none; color: var(--text-muted); font-size: 0.65rem; display: flex; align-items: center; gap: 4px; padding: 5px 0; width: 100%; cursor: pointer; transition: color 0.2s var(--ease-soft); }
         .btn-reportar:hover, .btn-eliminar:hover { color: #ef4444; }
 
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: var(--nav-bg);
-            backdrop-filter: blur(18px) saturate(1.4);
-            -webkit-backdrop-filter: blur(18px) saturate(1.4);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 6px;
-            padding: 10px 8px calc(28px + env(safe-area-inset-bottom));
-            z-index: 200;
-            transition: transform 0.4s var(--ease-elegant);
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 10px max(10px, env(safe-area-inset-bottom)); z-index: 200; transition: transform 0.4s var(--ease-elegant); box-sizing: border-box; min-height: var(--bottom-nav-height); }
         .bottom-nav.nav-hidden { transform: translateY(100%); }
-        .nav-bottom-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; transition: 0.25s var(--ease-elegant); padding: 4px 12px; border-radius: 30px; position: relative; }
+        .nav-center-group { display: flex; justify-content: center; align-items: flex-start; gap: 6px; flex: 1; }
+        .nav-bottom-item { display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; font-size: 0.68rem; color: var(--text-muted); cursor: pointer; transition: 0.25s var(--ease-elegant); padding: 4px 10px; border-radius: 30px; position: relative; }
         .nav-bottom-item i { font-size: 1.5rem; transition: transform 0.25s var(--ease-elegant); }
         .icon-inline { width: 15px; height: 15px; object-fit: contain; vertical-align: -2px; }
         .icon-inline-lg { width: 20px; height: 20px; object-fit: contain; vertical-align: -4px; }
@@ -278,7 +248,6 @@
         .nav-bottom-item:active i, .nav-bottom-item:active .nav-icon-img { transform: scale(0.85); }
         .nav-avatar-icon { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 2px solid transparent; transition: border-color 0.25s var(--ease-soft); }
         .nav-bottom-item[data-tab="perfil"].active .nav-avatar-icon { border-color: var(--accent); }
-        .nav-item-perfil { position: absolute; left: 10px; top: 8px; }
         .nav-fab-item { transform: translateY(-14px); padding: 0; }
         .nav-fab { width: 50px; height: 50px; border-radius: 50%; background: var(--accent-gradient); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: var(--shadow-float); transition: transform 0.3s var(--ease-elegant), box-shadow 0.3s var(--ease-elegant); animation: floatSoft 3s ease-in-out infinite; }
         .nav-fab-item:hover .nav-fab { background: var(--accent-dark); }
@@ -350,7 +319,7 @@
         .game-container:hover { box-shadow: var(--shadow-float); }
         .game-container:active { transform: scale(0.97); }
         .game-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease-elegant); }
-
+        
         .game-title {
             position: absolute;
             bottom: 0; left: 0; right: 0;
@@ -615,8 +584,8 @@
         }
 
         .conversations-list {
-            width: 100%;
-            background: var(--bg-color);
+            width: 35%;
+            background: var(--surface-color);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -625,56 +594,33 @@
         }
 
         .conversations-header {
-            padding: 14px 16px 10px;
+            padding: 14px 16px 12px;
             border-bottom: 1px solid var(--border-color);
             background: var(--card-bg);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
         }
-        .conversations-header h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; color: var(--text-color); }
-        .wa-search-wrap {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--surface-color);
-            border-radius: var(--radius-pill);
-            padding: 9px 14px;
-        }
-        .wa-search-wrap i { color: var(--text-muted); font-size: 0.85rem; }
-        .wa-search-wrap input {
-            border: none;
-            background: transparent;
-            outline: none;
-            width: 100%;
-            font-size: 0.85rem;
-            color: var(--text-color);
-        }
-        .wa-search-wrap input::placeholder { color: var(--text-muted); }
+        .conversations-header h3 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: var(--text-color); letter-spacing: -0.01em; }
 
         .conversations-scroll {
             flex: 1;
             overflow-y: auto;
             padding: 4px 0;
-            background: var(--card-bg);
         }
 
         .conversation-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 11px 16px;
+            padding: 10px 16px;
             cursor: pointer;
-            transition: 0.2s var(--ease-elegant);
+            transition: 0.25s var(--ease-elegant);
             border-radius: 0;
             margin: 0;
-            border-bottom: 1px solid var(--border-soft);
         }
         .conversation-item:hover { background: var(--surface-color); }
         .conversation-item.active { background: var(--accent-soft); }
         .conversation-avatar {
-            width: 52px;
-            height: 52px;
+            width: 54px;
+            height: 54px;
             background: var(--accent-gradient);
             border-radius: 50%;
             display: flex;
@@ -685,23 +631,26 @@
             font-size: 1.2rem;
             flex-shrink: 0;
             box-shadow: none;
+            position: relative;
         }
         .conversation-info { flex: 1; min-width: 0; }
         .conversation-name {
             font-weight: 600;
             color: var(--text-color);
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             margin-bottom: 3px;
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
         }
-        .conversation-last-message {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            white-space: nowrap;
-            overflow: hidden;
+        .conversation-item.tiene-no-leidos .conversation-name,
+        .conversation-item.tiene-no-leidos .mensaje-preview { font-weight: 700; color: var(--text-color); }
+        .conversation-last-message { 
+            font-size: 0.82rem; 
+            color: var(--text-muted); 
+            white-space: nowrap; 
+            overflow: hidden; 
             text-overflow: ellipsis;
             display: flex;
             align-items: center;
@@ -713,22 +662,24 @@
             color: var(--text-secondary);
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
         }
         .conversation-last-message .mensaje-preview.no-leido {
             color: var(--text-color);
             font-weight: 600;
         }
-        .conversation-time { font-size: 0.72rem; color: var(--text-muted); align-self: flex-start; margin-top: 2px; }
+        .conversation-time { font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
         .badge-no-leidos {
-            background: #25d366;
+            background: var(--accent);
             color: white;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 700;
-            padding: 2px 6px;
+            padding: 1px 6px;
             border-radius: 20px;
-            min-width: 20px;
-            text-align: center;
+            min-width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             animation: pulse 1s infinite;
         }
         @keyframes pulse {
@@ -791,84 +742,92 @@
         .chat-messages-area {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
-            background-color: var(--bg-color);
-            background-image:
-                radial-gradient(rgba(24,119,242,0.10) 1.6px, transparent 1.6px),
-                radial-gradient(rgba(24,119,242,0.06) 1.6px, transparent 1.6px);
-            background-size: 28px 28px, 28px 28px;
-            background-position: 0 0, 14px 14px;
+            padding: 14px 12px;
+            background: var(--card-bg);
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 3px;
         }
-        body.dark-mode .chat-messages-area {
-            background-image:
-                radial-gradient(rgba(45,136,255,0.14) 1.6px, transparent 1.6px),
-                radial-gradient(rgba(45,136,255,0.08) 1.6px, transparent 1.6px);
+        .mensaje-fila {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            max-width: 100%;
+        }
+        .mensaje-fila.emisor { justify-content: flex-end; }
+        .mensaje-fila.receptor { justify-content: flex-start; }
+        .mensaje-avatar-mini {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
         .mensaje {
-            max-width: 75%;
+            max-width: 72%;
             font-size: 0.92rem;
-            line-height: 1.4;
+            line-height: 1.35;
             word-break: break-word;
             white-space: normal;
-            animation: fadeInUp 0.25s var(--ease-elegant);
+            animation: fadeInUp 0.2s var(--ease-elegant);
         }
         .mensaje.emisor {
-            align-self: flex-end;
-            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-            color: white;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: #ffffff;
             border-radius: 18px 18px 4px 18px;
             padding: 9px 14px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+            box-shadow: none;
         }
         .mensaje.receptor {
-            align-self: flex-start;
-            background: var(--card-bg);
+            background: var(--surface-color);
             color: var(--text-color);
             border-radius: 18px 18px 18px 4px;
             padding: 9px 14px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.10);
-            border: 1px solid var(--border-soft);
+            box-shadow: none;
+            border: none;
         }
         .mensaje.receptor strong {
             color: var(--accent);
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .mensaje small {
             display: block;
-            font-size: 0.62rem;
-            opacity: 0.75;
-            margin-top: 4px;
-            text-align: right;
+            font-size: 0.6rem;
+            opacity: 0.7;
+            margin-top: 3px;
         }
-        .mensaje.emisor small { color: rgba(255,255,255,0.9); }
+        .mensaje.emisor small { color: rgba(255,255,255,0.85); }
         .mensaje.receptor small { color: var(--text-muted); }
         .mensaje-imagen { max-width: 200px; width: 100%; border-radius: 14px; margin-top: 4px; cursor: pointer; transition: transform 0.2s var(--ease-elegant); display: block; }
         .mensaje-imagen:hover { transform: scale(1.03); }
 
         .chat-input-area {
-            padding: 10px 12px;
+            padding: 8px 10px;
             border-top: 1px solid var(--border-color);
             background: var(--card-bg);
             display: flex;
-            gap: 6px;
+            gap: 4px;
             align-items: center;
         }
         .chat-icon-btn {
             background: none;
             border: none;
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             color: var(--accent);
             cursor: pointer;
             flex-shrink: 0;
@@ -881,23 +840,25 @@
             display: flex;
             align-items: center;
             background: var(--surface-color);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-pill);
             padding: 2px 4px 2px 16px;
-            transition: box-shadow 0.25s var(--ease-soft);
+            transition: box-shadow 0.25s var(--ease-soft), border-color 0.25s var(--ease-soft);
         }
-        .chat-input-pill:focus-within { box-shadow: 0 0 0 3px var(--accent-soft); }
-        .chat-input-area input {
+        .chat-input-pill:focus-within { box-shadow: 0 0 0 3px var(--accent-soft); border-color: var(--accent); }
+        .chat-input-area input[type="text"] {
             flex: 1;
+            min-width: 0;
             padding: 10px 4px;
             border: none;
             outline: none;
-            font-size: 0.9rem;
-            background-color: var(--surface-color);
+            font-size: 0.95rem;
+            background: transparent;
             color: var(--text-color) !important;
             -webkit-text-fill-color: var(--text-color);
             caret-color: var(--accent);
         }
-        .chat-input-area input::placeholder { color: var(--text-muted); opacity: 1; }
+        .chat-input-area input[type="text"]::placeholder { color: var(--text-muted); opacity: 1; }
         .chat-emoji-btn {
             background: none;
             border: none;
@@ -982,7 +943,7 @@
         .google-btn { background: #1f1f1f; color: white; border: none; padding: 14px 28px; border-radius: var(--radius-pill); font-size: 1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; margin-top: 20px; transition: transform 0.2s var(--ease-elegant), box-shadow 0.2s var(--ease-elegant); box-shadow: var(--shadow-elegant); }
         .google-btn:hover { background: #2a2a2a; }
         .google-btn:active { transform: scale(0.97); }
-
+        
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -993,7 +954,7 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
+        
         .mensaje-enviando {
             opacity: 0.6;
         }
@@ -1021,7 +982,7 @@
             70% { opacity: 1; }
             100% { opacity: 0; visibility: hidden; }
         }
-
+        
         .nuevo-mensaje-indicador {
             animation: highlight 0.6s var(--ease-soft);
         }
@@ -1029,7 +990,7 @@
             0% { background-color: var(--accent-soft); }
             100% { background-color: transparent; }
         }
-
+        
         #mapaMobile {
             height: 200px;
             border-radius: var(--radius-md);
@@ -1179,10 +1140,6 @@
             <div class="conversations-list">
                 <div class="conversations-header">
                     <h3>Chats</h3>
-                    <div class="wa-search-wrap">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="chatSearchInput" placeholder="Buscar conversación...">
-                    </div>
                 </div>
                 <div class="conversations-scroll" id="conversationsList">
                     <div style="text-align:center; padding:20px;">Cargando conversaciones...</div>
@@ -1198,11 +1155,13 @@
     </div>
 
     <div class="bottom-nav" id="bottomNav">
-        <button class="nav-bottom-item nav-item-perfil" data-tab="perfil"><img id="navAvatarImg" class="nav-avatar-icon" src="" alt="perfil"><span>Tú</span></button>
-        <button class="nav-bottom-item active" data-tab="feed"><img class="nav-icon-img" src="https://cdn-icons-png.flaticon.com/128/3917/3917033.png" alt="inicio"><span>Inicio</span></button>
-        <button class="nav-bottom-item nav-fab-item" data-tab="crear"><span class="nav-fab"><i class="fas fa-plus"></i></span></button>
-        <button class="nav-bottom-item" data-tab="juegos"><img class="nav-icon-img" src="https://cdn-icons-png.flaticon.com/128/17589/17589142.png" alt="juegos"><span>Juegos</span></button>
-        <button class="nav-bottom-item" data-tab="mensajes" id="mensajesNavBtn"><img class="nav-icon-img" src="https://cdn-icons-png.flaticon.com/128/3917/3917270.png" alt="mensajes"><span>Mensajes</span><span id="mensajesBadge" class="badge-mensajes" style="display:none;">0</span></button>
+        <button class="nav-bottom-item" data-tab="perfil"><img id="navAvatarImg" class="nav-avatar-icon" src="" alt="perfil"><span>Tú</span></button>
+        <div class="nav-center-group">
+            <button class="nav-bottom-item active" data-tab="feed"><img class="nav-icon-img" src="https://cdn-icons-png.flaticon.com/128/3917/3917033.png" alt="inicio"><span>Inicio</span></button>
+            <button class="nav-bottom-item nav-fab-item" data-tab="crear"><span class="nav-fab"><i class="fas fa-plus"></i></span></button>
+            <button class="nav-bottom-item" data-tab="juegos"><img class="nav-icon-img" src="https://cdn-icons-png.flaticon.com/128/17589/17589142.png" alt="juegos"><span>Juegos</span></button>
+            <button class="nav-bottom-item" data-tab="mensajes" id="mensajesNavBtn"><img class="nav-icon-img" src="https://cdn-icons-png.flaticon.com/128/3917/3917270.png" alt="mensajes"><span>Mensajes</span><span id="mensajesBadge" class="badge-mensajes" style="display:none;">0</span></button>
+        </div>
     </div>
 </div>
 
@@ -1254,7 +1213,7 @@
 
 <script>
     const WORKER_URL = "https://subir-fotos-worker.yvellaurore02.workers.dev";
-
+    
     let currentUser = null;
     let authToken = null;
     let objetos = [];
@@ -1262,13 +1221,13 @@
     let fotoPrincipalData = null;
     let fotosExtraSeleccionadas = [];
     let mapaTemp = null;
-
+    
     let ubicacionSeleccionada = {
         lat: null,
         lng: null,
         direccion: ''
     };
-
+    
     let chatPollingInterval = null;
     let conversacionesPollingInterval = null;
     let chatActual = null;
@@ -1277,7 +1236,7 @@
     let mensajesPendientes = [];
     let ultimasConversaciones = [];
     let ultimosMensajesCache = new Map();
-
+    
     let confirmResolve = null;
 
     const categorias = ["Electrónica", "Ropa", "Libros", "Mascotas", "Hogar", "Deportes"];
@@ -1382,29 +1341,56 @@
     // ========== FUNCIÓN guardarOneSignalId CON MÁS LOGS ==========
     async function guardarOneSignalId(email) {
         try {
+            console.log('=== INICIANDO GUARDADO DE ONESIGNAL ID ===');
+            console.log('Email usuario:', email);
+            console.log('authToken existe?', authToken ? 'SI' : 'NO');
+            
             let intentos = 0;
             while (!window.onesignalId && intentos < 10) {
+                console.log(`Intento ${intentos + 1}/10: Esperando window.onesignalId...`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 intentos++;
             }
-
+            
+            console.log('window.onesignalId después de espera:', window.onesignalId);
+            
             if (window.onesignalId) {
+                console.log('Token:', authToken ? 'existe' : 'NULL');
+                console.log('OnesignalId:', window.onesignalId);
+                console.log('OnesignalId tipo:', typeof window.onesignalId);
+                console.log('OnesignalId length:', window.onesignalId.length);
+                
+                console.log('Enviando petición a:', `${WORKER_URL}/guardar-onesignal-id`);
+                
                 const response = await fetch(`${WORKER_URL}/guardar-onesignal-id`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${authToken}` 
                     },
                     body: JSON.stringify({ onesignal_id: window.onesignalId })
                 });
-
-                if (!response.ok) {
+                
+                console.log('Respuesta status:', response.status);
+                console.log('Respuesta OK?', response.ok);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Respuesta data:', data);
+                    console.log('✅ OneSignal ID guardado exitosamente');
+                } else {
                     const errorText = await response.text();
-                    console.error('Error en respuesta:', response.status, errorText);
+                    console.error('❌ Error en respuesta:', response.status, errorText);
                 }
+            } else {
+                console.log('❌ No se obtuvo onesignalId después de 10 intentos');
+                console.log('window.onesignalId es:', window.onesignalId);
             }
-        } catch(e) {
-            console.error('Error guardando OneSignal ID:', e);
+            
+            console.log('=== FIN GUARDADO DE ONESIGNAL ID ===');
+        } catch(e) { 
+            console.error('❌ Error guardando OneSignal ID:', e);
+            console.error('Stack trace:', e.stack);
         }
     }
 
@@ -1439,13 +1425,13 @@
     function mostrarToast(mensaje, esError = true) {
         const toastAnterior = document.querySelector('.toast-message');
         if (toastAnterior) toastAnterior.remove();
-
+        
         const toast = document.createElement('div');
         toast.className = 'toast-message';
         toast.style.background = esError ? '#ef4444' : '#10b981';
         toast.textContent = mensaje;
         document.body.appendChild(toast);
-
+        
         setTimeout(() => {
             if (toast && toast.remove) toast.remove();
         }, 3000);
@@ -1458,7 +1444,7 @@
         }
         ocultarConfirm();
     });
-
+    
     document.getElementById('confirmCancelBtn')?.addEventListener('click', () => {
         if (confirmResolve) {
             confirmResolve(false);
@@ -1501,7 +1487,7 @@
 
     function loginWithGoogle() {
         const isAndroidApp = navigator.userAgent.includes('wv');
-        const redirectUrl = isAndroidApp
+        const redirectUrl = isAndroidApp 
             ? 'intercambia://callback'
             : window.location.origin;
         window.location.href = `${WORKER_URL}/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
@@ -1546,10 +1532,10 @@
         document.getElementById("latMobile").value = "";
         document.getElementById("lngMobile").value = "";
         document.getElementById("direccionMobile").value = "";
-
+        
         const mapDiv = document.getElementById("mapaMobile");
         const limpiarBtn = document.getElementById("limpiarUbicacionBtn");
-
+        
         if (mapDiv) {
             mapDiv.style.display = "none";
             if (mapaTemp) {
@@ -1557,35 +1543,37 @@
                 mapaTemp = null;
             }
         }
-
+        
         if (limpiarBtn) limpiarBtn.style.display = "none";
     }
 
     function obtenerUbicacionActual() {
         const btnUbicar = document.getElementById("ubicarBtnMobile");
         const originalText = btnUbicar.innerHTML;
-
+        
         if (!navigator.geolocation) {
             mostrarToast("Tu navegador no soporta geolocalización", true);
             return;
         }
-
+        
         btnUbicar.innerHTML = '<span class="loading-spinner" style="width:16px; height:16px;"></span> Obteniendo ubicación...';
         btnUbicar.disabled = true;
-
+        
         const procesarExito = async (position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-
+            
+            console.log("Ubicación obtenida:", lat, lng);
+            
             ubicacionSeleccionada.lat = lat;
             ubicacionSeleccionada.lng = lng;
             document.getElementById("latMobile").value = lat;
             document.getElementById("lngMobile").value = lng;
-
+            
             try {
                 const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
                 const data = await response.json();
-
+                
                 if (data && data.display_name) {
                     const parts = data.display_name.split(',');
                     let direccionCorta = parts.slice(0, 3).join(',');
@@ -1593,29 +1581,30 @@
                     document.getElementById("direccionMobile").value = direccionCorta;
                 }
             } catch (error) {
+                console.error('Error obteniendo dirección:', error);
                 ubicacionSeleccionada.direccion = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
                 document.getElementById("direccionMobile").value = ubicacionSeleccionada.direccion;
             }
-
+            
             const mapDiv = document.getElementById("mapaMobile");
             mapDiv.style.display = "block";
-
+            
             if (mapaTemp) mapaTemp.remove();
-
+            
             mapaTemp = L.map('mapaMobile').setView([lat, lng], 15);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
             }).addTo(mapaTemp);
-
+            
             const marker = L.marker([lat, lng], { draggable: true }).addTo(mapaTemp);
-
+            
             marker.on('dragend', async function(e) {
                 const newPos = marker.getLatLng();
                 ubicacionSeleccionada.lat = newPos.lat;
                 ubicacionSeleccionada.lng = newPos.lng;
                 document.getElementById("latMobile").value = newPos.lat;
                 document.getElementById("lngMobile").value = newPos.lng;
-
+                
                 try {
                     const reverseResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${newPos.lat}&lon=${newPos.lng}&zoom=18`);
                     const reverseData = await reverseResponse.json();
@@ -1625,28 +1614,33 @@
                         ubicacionSeleccionada.direccion = direccionCorta;
                         document.getElementById("direccionMobile").value = direccionCorta;
                     }
-                } catch (error) { }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
             });
-
+            
             document.getElementById("limpiarUbicacionBtn").style.display = "block";
-
+            
             setTimeout(() => {
                 mapDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 500);
-
+            
             mostrarToast("📍 Ubicación obtenida correctamente", false);
-
+            
             btnUbicar.innerHTML = originalText;
             btnUbicar.disabled = false;
         };
-
+        
         const procesarError = (error) => {
+            console.error('Error de geolocalización:', error);
+            
             if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
                 mostrarToast("Intentando con menor precisión...", false);
-
+                
                 navigator.geolocation.getCurrentPosition(
                     procesarExito,
                     (err) => {
+                        console.error('Error en segundo intento:', err);
                         let mensaje = "No se pudo obtener tu ubicación.";
                         if (err.code === err.PERMISSION_DENIED) {
                             mensaje = "Permiso denegado. Activa la ubicación en ajustes.";
@@ -1667,7 +1661,7 @@
                 btnUbicar.disabled = false;
             }
         };
-
+        
         navigator.geolocation.getCurrentPosition(
             procesarExito,
             procesarError,
@@ -1679,22 +1673,24 @@
         const form = new FormData();
         form.append('titulo', titulo);
         form.append('descripcion', `${categoria} | ${descripcion}`);
-
+        
         const lat = ubicacionSeleccionada.lat || document.getElementById("latMobile").value || '';
         const lng = ubicacionSeleccionada.lng || document.getElementById("lngMobile").value || '';
         const direccion = direccionManual || ubicacionSeleccionada.direccion || document.getElementById("direccionMobile").value || '';
-
+        
         form.append('latitud', lat);
         form.append('longitud', lng);
         form.append('direccion', direccion);
-
+        
         for (let i = 0; i < Math.min(fotos.length, 5); i++) {
             form.append(`foto_${i}`, fotos[i]);
         }
-
+        
+        console.log('Publicando con ubicación:', { lat, lng, direccion });
+        
         return await apiFetch('/objeto', { method: 'POST', body: form });
     }
-
+    
     // ========== CHAT FUNCTIONS ==========
     async function enviarMensajeConReintento(objetoId, receptor, mensaje, archivoUrl = null, intentos = 3) {
         for (let i = 0; i < intentos; i++) {
@@ -1707,22 +1703,23 @@
                 if (archivoUrl) body.archivo_url = archivoUrl;
                 const response = await fetch(`${WORKER_URL}/mensaje`, {
                     method: 'POST',
-                    headers: {
+                    headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify(body)
                 });
-
+                
                 if (response.ok) {
                     const data = await response.json();
                     return { success: true, data };
                 }
-
+                
                 if (i < intentos - 1) {
                     await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
                 }
             } catch (error) {
+                console.error(`Intento ${i + 1} error:`, error);
                 if (i < intentos - 1) {
                     await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
                 }
@@ -1733,17 +1730,17 @@
 
     async function procesarMensajesPendientes() {
         if (mensajesPendientes.length === 0 || enviandoMensaje) return;
-
+        
         const pendiente = mensajesPendientes[0];
         enviandoMensaje = true;
-
+        
         try {
             const resultado = await enviarMensajeConReintento(pendiente.objetoId, pendiente.receptor, pendiente.mensaje, pendiente.archivoUrl || null);
-
+            
             if (resultado.success) {
                 mensajesPendientes.shift();
                 mostrarToast('Mensaje enviado', false);
-
+                
                 const cacheKey = `${pendiente.objetoId}_${pendiente.receptor}`;
                 chatMensajesCache.delete(cacheKey);
                 ultimosMensajesCache.delete(`${pendiente.objetoId}_${pendiente.receptor}`);
@@ -1754,9 +1751,10 @@
                 mostrarToast('Error al enviar mensaje. Reintentando...', true);
             }
         } catch (error) {
+            console.error('Error procesando mensaje pendiente:', error);
         } finally {
             enviandoMensaje = false;
-
+            
             if (mensajesPendientes.length > 0) {
                 setTimeout(() => procesarMensajesPendientes(), 1000);
             }
@@ -1768,19 +1766,19 @@
             mostrarToast('No hay chat activo', true);
             return false;
         }
-
+        
         const textoLimpio = texto.trim();
         const input = document.getElementById('msgInputMobile');
-
+        
         if (input) input.value = '';
-
+        
         mensajesPendientes.push({
             objetoId: chatActual.id_objeto,
             receptor: chatActual.otroUsuario,
             mensaje: textoLimpio,
             timestamp: Date.now()
         });
-
+        
         const container = document.getElementById('chatMessagesArea');
         if (container) {
             const mensajeTemp = `
@@ -1792,11 +1790,11 @@
             container.insertAdjacentHTML('beforeend', mensajeTemp);
             container.scrollTop = container.scrollHeight;
         }
-
+        
         await procesarMensajesPendientes();
-
+        
         document.querySelectorAll('.mensaje[data-temporal="true"]').forEach(el => el.remove());
-
+        
         return true;
     }
 
@@ -1875,78 +1873,85 @@
 
     async function cargarMensajesChat() {
         if (!chatActual || !chatActual.id_objeto || !chatActual.otroUsuario) return;
-
+        
         const cacheKey = `${chatActual.id_objeto}_${chatActual.otroUsuario}`;
-
+        
         try {
             const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${chatActual.id_objeto}&otro=${encodeURIComponent(chatActual.otroUsuario)}`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
-
+            
             if (!response.ok) return;
-
+            
             const mensajes = await response.json();
             const mensajesArray = Array.isArray(mensajes) ? mensajes : [];
-
+            
             const cacheActual = chatMensajesCache.get(cacheKey) || [];
             const hayCambios = JSON.stringify(mensajesArray.map(m => m.id)) !== JSON.stringify(cacheActual.map(m => m.id));
-
+            
             if (!hayCambios && cacheActual.length > 0) return;
-
+            
             chatMensajesCache.set(cacheKey, mensajesArray);
-
+            
             if (chatActual && chatActual.id_objeto === chatActual.id_objeto && chatActual.otroUsuario === chatActual.otroUsuario) {
                 await renderizarMensajes(mensajesArray);
             }
-
+            
             let mensajesLeidos = false;
             for (const m of mensajesArray) {
                 if (m.emisor !== currentUser?.email && m.leido === 0) {
                     await fetch(`${WORKER_URL}/mensaje/${m.id}?action=leer`, {
                         method: 'PATCH',
                         headers: { 'Authorization': `Bearer ${authToken}` }
-                    }).catch(e => {});
+                    }).catch(e => console.error('Error:', e));
                     mensajesLeidos = true;
                 }
             }
-
+            
             if (mensajesLeidos) {
                 ultimosMensajesCache.delete(cacheKey);
                 await cargarConversaciones();
                 await actualizarBadgeMensajes();
             }
-
-        } catch (error) { }
+            
+        } catch (error) {
+            console.error('Error cargando mensajes:', error);
+        }
     }
 
     async function renderizarMensajes(mensajes) {
         const container = document.getElementById('chatMessagesArea');
         if (!container) return;
-
+        
         const estabaAlFondo = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-
+        
         if (!mensajes || mensajes.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">💬 No hay mensajes aún. ¡Envía el primero!</div>';
+            container.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay mensajes aún. ¡Envía el primero!</div>';
             return;
         }
-
-        const html = mensajes.map(m => {
+        
+        const html = mensajes.map((m, idx) => {
             const esMio = m.emisor === currentUser?.email;
             const nombre = esMio ? 'Tú' : (m.emisor?.split('@')[0] || 'Usuario');
+            const esUltimoDeGrupo = idx === mensajes.length - 1 || mensajes[idx + 1]?.emisor !== m.emisor;
+            const avatarHtml = (!esMio && esUltimoDeGrupo) ? `<div class="mensaje-avatar-mini">${escapeHtml(nombre.charAt(0).toUpperCase())}</div>` : (!esMio ? `<div style="width:24px;flex-shrink:0;"></div>` : '');
             return `
-                <div class="mensaje ${esMio ? 'emisor' : 'receptor'}" data-id="${m.id}">
-                    ${!esMio ? `<strong>${escapeHtml(nombre)}</strong>` : ''}
-                    <div>${escapeHtml(m.mensaje || '')}</div>
-                    ${m.archivo_url ? `<img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')">` : ''}
-                    <small>${new Date(m.fecha).toLocaleTimeString()}</small>
+                <div class="mensaje-fila ${esMio ? 'emisor' : 'receptor'}">
+                    ${!esMio ? avatarHtml : ''}
+                    <div class="mensaje ${esMio ? 'emisor' : 'receptor'}" data-id="${m.id}">
+                        ${!esMio ? `<strong>${escapeHtml(nombre)}</strong>` : ''}
+                        ${m.mensaje ? `<div>${escapeHtml(m.mensaje)}</div>` : ''}
+                        ${m.archivo_url ? `<img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')">` : ''}
+                        <small>${new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+                    </div>
                 </div>
             `;
         }).join('');
-
+        
         if (container.innerHTML !== html) {
             container.innerHTML = html;
         }
-
+        
         if (estabaAlFondo) {
             setTimeout(() => {
                 container.scrollTop = container.scrollHeight;
@@ -1956,20 +1961,20 @@
 
     async function abrirChatDirecto(objetoId, otroUsuario, titulo) {
         detenerPollingChat();
-
+        
         const objeto = objetos.find(o => o.id === parseInt(objetoId));
         const otroNombre = objeto?.userNombre || otroUsuario?.split('@')[0] || 'Usuario';
-
+        
         chatActual = {
             id_objeto: parseInt(objetoId),
             otroUsuario: otroUsuario,
             titulo: titulo,
             otroNombre: otroNombre
         };
-
+        
         const chatContainer = document.getElementById('chat-active-container');
         if (!chatContainer) return;
-
+        
         chatContainer.innerHTML = `
             <div class="chat-active">
                 <div class="chat-active-header">
@@ -1998,10 +2003,10 @@
                 </div>
             </div>
         `;
-
+        
         const sendBtn = document.getElementById('sendMsgMobileBtn');
         const msgInput = document.getElementById('msgInputMobile');
-
+        
         if (sendBtn) {
             sendBtn.onclick = () => {
                 const texto = msgInput?.value || '';
@@ -2010,7 +2015,7 @@
                 }
             };
         }
-
+        
         if (msgInput) {
             msgInput.onkeypress = (e) => {
                 if (e.key === 'Enter') {
@@ -2060,21 +2065,21 @@
                 emojiPicker.classList.toggle('show');
             };
         }
-
+        
         const cacheKey = `${chatActual.id_objeto}_${chatActual.otroUsuario}`;
         chatMensajesCache.delete(cacheKey);
         await cargarMensajesChat();
-
+        
         iniciarPollingChat();
         openChatOnMobile();
         await cargarConversaciones();
     }
-
+    
     function cerrarChatCompletamente() {
         detenerPollingChat();
         chatActual = null;
         mensajesPendientes = [];
-
+        
         const chatContainer = document.getElementById('chat-active-container');
         if (chatContainer) {
             chatContainer.innerHTML = `
@@ -2084,13 +2089,13 @@
                 </div>
             `;
         }
-
+        
         document.querySelectorAll('.conversation-item').forEach(item => {
             item.classList.remove('active');
         });
-
+        
         closeChatOnMobile();
-
+        
         setTimeout(() => {
             cargarConversaciones();
             actualizarBadgeMensajes();
@@ -2121,7 +2126,7 @@
             if (ultimosMensajesCache.has(cacheKey)) {
                 return ultimosMensajesCache.get(cacheKey);
             }
-
+            
             const response = await fetch(`${WORKER_URL}/mensajes?id_objeto=${objetoId}&otro=${encodeURIComponent(otroUsuario)}`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
@@ -2133,6 +2138,7 @@
             ultimosMensajesCache.set(cacheKey, ultimo);
             return ultimo;
         } catch (error) {
+            console.error('Error obteniendo último mensaje:', error);
             return null;
         }
     }
@@ -2142,57 +2148,57 @@
             const response = await fetch(`${WORKER_URL}/mis-conversaciones`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
-
+            
             if (!response.ok) return;
-
+            
             const conversaciones = await response.json();
             const conversacionesArray = Array.isArray(conversaciones) ? conversaciones : [];
-
+            
             const conversacionesConMensajes = await Promise.all(conversacionesArray.map(async (conv) => {
                 const ultimoMensaje = await obtenerUltimoMensaje(conv.id_objeto, conv.otroUsuario);
                 return { ...conv, ultimoMensaje };
             }));
-
-            const cambiosDetectados = JSON.stringify(conversacionesConMensajes.map(c => ({
-                id: c.id_objeto,
-                otro: c.otroUsuario,
-                no_leidos: c.no_leidos,
+            
+            const cambiosDetectados = JSON.stringify(conversacionesConMensajes.map(c => ({ 
+                id: c.id_objeto, 
+                otro: c.otroUsuario, 
+                no_leidos: c.no_leidos, 
                 ultimaFecha: c.ultimaFecha,
                 ultimoMensajeId: c.ultimoMensaje?.id
-            }))) !== JSON.stringify(ultimasConversaciones.map(c => ({
-                id: c.id_objeto,
-                otro: c.otroUsuario,
-                no_leidos: c.no_leidos,
+            }))) !== JSON.stringify(ultimasConversaciones.map(c => ({ 
+                id: c.id_objeto, 
+                otro: c.otroUsuario, 
+                no_leidos: c.no_leidos, 
                 ultimaFecha: c.ultimaFecha,
                 ultimoMensajeId: c.ultimoMensaje?.id
             })));
-
+            
             ultimasConversaciones = conversacionesConMensajes;
-
+            
             const listaContainer = document.getElementById('conversationsList');
             if (!listaContainer) return;
-
+            
             if (!conversacionesConMensajes || conversacionesConMensajes.length === 0) {
-                listaContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">💬 No hay conversaciones aún</div>';
+                listaContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#8aa59a;">💬 No hay conversaciones aún</div>';
                 return;
             }
-
+            
             conversacionesConMensajes.sort((a, b) => new Date(b.ultimaFecha) - new Date(a.ultimaFecha));
-
+            
             listaContainer.innerHTML = conversacionesConMensajes.map(c => {
                 const otroNombre = c.otroUsuario?.split('@')[0] || 'Usuario';
                 const noLeidos = c.no_leidos || 0;
-                const isActive = chatActual &&
-                                chatActual.id_objeto === c.id_objeto &&
+                const isActive = chatActual && 
+                                chatActual.id_objeto === c.id_objeto && 
                                 chatActual.otroUsuario === c.otroUsuario;
-
+                
                 let fechaTexto = '';
                 if (c.ultimaFecha) {
                     const fecha = new Date(c.ultimaFecha);
                     const hoy = new Date();
                     const ayer = new Date(hoy);
                     ayer.setDate(ayer.getDate() - 1);
-
+                    
                     if (fecha.toDateString() === hoy.toDateString()) {
                         fechaTexto = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     } else if (fecha.toDateString() === ayer.toDateString()) {
@@ -2201,7 +2207,7 @@
                         fechaTexto = fecha.toLocaleDateString();
                     }
                 }
-
+                
                 let previewMensaje = '';
                 if (c.ultimoMensaje) {
                     const esMio = c.ultimoMensaje.emisor === currentUser?.email;
@@ -2218,9 +2224,9 @@
                 } else {
                     previewMensaje = `<div class="conversation-last-message">📦 ${escapeHtml(c.titulo || 'Objeto')}</div>`;
                 }
-
+                
                 return `
-                    <div class="conversation-item ${isActive ? 'active' : ''}" data-nombre="${escapeHtml(otroNombre.toLowerCase())}"
+                    <div class="conversation-item ${isActive ? 'active' : ''} ${noLeidos > 0 ? 'tiene-no-leidos' : ''}" 
                          onclick="abrirChatDirecto(${c.id_objeto}, '${c.otroUsuario || ''}', '${escapeHtml(c.titulo || '').replace(/'/g, "\\'")}')">
                         <div class="conversation-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
                         <div class="conversation-info">
@@ -2229,14 +2235,14 @@
                             </div>
                             ${previewMensaje}
                         </div>
-                        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
                             <div class="conversation-time">${fechaTexto}</div>
                             ${noLeidos > 0 ? `<span class="badge-no-leidos">${noLeidos}</span>` : ''}
                         </div>
                     </div>
                 `;
             }).join('');
-
+            
             if (cambiosDetectados) {
                 const nuevosItems = document.querySelectorAll('.conversation-item .badge-no-leidos');
                 nuevosItems.forEach(item => {
@@ -2247,8 +2253,10 @@
                     }
                 });
             }
-
-        } catch (error) { }
+            
+        } catch (error) {
+            console.error('Error cargando conversaciones:', error);
+        }
     }
 
     async function actualizarBadgeMensajes() {
@@ -2271,7 +2279,7 @@
                     badge.style.display = 'none';
                 }
             }
-        } catch(e) { }
+        } catch(e) { console.error('Error:', e); }
     }
 
     async function cargarObjetosDesdeAPI() {
@@ -2295,31 +2303,31 @@
             renderFeed();
             renderFavoritos();
             renderMisCosas();
-        } catch(e) { }
+        } catch(e) { console.error('Error:', e); }
     }
 
     async function cargarFavoritosDesdeAPI() {
         try {
             const data = await apiFetch('/favoritos');
             favoritosIds = new Set(data.map(f => f.id));
-        } catch(e) { }
+        } catch(e) { console.error('Error:', e); }
     }
 
     async function agregarFavorito(id) { await apiFetch('/favoritos', { method: 'POST', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.add(id); renderFeed(); renderFavoritos(); }
     async function quitarFavorito(id) { await apiFetch('/favoritos', { method: 'DELETE', body: JSON.stringify({ id_objeto: id }) }); favoritosIds.delete(id); renderFeed(); renderFavoritos(); }
-
-    async function reportarObjeto(id, motivo) {
+    
+    async function reportarObjeto(id, motivo) { 
         if (!motivo) return;
         await apiFetch('/reporte', { method: 'POST', body: JSON.stringify({ id_objeto: id, motivo }) });
         mostrarAlert('Reporte enviado. Gracias por ayudarnos a mantener la comunidad segura.', false);
     }
-
-    async function eliminarObjeto(id) {
-        await apiFetch(`/objeto/${id}`, { method: 'DELETE' });
-        objetos = objetos.filter(o => o.id !== id);
-        renderFeed();
-        renderFavoritos();
-        renderMisCosas();
+    
+    async function eliminarObjeto(id) { 
+        await apiFetch(`/objeto/${id}`, { method: 'DELETE' }); 
+        objetos = objetos.filter(o => o.id !== id); 
+        renderFeed(); 
+        renderFavoritos(); 
+        renderMisCosas(); 
         mostrarAlert('Objeto eliminado correctamente', false);
     }
 
@@ -2387,23 +2395,23 @@
             btn.addEventListener('click', favHandler);
         });
         async function favHandler(e) { e.stopPropagation(); const id = parseInt(this.dataset.id); if(favoritosIds.has(id)) await quitarFavorito(id); else await agregarFavorito(id); renderFeed(); renderFavoritos(); }
-
+        
         document.querySelectorAll('.btn-intercambiar').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.dataset.id); const usuario = btn.dataset.usuario; const titulo = btn.dataset.titulo; abrirChatDirecto(id, usuario, titulo); switchTab('mensajes'); }));
-
-        document.querySelectorAll('.btn-reportar').forEach(btn => btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const id = parseInt(btn.dataset.id);
+        
+        document.querySelectorAll('.btn-reportar').forEach(btn => btn.addEventListener('click', async (e) => { 
+            e.stopPropagation(); 
+            const id = parseInt(btn.dataset.id); 
             const motivo = prompt('Motivo del reporte:');
             if (motivo) await reportarObjeto(id, motivo);
         }));
-
-        document.querySelectorAll('.btn-eliminar').forEach(btn => btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const id = parseInt(btn.dataset.id);
+        
+        document.querySelectorAll('.btn-eliminar').forEach(btn => btn.addEventListener('click', async (e) => { 
+            e.stopPropagation(); 
+            const id = parseInt(btn.dataset.id); 
             const confirmado = await mostrarConfirm('¿Estás seguro de que quieres eliminar este objeto? Esta acción no se puede deshacer.');
-            if (confirmado) await eliminarObjeto(id);
+            if (confirmado) await eliminarObjeto(id); 
         }));
-
+        
         document.querySelectorAll('.pin-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if(e.target.closest('button')) return;
@@ -2413,16 +2421,16 @@
         });
     }
 
-    function renderFavoritos() {
-        const favs = objetos.filter(o => favoritosIds.has(o.id) && !o.intercambiado);
-        document.getElementById("favoritosGrid").innerHTML = favs.length ? favs.map(o=>renderPinCard(o)).join('') : '<div style="grid-column:span 2; text-align:center; padding:40px;">Sin favoritos</div>';
-        attachCardEvents();
+    function renderFavoritos() { 
+        const favs = objetos.filter(o => favoritosIds.has(o.id) && !o.intercambiado); 
+        document.getElementById("favoritosGrid").innerHTML = favs.length ? favs.map(o=>renderPinCard(o)).join('') : '<div style="grid-column:span 2; text-align:center; padding:40px;">Sin favoritos</div>'; 
+        attachCardEvents(); 
     }
-
-    function renderMisCosas() {
-        const mis = objetos.filter(o => o.userId === currentUser?.email);
-        document.getElementById("misCosasGrid").innerHTML = mis.length ? mis.map(o=>renderPinCard(o)).join('') : '<div style="grid-column:span 2; text-align:center; padding:40px;">No has publicado nada</div>';
-        attachCardEvents();
+    
+    function renderMisCosas() { 
+        const mis = objetos.filter(o => o.userId === currentUser?.email); 
+        document.getElementById("misCosasGrid").innerHTML = mis.length ? mis.map(o=>renderPinCard(o)).join('') : '<div style="grid-column:span 2; text-align:center; padding:40px;">No has publicado nada</div>'; 
+        attachCardEvents(); 
     }
 
     function abrirDetalleModal(obj) {
@@ -2433,7 +2441,7 @@
         document.getElementById("modalDesc").innerText = obj.descripcion;
         document.getElementById("modalUbicacion").innerText = obj.ubicacionTexto;
         document.getElementById("modalUsuario").innerHTML = obj.userNombre;
-
+        
         const thumbContainer = document.getElementById("modalThumbnails");
         thumbContainer.innerHTML = allPhotos.map((photo, idx) => `<img class="miniatura-modal ${idx===0 ? 'active' : ''}" src="${photo}" data-index="${idx}">`).join('');
         document.querySelectorAll('.miniatura-modal').forEach(thumb => {
@@ -2443,7 +2451,7 @@
                 document.getElementById("modalMainImg").src = thumb.src;
             });
         });
-
+        
         const accionesDiv = document.getElementById("modalAcciones");
         const esFav = favoritosIds.has(obj.id);
         accionesDiv.innerHTML = `
@@ -2453,7 +2461,7 @@
         document.getElementById("modalGuardarBtn")?.addEventListener("click", async () => { if(favoritosIds.has(obj.id)) await quitarFavorito(obj.id); else await agregarFavorito(obj.id); document.getElementById("detailModal").style.display = "none"; renderFeed(); renderFavoritos(); });
         document.getElementById("modalIntercambiarBtn")?.addEventListener("click", () => { abrirChatDirecto(obj.id, obj.userId, obj.titulo); document.getElementById("detailModal").style.display = "none"; switchTab('mensajes'); });
         document.getElementById("modalEliminarBtn")?.addEventListener("click", async () => { const confirmado = await mostrarConfirm('¿Eliminar este objeto permanentemente?'); if(confirmado){ await eliminarObjeto(obj.id); document.getElementById("detailModal").style.display = "none"; } });
-
+        
         document.getElementById("detailModal").style.display = "block";
     }
 
@@ -2472,35 +2480,35 @@
 
     // Eventos de publicación
     document.getElementById("uploadMainMobile")?.addEventListener("click",()=>document.getElementById("fotoMainInput").click());
-    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{
-        if(e.target.files[0]){
-            fotoPrincipalData = e.target.files[0];
+    document.getElementById("fotoMainInput")?.addEventListener("change",(e)=>{ 
+        if(e.target.files[0]){ 
+            fotoPrincipalData = e.target.files[0]; 
             const preview = document.getElementById("previewMainMobile");
             preview.innerHTML = `<div class="img-upload-wrapper"><div style="width:80px;height:80px;border-radius:16px;background:#e5e7eb;"></div><div class="img-upload-spinner"></div></div>`;
-            const reader = new FileReader();
-            reader.onload = ev => {
+            const reader = new FileReader(); 
+            reader.onload = ev => { 
                 setTimeout(() => {
                     preview.innerHTML = `<div class="img-upload-wrapper"><img src="${ev.target.result}" style="width:80px; height:80px; border-radius:16px; object-fit:cover;"></div>`;
                 }, 600);
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        }
+            }; 
+            reader.readAsDataURL(e.target.files[0]); 
+        } 
     });
-
+    
     document.getElementById("uploadExtraMobile")?.addEventListener("click",()=>document.getElementById("fotosExtraInput").click());
-    document.getElementById("fotosExtraInput")?.addEventListener("change",(e)=>{
+    document.getElementById("fotosExtraInput")?.addEventListener("change",(e)=>{ 
         const nuevasFotos = Array.from(e.target.files);
         fotosExtraSeleccionadas.push(...nuevasFotos);
         if (fotosExtraSeleccionadas.length > 4) fotosExtraSeleccionadas = fotosExtraSeleccionadas.slice(0,4);
         const container = document.getElementById("previewExtraMobile");
-
-        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) =>
+        
+        container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => 
             `<div class="img-upload-wrapper" id="extra-wrap-${idx}">
                 <div style="width:60px;height:60px;border-radius:12px;background:#e5e7eb;"></div>
                 <div class="img-upload-spinner" style="border-radius:12px;"></div>
             </div>`
         ).join('');
-
+        
         fotosExtraSeleccionadas.forEach((f, idx) => {
             const reader = new FileReader();
             reader.onload = ev => {
@@ -2514,35 +2522,35 @@
             };
             reader.readAsDataURL(f);
         });
-
+        
         e.target.value = '';
     });
-
+    
     document.getElementById("ubicarBtnMobile")?.addEventListener("click", obtenerUbicacionActual);
     document.getElementById("limpiarUbicacionBtn")?.addEventListener("click", limpiarUbicacion);
-
+    
     window.eliminarFotoExtra = function(idx) {
         fotosExtraSeleccionadas.splice(idx, 1);
         const container = document.getElementById("previewExtraMobile");
         container.innerHTML = fotosExtraSeleccionadas.map((f, idx) => `<div style="position:relative;"><img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; border-radius:12px; object-fit:cover;"><button onclick="eliminarFotoExtra(${idx})" style="position:absolute; top:-6px; right:-6px; background:#dc2626; color:white; border-radius:50%; width:20px; height:20px; border:none; cursor:pointer;">✕</button></div>`).join('');
     };
-
+    
     document.getElementById("previewMobileBtn")?.addEventListener("click", () => {
         if (!fotoPrincipalData) {
             mostrarToast("Foto principal requerida", true);
             return;
         }
-
+        
         const titulo = document.getElementById("tituloMobile").value;
         const descripcion = document.getElementById("descripcionMobile").value;
         const categoria = document.getElementById("categoriaMobile").value;
         const direccion = document.getElementById("direccionMobile").value || "Sin dirección especificada";
-
+        
         if (!titulo || !descripcion) {
             mostrarToast("Título y descripción son requeridos", true);
             return;
         }
-
+        
         const reader = new FileReader();
         reader.onload = e => {
             document.getElementById("previewImgModal").src = e.target.result;
@@ -2557,7 +2565,7 @@
         };
         reader.readAsDataURL(fotoPrincipalData);
     });
-
+    
     document.getElementById("confirmarPublicarBtn").onclick = async () => {
         if (publicando) return;
         publicando = true;
@@ -2565,13 +2573,13 @@
         const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<span class="loading-spinner"></span> Publicando...';
-
+        
         try {
             const titulo = document.getElementById("tituloMobile").value;
             const descripcion = document.getElementById("descripcionMobile").value;
             const categoria = document.getElementById("categoriaMobile").value;
             const direccion = document.getElementById("direccionMobile").value;
-
+            
             await publicarObjetoConUbicacion(
                 titulo,
                 descripcion,
@@ -2579,15 +2587,16 @@
                 [fotoPrincipalData, ...fotosExtraSeleccionadas],
                 direccion
             );
-
+            
             document.getElementById("previewModal").style.display = "none";
             await cargarObjetosDesdeAPI();
             limpiarFormPublicacion();
             mostrarAlert("¡Objeto publicado correctamente!", false);
-
+            
             document.querySelector('.nav-bottom-item[data-tab="feed"]').click();
-
+            
         } catch(error) {
+            console.error('Error al publicar:', error);
             mostrarAlert("Error al publicar: " + (error.message || "Intenta de nuevo"), true);
         } finally {
             publicando = false;
@@ -2595,7 +2604,7 @@
             btn.innerHTML = originalText;
         }
     };
-
+    
     document.getElementById("cancelPreviewBtn")?.addEventListener("click", ()=>document.getElementById("previewModal").style.display="none");
 
     function switchTab(tabId) {
@@ -2611,7 +2620,7 @@
 
         if(tabId==="juegos") loadGames();
         if(tabId==="perfil") renderPerfilData();
-        if(tabId==="mensajes") {
+        if(tabId==="mensajes") { 
             detenerPollingChat();
             cargarConversaciones();
             iniciarPollingConversaciones();
@@ -2698,14 +2707,6 @@
     document.getElementById('back-button')?.addEventListener('click', exitGame);
     aplicarModoOscuroGuardado();
 
-    document.getElementById('chatSearchInput')?.addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        document.querySelectorAll('.conversation-item').forEach(item => {
-            const nombre = item.dataset.nombre || '';
-            item.style.display = nombre.includes(term) ? 'flex' : 'none';
-        });
-    });
-
     let lastScrollY = window.scrollY;
     window.addEventListener('scroll', () => {
         if (currentTab !== 'feed') return;
@@ -2731,24 +2732,24 @@
                 document.getElementById('appContainer').style.display = 'block';
                 document.getElementById("navAvatarImg").src = currentUser.picture || 'https://ui-avatars.com/api/?background=059669&color=fff&name=' + encodeURIComponent(currentUser.name || currentUser.email);
                 document.getElementById("perfilBackBtn")?.addEventListener("click", cerrarPerfil);
-
+                
                 const supportBtn = document.getElementById('supportBtn');
                 if (supportBtn) {
                     supportBtn.addEventListener('click', abrirAtencionCliente);
                 }
-
+                
                 await cargarObjetosDesdeAPI();
                 await cargarFavoritosDesdeAPI();
                 guardarOneSignalId(currentUser.email);
                 await cargarConversaciones();
-
+                
                 const welcomeShown = localStorage.getItem('welcome_shown');
                 if (!welcomeShown) {
                     setTimeout(() => {
                         mostrarBienvenida();
                     }, 500);
                 }
-
+                
                 setInterval(async () => {
                     await actualizarBadgeMensajes();
                 }, 10000);
@@ -2773,7 +2774,7 @@
         document.getElementById("searchContainer").classList.remove("show");
     });
         document.getElementById("closeDetailModal")?.addEventListener("click", () => document.getElementById("detailModal").style.display = "none");
-
+        
         document.querySelectorAll(".nav-bottom-item").forEach(btn => {
             btn.addEventListener("click", () => {
                 document.querySelectorAll(".nav-bottom-item").forEach(b=>b.classList.remove("active"));
@@ -2784,7 +2785,7 @@
             });
         });
     }
-
+    
     document.getElementById("googleLoginBtn")?.addEventListener("click", loginWithGoogle);
     init();
 </script>
