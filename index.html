@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content">
     <title>Intercambia - Trueque de objetos | Marketplace</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -575,17 +575,39 @@
         .btn-modern:active { transform: scale(0.97); }
         .btn-modern:disabled { background: #9ac9b0; cursor: not-allowed; box-shadow: none; transform: none; }
 
+        /* ===================== MENSAJERÍA ESTILO TELEGRAM / WHATSAPP ===================== */
+        :root {
+            --chat-bg: #e9edf1;
+            --chat-bubble-out: #dcf8c6;
+            --chat-bubble-out-text: #0b1a0f;
+            --chat-bubble-in: #ffffff;
+            --chat-bubble-in-text: #101010;
+            --chat-header-bg: #f7f8fa;
+            --chat-check-sent: #90a4ae;
+            --chat-check-read: #4fc3f7;
+            --chat-date-chip-bg: rgba(0,0,0,0.06);
+        }
+        body.dark-mode {
+            --chat-bg: #0b141a;
+            --chat-bubble-out: #005c4b;
+            --chat-bubble-out-text: #e9edef;
+            --chat-bubble-in: #202c33;
+            --chat-bubble-in-text: #e9edef;
+            --chat-header-bg: #202c33;
+            --chat-date-chip-bg: rgba(255,255,255,0.08);
+        }
+
         .messenger-container {
             display: flex;
             background: var(--card-bg);
             overflow: hidden;
-            height: calc(100vh - var(--bottom-nav-height) - 52px);
+            height: calc(100vh - var(--bottom-nav-height) - var(--top-nav-height));
             position: relative;
         }
 
         .conversations-list {
             width: 35%;
-            background: var(--surface-color);
+            background: var(--card-bg);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
@@ -594,11 +616,14 @@
         }
 
         .conversations-header {
-            padding: 14px 16px 12px;
+            padding: max(14px, env(safe-area-inset-top)) 16px 12px;
+            background: var(--chat-header-bg);
             border-bottom: 1px solid var(--border-color);
-            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        .conversations-header h3 { font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: var(--text-color); letter-spacing: -0.01em; }
+        .conversations-header h3 { font-family: var(--font-display); font-size: 1.45rem; font-weight: 800; color: var(--text-color); letter-spacing: -0.01em; }
 
         .conversations-scroll {
             flex: 1;
@@ -610,17 +635,20 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 16px;
+            padding: 10px 14px;
             cursor: pointer;
-            transition: 0.25s var(--ease-elegant);
+            transition: background 0.15s var(--ease-elegant);
             border-radius: 0;
             margin: 0;
+            border-bottom: 1px solid var(--border-soft);
+            position: relative;
         }
         .conversation-item:hover { background: var(--surface-color); }
         .conversation-item.active { background: var(--accent-soft); }
+        .conversation-item:active { background: var(--surface-color); }
         .conversation-avatar {
-            width: 54px;
-            height: 54px;
+            width: 52px;
+            height: 52px;
             background: var(--accent-gradient);
             border-radius: 50%;
             display: flex;
@@ -628,7 +656,7 @@
             justify-content: center;
             color: white;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             flex-shrink: 0;
             box-shadow: none;
             position: relative;
@@ -637,7 +665,7 @@
         .conversation-name {
             font-weight: 600;
             color: var(--text-color);
-            font-size: 0.92rem;
+            font-size: 0.95rem;
             margin-bottom: 3px;
             display: flex;
             align-items: center;
@@ -647,7 +675,7 @@
         .conversation-item.tiene-no-leidos .conversation-name,
         .conversation-item.tiene-no-leidos .mensaje-preview { font-weight: 700; color: var(--text-color); }
         .conversation-last-message { 
-            font-size: 0.82rem; 
+            font-size: 0.85rem; 
             color: var(--text-muted); 
             white-space: nowrap; 
             overflow: hidden; 
@@ -656,27 +684,30 @@
             align-items: center;
             gap: 4px;
         }
-        .conversation-last-message i { font-size: 0.65rem; }
+        .conversation-last-message i { font-size: 0.75rem; }
+        .conversation-last-message .fa-check-double.leido-check { color: var(--chat-check-read); }
         .conversation-last-message .mensaje-preview {
             font-weight: normal;
             color: var(--text-secondary);
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .conversation-last-message .mensaje-preview.no-leido {
             color: var(--text-color);
             font-weight: 600;
         }
         .conversation-time { font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+        .conversation-item.tiene-no-leidos .conversation-time { color: var(--accent); font-weight: 700; }
         .badge-no-leidos {
             background: var(--accent);
             color: white;
-            font-size: 0.62rem;
+            font-size: 0.68rem;
             font-weight: 700;
             padding: 1px 6px;
             border-radius: 20px;
-            min-width: 18px;
-            height: 18px;
+            min-width: 20px;
+            height: 20px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -692,16 +723,18 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: var(--card-bg);
+            background: var(--chat-bg);
             overflow: hidden;
+            height: 100%;
         }
         .chat-active-header {
-            padding: 16px;
+            padding: max(10px, env(safe-area-inset-top)) 12px 10px;
             border-bottom: 1px solid var(--border-color);
-            background: var(--card-bg);
+            background: var(--chat-header-bg);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            flex-shrink: 0;
         }
         .chat-back-btn {
             display: none;
@@ -712,10 +745,11 @@
             color: var(--accent);
             padding: 8px;
             border-radius: 50%;
+            flex-shrink: 0;
         }
         .chat-active-avatar {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             background: var(--accent-gradient);
             border-radius: 50%;
             display: flex;
@@ -724,10 +758,11 @@
             color: white;
             font-weight: 700;
             box-shadow: none;
+            flex-shrink: 0;
         }
-        .chat-active-info { flex: 1; }
-        .chat-active-name { font-weight: 600; color: var(--text-color); }
-        .chat-active-objeto { font-size: 0.7rem; color: var(--text-muted); }
+        .chat-active-info { flex: 1; min-width: 0; }
+        .chat-active-name { font-weight: 600; color: var(--text-color); font-size: 0.98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-active-objeto { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-active-close {
             background: none;
             border: none;
@@ -736,29 +771,51 @@
             color: var(--text-muted);
             padding: 8px;
             border-radius: 50%;
+            flex-shrink: 0;
         }
         .chat-active-close:hover { background: var(--border-color); color: #ef4444; }
 
         .chat-messages-area {
             flex: 1;
+            min-height: 0;
             overflow-y: auto;
-            padding: 14px 12px;
-            background: var(--card-bg);
+            padding: 12px 8%;
+            background: var(--chat-bg);
+            background-image:
+                radial-gradient(circle at 15% 20%, rgba(0,0,0,0.025) 0, transparent 40%),
+                radial-gradient(circle at 85% 60%, rgba(0,0,0,0.025) 0, transparent 40%);
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
         }
+        @media (max-width: 768px) { .chat-messages-area { padding: 10px 3%; } }
+
+        .fecha-separador {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .fecha-separador span {
+            background: var(--chat-date-chip-bg);
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: var(--radius-pill);
+        }
+
         .mensaje-fila {
             display: flex;
             align-items: flex-end;
             gap: 6px;
             max-width: 100%;
+            margin: 1px 0;
         }
         .mensaje-fila.emisor { justify-content: flex-end; }
         .mensaje-fila.receptor { justify-content: flex-start; }
         .mensaje-avatar-mini {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             background: var(--accent-gradient);
             color: #fff;
@@ -770,76 +827,86 @@
             flex-shrink: 0;
         }
         .mensaje {
-            max-width: 72%;
+            max-width: 76%;
             font-size: 0.92rem;
             line-height: 1.35;
             word-break: break-word;
             white-space: normal;
             animation: fadeInUp 0.2s var(--ease-elegant);
+            position: relative;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.08);
         }
         .mensaje.emisor {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-            color: #ffffff;
-            border-radius: 18px 18px 4px 18px;
-            padding: 9px 14px;
-            box-shadow: none;
+            background: var(--chat-bubble-out);
+            color: var(--chat-bubble-out-text);
+            border-radius: 14px 14px 3px 14px;
+            padding: 7px 9px 6px 10px;
         }
         .mensaje.receptor {
-            background: var(--surface-color);
-            color: var(--text-color);
-            border-radius: 18px 18px 18px 4px;
-            padding: 9px 14px;
-            box-shadow: none;
+            background: var(--chat-bubble-in);
+            color: var(--chat-bubble-in-text);
+            border-radius: 14px 14px 14px 3px;
+            padding: 7px 9px 6px 10px;
             border: none;
         }
         .mensaje.receptor strong {
             color: var(--accent);
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             font-weight: 700;
             display: block;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
+        }
+        .mensaje-meta {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            margin-top: 2px;
         }
         .mensaje small {
-            display: block;
-            font-size: 0.6rem;
-            opacity: 0.7;
-            margin-top: 3px;
+            font-size: 0.62rem;
+            opacity: 0.65;
+            white-space: nowrap;
         }
-        .mensaje.emisor small { color: rgba(255,255,255,0.85); }
+        .mensaje.emisor small { color: rgba(0,0,0,0.5); }
         .mensaje.receptor small { color: var(--text-muted); }
-        .mensaje-imagen { max-width: 200px; width: 100%; border-radius: 14px; margin-top: 4px; cursor: pointer; transition: transform 0.2s var(--ease-elegant); display: block; }
-        .mensaje-imagen:hover { transform: scale(1.03); }
+        .mensaje-checks { font-size: 0.72rem; color: var(--chat-check-sent); display: inline-flex; }
+        .mensaje-checks.leido { color: var(--chat-check-read); }
+        .mensaje-imagen { max-width: 220px; width: 100%; border-radius: 12px; margin-top: 2px; cursor: pointer; transition: transform 0.2s var(--ease-elegant); display: block; }
+        .mensaje-imagen:hover { transform: scale(1.02); }
 
         .chat-input-area {
-            padding: 8px 10px;
+            padding: 6px 8px;
             border-top: 1px solid var(--border-color);
-            background: var(--card-bg);
+            background: var(--chat-header-bg);
             display: flex;
             gap: 4px;
-            align-items: center;
+            align-items: flex-end;
+            flex-shrink: 0;
+            padding-bottom: max(6px, env(safe-area-inset-bottom));
         }
         .chat-icon-btn {
             background: none;
             border: none;
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            color: var(--accent);
+            font-size: 1.15rem;
+            color: var(--text-secondary);
             cursor: pointer;
             flex-shrink: 0;
             transition: background 0.2s var(--ease-soft);
         }
-        .chat-icon-btn:hover { background: var(--accent-soft); }
+        .chat-icon-btn:hover { background: var(--surface-color); }
         .chat-icon-btn:active { transform: scale(0.9); }
         .chat-input-pill {
             flex: 1;
             display: flex;
             align-items: center;
-            background: var(--surface-color);
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-pill);
             padding: 2px 4px 2px 16px;
@@ -869,7 +936,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1.1rem;
-            color: var(--accent);
+            color: var(--text-secondary);
             cursor: pointer;
             flex-shrink: 0;
         }
@@ -879,15 +946,15 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 0.95rem;
-            transition: background 0.2s var(--ease-soft);
-            box-shadow: none;
+            font-size: 1rem;
+            transition: background 0.2s var(--ease-soft), transform 0.15s var(--ease-elegant);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             flex-shrink: 0;
         }
         .btn-enviar:hover { background: var(--accent-dark); }
@@ -903,6 +970,7 @@
             border-top: 1px solid var(--border-color);
             max-height: 160px;
             overflow-y: auto;
+            flex-shrink: 0;
         }
         .emoji-picker.show { display: grid; }
         .emoji-item {
@@ -925,11 +993,12 @@
             gap: 16px;
             text-align: center;
             padding: 20px;
+            background: var(--chat-bg);
         }
         .empty-chat i { font-size: 48px; opacity: 0.5; }
 
         @media (max-width: 768px) {
-            .messenger-container { height: calc(100vh - var(--bottom-nav-height) - 52px); }
+            .messenger-container { height: calc(100vh - var(--bottom-nav-height) - var(--top-nav-height)); }
             .messenger-container.chat-open .conversations-list { transform: translateX(-100%); position: absolute; width: 100%; z-index: 1; height: 100%; }
             .messenger-container.chat-open .chat-active { width: 100%; }
             .messenger-container.chat-open { height: 100vh; }
@@ -1453,6 +1522,24 @@
         ocultarConfirm();
     });
 
+    function avatarColorFromString(str) {
+        const colores = ['#f97316','#ef4444','#ec4899','#a855f7','#6366f1','#0ea5e9','#14b8a6','#22c55e','#84cc16','#f59e0b'];
+        let hash = 0;
+        const s = str || '?';
+        for (let i = 0; i < s.length; i++) hash = s.charCodeAt(i) + ((hash << 5) - hash);
+        return colores[Math.abs(hash) % colores.length];
+    }
+
+    function formatearFechaSeparador(fecha) {
+        const d = new Date(fecha);
+        const hoy = new Date();
+        const ayer = new Date(hoy);
+        ayer.setDate(ayer.getDate() - 1);
+        if (d.toDateString() === hoy.toDateString()) return 'Hoy';
+        if (d.toDateString() === ayer.toDateString()) return 'Ayer';
+        return d.toLocaleDateString([], { day: '2-digit', month: 'long', year: 'numeric' });
+    }
+
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -1930,19 +2017,39 @@
             return;
         }
         
+        let fechaAnterior = null;
         const html = mensajes.map((m, idx) => {
             const esMio = m.emisor === currentUser?.email;
             const nombre = esMio ? 'Tú' : (m.emisor?.split('@')[0] || 'Usuario');
             const esUltimoDeGrupo = idx === mensajes.length - 1 || mensajes[idx + 1]?.emisor !== m.emisor;
-            const avatarHtml = (!esMio && esUltimoDeGrupo) ? `<div class="mensaje-avatar-mini">${escapeHtml(nombre.charAt(0).toUpperCase())}</div>` : (!esMio ? `<div style="width:24px;flex-shrink:0;"></div>` : '');
+            const colorAvatar = avatarColorFromString(m.emisor || nombre);
+            const avatarHtml = (!esMio && esUltimoDeGrupo) ? `<div class="mensaje-avatar-mini" style="background:${colorAvatar};">${escapeHtml(nombre.charAt(0).toUpperCase())}</div>` : (!esMio ? `<div style="width:26px;flex-shrink:0;"></div>` : '');
+
+            const fechaMsg = new Date(m.fecha).toDateString();
+            let separador = '';
+            if (fechaMsg !== fechaAnterior) {
+                separador = `<div class="fecha-separador"><span>${formatearFechaSeparador(m.fecha)}</span></div>`;
+                fechaAnterior = fechaMsg;
+            }
+
+            let checksHtml = '';
+            if (esMio) {
+                const leido = m.leido === 1 || m.leido === true;
+                checksHtml = `<span class="mensaje-checks ${leido ? 'leido' : ''}"><i class="fas fa-check-double"></i></span>`;
+            }
+
             return `
+                ${separador}
                 <div class="mensaje-fila ${esMio ? 'emisor' : 'receptor'}">
                     ${!esMio ? avatarHtml : ''}
                     <div class="mensaje ${esMio ? 'emisor' : 'receptor'}" data-id="${m.id}">
                         ${!esMio ? `<strong>${escapeHtml(nombre)}</strong>` : ''}
                         ${m.mensaje ? `<div>${escapeHtml(m.mensaje)}</div>` : ''}
                         ${m.archivo_url ? `<img src="${m.archivo_url}" class="mensaje-imagen" onclick="verFotoAmpliada('${m.archivo_url}')">` : ''}
-                        <small>${new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+                        <span class="mensaje-meta">
+                            <small>${new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
+                            ${checksHtml}
+                        </span>
                     </div>
                 </div>
             `;
@@ -1979,7 +2086,7 @@
             <div class="chat-active">
                 <div class="chat-active-header">
                     <button class="chat-back-btn" onclick="cerrarChatCompletamente()"><img class="icon-inline-lg" src="https://cdn-icons-png.flaticon.com/128/3916/3916912.png" alt=""></button>
-                    <div class="chat-active-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
+                    <div class="chat-active-avatar" style="background:${avatarColorFromString(otroUsuario || otroNombre)};">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
                     <div class="chat-active-info">
                         <div class="chat-active-name">${escapeHtml(otroNombre)}</div>
                         <div class="chat-active-objeto">📦 ${escapeHtml(titulo)}</div>
@@ -2109,6 +2216,7 @@
             document.getElementById('bottomNav')?.classList.remove('nav-hidden');
             document.body.classList.remove('chat-fullscreen');
         }
+        desactivarFixTecladoWebview();
     }
 
     function openChatOnMobile() {
@@ -2117,6 +2225,67 @@
             container.classList.add('chat-open');
             document.getElementById('bottomNav')?.classList.add('nav-hidden');
             document.body.classList.add('chat-fullscreen');
+        }
+        activarFixTecladoWebview();
+    }
+
+    // ========== FIX TECLADO PARA APP EMPAQUETADA (WebView / Play Store) ==========
+    // Cuando la app se instala desde Play Store (WebView), el teclado virtual no
+    // redimensiona el viewport como lo hace un navegador normal, por eso la barra
+    // de escribir queda tapada. Usamos visualViewport para reajustar la altura
+    // del chat en tiempo real y que la barra de texto siempre quede visible.
+    let _vvResizeHandler = null;
+
+    function ajustarAlturaChatPorTeclado() {
+        if (!window.visualViewport) return;
+        const messenger = document.getElementById('messengerContainer');
+        if (!messenger || !messenger.classList.contains('chat-open')) return;
+
+        const vv = window.visualViewport;
+        const alturaVisible = vv.height;
+
+        messenger.style.height = alturaVisible + 'px';
+        messenger.style.position = 'fixed';
+        messenger.style.top = vv.offsetTop + 'px';
+        messenger.style.left = '0';
+        messenger.style.width = '100%';
+
+        const msgArea = document.getElementById('chatMessagesArea');
+        if (msgArea) {
+            requestAnimationFrame(() => { msgArea.scrollTop = msgArea.scrollHeight; });
+        }
+    }
+
+    function activarFixTecladoWebview() {
+        if (!window.visualViewport) return;
+        desactivarFixTecladoWebview();
+        _vvResizeHandler = () => ajustarAlturaChatPorTeclado();
+        window.visualViewport.addEventListener('resize', _vvResizeHandler);
+        window.visualViewport.addEventListener('scroll', _vvResizeHandler);
+        setTimeout(ajustarAlturaChatPorTeclado, 50);
+
+        const msgInput = document.getElementById('msgInputMobile');
+        if (msgInput) {
+            msgInput.addEventListener('focus', () => {
+                setTimeout(ajustarAlturaChatPorTeclado, 200);
+                setTimeout(ajustarAlturaChatPorTeclado, 500);
+            });
+        }
+    }
+
+    function desactivarFixTecladoWebview() {
+        if (_vvResizeHandler && window.visualViewport) {
+            window.visualViewport.removeEventListener('resize', _vvResizeHandler);
+            window.visualViewport.removeEventListener('scroll', _vvResizeHandler);
+        }
+        _vvResizeHandler = null;
+        const messenger = document.getElementById('messengerContainer');
+        if (messenger) {
+            messenger.style.height = '';
+            messenger.style.position = '';
+            messenger.style.top = '';
+            messenger.style.left = '';
+            messenger.style.width = '';
         }
     }
 
@@ -2211,13 +2380,15 @@
                 let previewMensaje = '';
                 if (c.ultimoMensaje) {
                     const esMio = c.ultimoMensaje.emisor === currentUser?.email;
-                    const textoPreview = c.ultimoMensaje.mensaje || '📎 Archivo adjunto';
+                    const textoPreview = c.ultimoMensaje.mensaje || '📎 Foto';
                     const previewCortado = textoPreview.length > 35 ? textoPreview.substring(0, 35) + '...' : textoPreview;
+                    const leidoUltimo = c.ultimoMensaje.leido === 1 || c.ultimoMensaje.leido === true;
+                    const checkPreview = esMio ? `<i class="fas fa-check-double ${leidoUltimo ? 'leido-check' : ''}"></i>` : '';
                     previewMensaje = `
                         <div class="conversation-last-message">
-                            <i class="fas ${esMio ? 'fa-reply' : 'fa-comment'}"></i>
+                            ${checkPreview}
                             <span class="mensaje-preview ${noLeidos > 0 && !esMio ? 'no-leido' : 'leido'}">
-                                ${esMio ? 'Tú: ' : ''}${escapeHtml(previewCortado)}
+                                ${escapeHtml(previewCortado)}
                             </span>
                         </div>
                     `;
@@ -2225,10 +2396,11 @@
                     previewMensaje = `<div class="conversation-last-message">📦 ${escapeHtml(c.titulo || 'Objeto')}</div>`;
                 }
                 
+                const colorAvatarConv = avatarColorFromString(c.otroUsuario || otroNombre);
                 return `
                     <div class="conversation-item ${isActive ? 'active' : ''} ${noLeidos > 0 ? 'tiene-no-leidos' : ''}" 
                          onclick="abrirChatDirecto(${c.id_objeto}, '${c.otroUsuario || ''}', '${escapeHtml(c.titulo || '').replace(/'/g, "\\'")}')">
-                        <div class="conversation-avatar">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
+                        <div class="conversation-avatar" style="background:${colorAvatarConv};">${escapeHtml(otroNombre.charAt(0).toUpperCase())}</div>
                         <div class="conversation-info">
                             <div class="conversation-name">
                                 ${escapeHtml(otroNombre)}
